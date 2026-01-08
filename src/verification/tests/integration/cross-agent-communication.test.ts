@@ -151,26 +151,58 @@ describe('Cross-Agent Communication Verification', () => {
   }
 
   function calculateTruthScore(message: AgentMessage, evidence: any): number {
-    // Simplified truth score calculation for testing
-    const baseScore = 0.8;
-    const evidenceQuality = evidence?.quality || 0.5;
-    const messageIntegrity = message.hash ? 0.2 : 0;
-    
-    return Math.min(1.0, baseScore + evidenceQuality * 0.15 + messageIntegrity);
+    let score = 0.5; // Base score
+
+    // Evidence quality contributes significantly
+    const evidenceQuality = evidence?.quality ?? 0.5;
+    score += evidenceQuality * 0.4;
+
+    // Hash integrity bonus
+    if (message.hash) score += 0.1;
+
+    // Penalize when actual_success contradicts claimed_success
+    if (message.content?.claimed_success && evidence?.actual_success === false) {
+      score -= 0.5;
+    }
+
+    // Bonus for matching success
+    if (message.content?.claimed_success === evidence?.actual_success) {
+      score += 0.1;
+    }
+
+    // Penalize for inconsistent performance metrics (claimed improvement but worse results)
+    if (message.content?.performance_improved && evidence?.performance_metrics) {
+      const metrics = evidence.performance_metrics;
+      if (metrics.before && metrics.after && metrics.after.query_time > metrics.before.query_time) {
+        score -= 0.5; // Significant penalty for contradictory evidence
+      }
+    }
+
+    return Math.max(0, Math.min(1.0, score));
   }
 
   function detectConflicts(message: AgentMessage, evidence: any): string[] {
     const conflicts: string[] = [];
-    
-    // Simulate conflict detection
+
+    // Claimed success but evidence shows failure
     if (message.content?.claimed_success && evidence?.actual_success === false) {
       conflicts.push('Claimed success but evidence shows failure');
     }
-    
-    if (message.content?.test_count && evidence?.actual_test_count !== message.content.test_count) {
+
+    // Test count mismatch
+    if (message.content?.test_count && evidence?.actual_test_count !== undefined &&
+        evidence.actual_test_count !== message.content.test_count) {
       conflicts.push(`Test count mismatch: claimed ${message.content.test_count}, actual ${evidence.actual_test_count}`);
     }
-    
+
+    // Performance improvement claimed but metrics show degradation
+    if (message.content?.performance_improved && evidence?.performance_metrics) {
+      const metrics = evidence.performance_metrics;
+      if (metrics.before && metrics.after && metrics.after.query_time > metrics.before.query_time) {
+        conflicts.push('Performance claimed improved but metrics show degradation');
+      }
+    }
+
     return conflicts;
   }
 
