@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Claude-Flow CLI - Core implementation using Node.js
+ * Tiara CLI - Core implementation using Node.js
  */
 
 import chalk from 'chalk';
@@ -303,7 +303,7 @@ async function main() {
     process.argv[1] &&
     (process.argv[1].endsWith('cli-core.js') || process.argv[1].endsWith('cli-core.ts'))
   ) {
-    const cli = new CLI('claude-flow', 'Advanced AI Agent Orchestration System');
+    const cli = new CLI('tiara', 'Advanced AI Agent Orchestration System');
 
     // Import and register all commands
     const { setupCommands } = await import('./commands/index.js');

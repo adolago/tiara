@@ -1,11 +1,12 @@
 {
-  "name": "claude-flow",
-  "version": "2.7.47",
-  "description": "Enterprise-grade AI agent orchestration with WASM-powered ReasoningBank memory and AgentDB vector database (always uses latest agentic-flow)",
-  "mcpName": "io.github.ruvnet/claude-flow",
+  "name": "tiara",
+  "version": "3.0.0",
+  "description": "Enterprise-grade AI agent orchestration with WASM-powered ReasoningBank memory and AgentDB vector database",
+  "mcpName": "io.github.adolago/tiara",
   "main": "cli.mjs",
   "bin": {
-    "claude-flow": "bin/claude-flow.js"
+    "tiara": "bin/tiara.js",
+    "claude-flow": "bin/tiara.js"
   },
   "scripts": {
     "preinstall": "node -e \"if(process.platform === 'win32' && process.env.npm_config_user_agent && process.env.npm_config_user_agent.includes('npm')) { console.warn('⚠️  Warning: On Windows, it is recommended to use pnpm to install this package to avoid potential native dependency build issues.'); console.warn('💡 Try: pnpm install or pnpx claude-flow@alpha'); }\"",
@@ -19,8 +20,8 @@
     "build:esm": "swc src -d dist --config-file .swcrc",
     "build:cjs": "swc src -d dist-cjs --config-file .swcrc",
     "build:ts": "npm run build:esm && npm run build:cjs",
-    "build:binary": "pkg dist/src/cli/main.js --targets node18-linux-x64,node18-macos-x64,node18-win-x64 --output bin/claude-flow",
-    "build:simple": "npm run build:ts && pkg dist/cli/simple-cli.js --output bin/claude-flow-simple",
+    "build:binary": "pkg dist/src/cli/main.js --targets node18-linux-x64,node18-macos-x64,node18-win-x64 --output bin/tiara",
+    "build:simple": "npm run build:ts && pkg dist/cli/simple-cli.js --output bin/tiara-simple",
     "typecheck": "tsc --noEmit",
     "typecheck:watch": "tsc --noEmit --watch",
     "dev:build": "tsc --watch",
@@ -84,27 +85,27 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ruvnet/claude-code-flow.git"
+    "url": "git+https://github.com/adolago/tiara.git"
   },
   "bugs": {
-    "url": "https://github.com/ruvnet/claude-code-flow/issues"
+    "url": "https://github.com/adolago/tiara/issues"
   },
-  "homepage": "https://github.com/ruvnet/claude-code-flow#readme",
+  "homepage": "https://github.com/adolago/tiara#readme",
   "engines": {
     "node": ">=20.0.0",
     "npm": ">=9.0.0"
   },
   "files": [
     "cli.js",
-    "bin/claude-flow.js",
-    "bin/claude-flow",
-    "bin/claude-flow-dev",
-    "bin/claude-flow-pkg.js",
-    "bin/claude-flow-swarm",
-    "bin/claude-flow-swarm-background",
-    "bin/claude-flow-swarm-bg",
-    "bin/claude-flow-swarm-monitor",
-    "bin/claude-flow-swarm-ui",
+    "bin/tiara.js",
+    "bin/tiara",
+    "bin/tiara-dev",
+    "bin/tiara-pkg.js",
+    "bin/tiara-swarm",
+    "bin/tiara-swarm-background",
+    "bin/tiara-swarm-bg",
+    "bin/tiara-swarm-monitor",
+    "bin/tiara-swarm-ui",
     "dist/",
     "src/",
     ".claude/",
