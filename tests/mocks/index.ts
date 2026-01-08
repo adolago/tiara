@@ -1,7 +1,76 @@
 /**
- * Mock implementations for testing
+ * Test mock factories for Tiara
  */
 
+import { jest } from '@jest/globals';
+
+export interface MockLogger {
+  debug: jest.Mock;
+  info: jest.Mock;
+  warn: jest.Mock;
+  error: jest.Mock;
+}
+
+export interface MockEventBus {
+  emit: jest.Mock;
+  on: jest.Mock;
+  off: jest.Mock;
+  once: jest.Mock;
+  removeAllListeners: jest.Mock;
+}
+
+function createMockLogger(): MockLogger {
+  return {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  };
+}
+
+function createMockEventBus(): MockEventBus {
+  const listeners = new Map<string, Set<(data: any) => void>>();
+
+  const mockEventBus: MockEventBus = {
+    emit: jest.fn((event: string, data?: any) => {
+      const handlers = listeners.get(event);
+      if (handlers) {
+        handlers.forEach(handler => handler(data));
+      }
+    }),
+    on: jest.fn((event: string, handler: (data: any) => void) => {
+      if (!listeners.has(event)) {
+        listeners.set(event, new Set());
+      }
+      listeners.get(event)!.add(handler);
+      return () => listeners.get(event)?.delete(handler);
+    }),
+    off: jest.fn((event: string, handler: (data: any) => void) => {
+      listeners.get(event)?.delete(handler);
+    }),
+    once: jest.fn((event: string, handler: (data: any) => void) => {
+      const wrapper = (data: any) => {
+        handler(data);
+        mockEventBus.off(event, wrapper);
+      };
+      mockEventBus.on(event, wrapper);
+    }),
+    removeAllListeners: jest.fn(() => {
+      listeners.clear();
+    }),
+  };
+
+  return mockEventBus;
+}
+
+export function createMocks() {
+  return {
+    logger: createMockLogger(),
+    eventBus: createMockEventBus(),
+  };
+}
+
+// Additional mock objects for specific tests
 export const mockAgent = {
   id: 'mock-agent-1',
   name: 'Mock Agent',
@@ -77,14 +146,6 @@ export const mockConfig = {
   },
 };
 
-export const mockEventBus = {
-  emit: jest.fn(),
-  on: jest.fn(),
-  off: jest.fn(),
-  once: jest.fn(),
-  removeAllListeners: jest.fn(),
-};
-
 export const mockMemoryStore = {
   store: jest.fn(),
   retrieve: jest.fn(),
@@ -109,3 +170,5 @@ export const mockCoordinationSystem = {
   broadcast: jest.fn(),
   sendMessage: jest.fn(),
 };
+
+export { createMockLogger, createMockEventBus };

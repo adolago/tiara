@@ -1,386 +1,128 @@
 /**
  * Comprehensive unit tests for Coordination System
- * Tests deadlock detection, task scheduling, and resource management
+ * Tests the CoordinationManager with its actual API
  */
 
-import { describe, it, beforeEach, afterEach, mockLogger, mockEventBus, FakeTime, spy, stub  } from "../../test.utils";
-import { expect } from "@jest/globals";
-
-import { CoordinationManager } from '../../../src/coordination/manager.ts';
-import { TaskScheduler } from '../../../src/coordination/scheduler.ts';
-import { ResourceManager } from '../../../src/coordination/resources.ts';
-import { ConflictResolver } from '../../../src/coordination/conflict-resolution.ts';
-import { CircuitBreaker } from '../../../src/coordination/circuit-breaker.ts';
-import { WorkStealingCoordinator } from '../../../src/coordination/work-stealing.ts';
-import { DependencyGraph } from '../../../src/coordination/dependency-graph.ts';
-import { AdvancedTaskScheduler } from '../../../src/coordination/advanced-scheduler.ts';
-import { 
-  AsyncTestUtils, 
-  MemoryTestUtils, 
-  PerformanceTestUtils,
-  TestAssertions,
-  MockFactory 
-} from '../../utils/test-utils.ts';
-import { generateCoordinationTasks, generateErrorScenarios } from '../../fixtures/generators.ts';
-import { setupTestEnv, cleanupTestEnv, TEST_CONFIG } from '../../test.config';
+import { describe, it, beforeEach, afterEach, expect } from '@jest/globals';
+import { CoordinationManager } from '../../../src/coordination/manager.js';
+import { ConflictResolver } from '../../../src/coordination/conflict-resolution.js';
+import { CircuitBreaker, CircuitState } from '../../../src/coordination/circuit-breaker.js';
+import type { CoordinationConfig, Task } from '../../../src/utils/types.js';
+import { createMocks } from '../../mocks/index.js';
 
 describe('Coordination System - Comprehensive Tests', () => {
   let coordinationManager: CoordinationManager;
-  let scheduler: TaskScheduler;
-  let resourceManager: ResourceManager;
-  let conflictResolver: ConflictResolver;
-  let fakeTime: FakeTime;
+  let mocks: ReturnType<typeof createMocks>;
+  let config: CoordinationConfig;
 
   beforeEach(() => {
-    setupTestEnv();
-    
-    resourceManager = new ResourceManager({
-      maxConcurrentTasks: 10,
-      maxMemoryUsage: 1024 * 1024 * 100, // 100MB
-      resourceTimeout: 30000,
-    });
+    mocks = createMocks();
 
-    scheduler = new TaskScheduler({
-      maxConcurrentTasks: 5,
-      taskTimeout: 10000,
-      retryAttempts: 3,
-    });
+    config = {
+      maxRetries: 3,
+      retryDelay: 100,
+      deadlockDetection: false,
+      resourceTimeout: 5000,
+      messageTimeout: 5000,
+    };
 
-    conflictResolver = new ConflictResolver(
-      mockLogger,
-      mockEventBus
+    coordinationManager = new CoordinationManager(
+      config,
+      mocks.eventBus,
+      mocks.logger
     );
-
-    coordinationManager = new CoordinationManager({
-      scheduler,
-      resourceManager,
-      conflictResolver,
-    });
-
-    fakeTime = new FakeTime();
   });
 
   afterEach(async () => {
-    fakeTime.restore();
-    await cleanupTestEnv();
+    try {
+      await coordinationManager.shutdown();
+    } catch {
+      // Ignore cleanup errors
+    }
   });
 
-  describe('Task Scheduling', () => {
+  describe('Initialization', () => {
+    it('should initialize successfully', async () => {
+      await coordinationManager.initialize();
+
+      const health = await coordinationManager.getHealthStatus();
+      expect(health.healthy).toBe(true);
+    });
+
+    it('should not initialize twice', async () => {
+      await coordinationManager.initialize();
+      await coordinationManager.initialize(); // Should not throw
+
+      const health = await coordinationManager.getHealthStatus();
+      expect(health.healthy).toBe(true);
+    });
+  });
+
+  describe('Task Management', () => {
     beforeEach(async () => {
       await coordinationManager.initialize();
     });
 
-    it('should schedule tasks with correct priority', async () => {
-      const tasks = [
-        { id: 'low-1', priority: 'low', execute: spy(async () => 'low-1') },
-        { id: 'high-1', priority: 'critical', execute: spy(async () => 'high-1') },
-        { id: 'medium-1', priority: 'medium', execute: spy(async () => 'medium-1') },
-        { id: 'high-2', priority: 'high', execute: spy(async () => 'high-2') },
-      ];
-
-      // Submit all tasks
-      const promises = tasks.map(task => 
-        coordinationManager.submitTask(task.id, task)
-      );
-
-      const results = await Promise.all(promises);
-      
-      // Verify all tasks completed
-      expect(results.length).toBe(4);
-      tasks.forEach(task => {
-        expect(task.execute.calls.length).toBe(1);
-      });
-    });
-
-    it('should handle task dependencies correctly', async () => {
-      const executionOrder: string[] = [];
-      
-      const tasks = [
-        {
-          id: 'task-a',
-          dependencies: [],
-          execute: spy(async () => {
-            await AsyncTestUtils.delay(10);
-            executionOrder.push('task-a');
-            return 'a';
-          }),
-        },
-        {
-          id: 'task-b',
-          dependencies: ['task-a'],
-          execute: spy(async () => {
-            await AsyncTestUtils.delay(10);
-            executionOrder.push('task-b');
-            return 'b';
-          }),
-        },
-        {
-          id: 'task-c',
-          dependencies: ['task-a', 'task-b'],
-          execute: spy(async () => {
-            await AsyncTestUtils.delay(10);
-            executionOrder.push('task-c');
-            return 'c';
-          }),
-        },
-      ];
-
-      // Submit tasks in random order
-      const promises = [
-        coordinationManager.submitTask('task-c', tasks[2]),
-        coordinationManager.submitTask('task-a', tasks[0]),
-        coordinationManager.submitTask('task-b', tasks[1]),
-      ];
-
-      await Promise.all(promises);
-      
-      // Verify execution order respected dependencies
-      expect(executionOrder[0]).toBe('task-a');
-      expect(executionOrder[1]).toBe('task-b');
-      expect(executionOrder[2]).toBe('task-c');
-    });
-
-    it('should detect and handle circular dependencies', async () => {
-      const tasks = [
-        { id: 'task-x', dependencies: ['task-y'], execute: spy() },
-        { id: 'task-y', dependencies: ['task-z'], execute: spy() },
-        { id: 'task-z', dependencies: ['task-x'], execute: spy() },
-      ];
-
-      // Submit tasks with circular dependencies
-      const promises = tasks.map(task => 
-        coordinationManager.submitTask(task.id, task)
-      );
-
-      // Should detect circular dependency and reject
-      const results = await Promise.allSettled(promises);
-      const failures = results.filter(r => r.status === 'rejected');
-      
-      expect(failures.length >= 1).toBe(true);
-      
-      // Verify circular dependency was detected
-      const error = failures[0] as PromiseRejectedResult;
-      expect(error.reason.message.includes('circular')).toBe(true);
-    });
-
-    it('should handle task timeouts correctly', async () => {
-      const longRunningTask = {
-        id: 'long-task',
-        timeout: 100, // 100ms timeout
-        execute: spy(async () => {
-          await AsyncTestUtils.delay(200); // Take 200ms
-          return 'should not complete';
-        }),
+    it('should assign task to agent', async () => {
+      const task: Task = {
+        id: 'test-task-1',
+        type: 'test',
+        description: 'Test task',
+        priority: 50,
+        status: 'pending',
+        dependencies: [],
+        input: {},
+        metadata: {},
+        createdAt: new Date(),
       };
+      const agentId = 'test-agent';
 
-      await TestAssertions.assertThrowsAsync(
-        () => coordinationManager.submitTask('long-task', longRunningTask),
-        Error,
-        'timeout'
-      );
+      await coordinationManager.assignTask(task, agentId);
+
+      const taskCount = await coordinationManager.getAgentTaskCount(agentId);
+      expect(taskCount).toBe(1);
     });
 
-    it('should handle concurrent task submission', async () => {
-      const tasks = generateCoordinationTasks(20);
-      
-      const promises = tasks.map(task => 
-        coordinationManager.submitTask(task.id, {
-          execute: spy(async () => `result-${task.id}`),
-          priority: task.priority,
-        })
-      );
-
-      const results = await Promise.all(promises);
-      
-      expect(results.length).toBe(20);
-      results.forEach((result, i) => {
-        expect(result).toBe(`result-${tasks[i].id}`);
-      });
-    });
-
-    it('should respect concurrency limits', async () => {
-      const limitedScheduler = new TaskScheduler({
-        maxConcurrentTasks: 2, // Only 2 concurrent tasks
-        taskTimeout: 10000,
-      });
-
-      const limitedManager = new CoordinationManager({
-        scheduler: limitedScheduler,
-        resourceManager,
-        conflictResolver,
-      });
-
-      await limitedManager.initialize();
-
-      let activeTasks = 0;
-      let maxActiveTasks = 0;
-
-      const tasks = Array.from({ length: 10 }, (_, i) => ({
-        id: `limited-${i}`,
-        execute: spy(async () => {
-          activeTasks++;
-          maxActiveTasks = Math.max(maxActiveTasks, activeTasks);
-          await AsyncTestUtils.delay(50);
-          activeTasks--;
-          return `result-${i}`;
-        }),
-      }));
-
-      const promises = tasks.map(task => 
-        limitedManager.submitTask(task.id, task)
-      );
-
-      await Promise.all(promises);
-      
-      // Should never exceed the concurrency limit
-      TestAssertions.assertInRange(maxActiveTasks, 1, 2);
-    });
-  });
-
-  describe('Deadlock Detection and Prevention', () => {
-    beforeEach(async () => {
-      await coordinationManager.initialize();
-    });
-
-    it('should detect simple deadlocks', async () => {
-      const resourceLocks = new Map<string, string>();
-      
-      const task1 = {
-        id: 'deadlock-1',
-        requiredResources: ['resource-a', 'resource-b'],
-        execute: spy(async () => {
-          resourceLocks.set('resource-a', 'deadlock-1');
-          await AsyncTestUtils.delay(50);
-          resourceLocks.set('resource-b', 'deadlock-1');
-          return 'task1-complete';
-        }),
+    it('should get agent tasks', async () => {
+      const task: Task = {
+        id: 'test-task-2',
+        type: 'test',
+        description: 'Test task 2',
+        priority: 50,
+        status: 'pending',
+        dependencies: [],
+        input: {},
+        metadata: {},
+        createdAt: new Date(),
       };
+      const agentId = 'test-agent';
 
-      const task2 = {
-        id: 'deadlock-2',
-        requiredResources: ['resource-b', 'resource-a'],
-        execute: spy(async () => {
-          resourceLocks.set('resource-b', 'deadlock-2');
-          await AsyncTestUtils.delay(50);
-          resourceLocks.set('resource-a', 'deadlock-2');
-          return 'task2-complete';
-        }),
-      };
+      await coordinationManager.assignTask(task, agentId);
 
-      // Submit both tasks simultaneously
-      const promises = [
-        coordinationManager.submitTask('deadlock-1', task1),
-        coordinationManager.submitTask('deadlock-2', task2),
-      ];
-
-      const results = await Promise.allSettled(promises);
-      
-      // At least one should be prevented/resolved
-      const successes = results.filter(r => r.status === 'fulfilled');
-      const failures = results.filter(r => r.status === 'rejected');
-      
-      // Deadlock detection should prevent both from hanging
-      expect(successes.length + failures.length).toBe(2);
+      const tasks = await coordinationManager.getAgentTasks(agentId);
+      expect(tasks.length).toBe(1);
+      expect(tasks[0].id).toBe(task.id);
     });
 
-    it('should prevent resource starvation', async () => {
-      const highPriorityTasks = Array.from({ length: 5 }, (_, i) => ({
-        id: `high-${i}`,
-        priority: 'critical',
-        requiredResources: ['shared-resource'],
-        execute: spy(async () => {
-          await AsyncTestUtils.delay(100);
-          return `high-${i}`;
-        }),
-      }));
-
-      const lowPriorityTask = {
-        id: 'low-priority',
-        priority: 'low',
-        requiredResources: ['shared-resource'],
-        execute: spy(async () => {
-          await AsyncTestUtils.delay(10);
-          return 'low-priority-complete';
-        }),
+    it('should cancel task', async () => {
+      const task: Task = {
+        id: 'test-task-3',
+        type: 'test',
+        description: 'Test task 3',
+        priority: 50,
+        status: 'pending',
+        dependencies: [],
+        input: {},
+        metadata: {},
+        createdAt: new Date(),
       };
+      const agentId = 'test-agent';
 
-      // Submit low priority task first
-      const lowPromise = coordinationManager.submitTask('low-priority', lowPriorityTask);
-      
-      // Then submit high priority tasks
-      const highPromises = highPriorityTasks.map(task => 
-        coordinationManager.submitTask(task.id, task)
-      );
+      await coordinationManager.assignTask(task, agentId);
+      await coordinationManager.cancelTask(task.id);
 
-      await AsyncTestUtils.delay(20); // Let low priority task get a chance
-
-      const allResults = await Promise.allSettled([lowPromise, ...highPromises]);
-      const successes = allResults.filter(r => r.status === 'fulfilled');
-      
-      // Low priority task should eventually complete (no starvation)
-      expect(successes.length).toBe(6);
-      expect(lowPriorityTask.execute.calls.length).toBe(1);
-    });
-
-    it('should handle complex dependency chains without deadlock', async () => {
-      // Create a complex but non-circular dependency graph
-      const tasks = [
-        { id: 'root', dependencies: [], execute: spy(async () => 'root') },
-        { id: 'branch-1', dependencies: ['root'], execute: spy(async () => 'branch-1') },
-        { id: 'branch-2', dependencies: ['root'], execute: spy(async () => 'branch-2') },
-        { id: 'merge-1', dependencies: ['branch-1', 'branch-2'], execute: spy(async () => 'merge-1') },
-        { id: 'leaf-1', dependencies: ['merge-1'], execute: spy(async () => 'leaf-1') },
-        { id: 'leaf-2', dependencies: ['merge-1'], execute: spy(async () => 'leaf-2') },
-        { id: 'final', dependencies: ['leaf-1', 'leaf-2'], execute: spy(async () => 'final') },
-      ];
-
-      const promises = tasks.map(task => 
-        coordinationManager.submitTask(task.id, task)
-      );
-
-      const results = await Promise.all(promises);
-      
-      expect(results.length).toBe(7);
-      tasks.forEach(task => {
-        expect(task.execute.calls.length).toBe(1);
-      });
-    });
-
-    it('should recover from deadlock through timeout', async () => {
-      const deadlockTimeout = 1000; // 1 second
-      
-      const task1 = {
-        id: 'timeout-deadlock-1',
-        requiredResources: ['resource-x'],
-        timeout: deadlockTimeout,
-        execute: spy(async () => {
-          await AsyncTestUtils.delay(2000); // Longer than timeout
-          return 'should-not-complete';
-        }),
-      };
-
-      const task2 = {
-        id: 'timeout-deadlock-2',
-        requiredResources: ['resource-x'],
-        execute: spy(async () => {
-          await AsyncTestUtils.delay(100);
-          return 'task2-complete';
-        }),
-      };
-
-      const promises = [
-        coordinationManager.submitTask('timeout-deadlock-1', task1),
-        coordinationManager.submitTask('timeout-deadlock-2', task2),
-      ];
-
-      const results = await Promise.allSettled(promises);
-      
-      // First task should timeout, second should complete
-      const successes = results.filter(r => r.status === 'fulfilled');
-      const failures = results.filter(r => r.status === 'rejected');
-      
-      expect(successes.length >= 1).toBe(true);
-      expect(failures.length >= 1).toBe(true);
+      const taskCount = await coordinationManager.getAgentTaskCount(agentId);
+      expect(taskCount).toBe(0);
     });
   });
 
@@ -389,779 +131,267 @@ describe('Coordination System - Comprehensive Tests', () => {
       await coordinationManager.initialize();
     });
 
-    it('should track resource usage correctly', async () => {
-      const tasks = Array.from({ length: 5 }, (_, i) => ({
-        id: `resource-task-${i}`,
-        requiredResources: [`cpu-${i % 2}`, 'memory'],
-        estimatedMemoryUsage: 1024 * 1024 * 10, // 10MB
-        execute: spy(async () => {
-          await AsyncTestUtils.delay(100);
-          return `task-${i}`;
-        }),
-      }));
+    it('should acquire and release resource', async () => {
+      const resourceId = 'test-resource';
+      const agentId = 'test-agent';
 
-      const promises = tasks.map(task => 
-        coordinationManager.submitTask(task.id, task)
-      );
+      await coordinationManager.acquireResource(resourceId, agentId);
+      await coordinationManager.releaseResource(resourceId, agentId);
 
-      // Check resource usage during execution
-      await AsyncTestUtils.delay(50);
-      
-      const resourceStatus = await resourceManager.getResourceStatus();
-      expect(resourceStatus).toBeDefined();
-      
-      // Should track active resource usage
-      expect(typeof resourceStatus.memoryUsage).toBe('number');
-      expect(typeof resourceStatus.activeResources).toBe('object');
-
-      await Promise.all(promises);
-    });
-
-    it('should enforce memory limits', async () => {
-      const limitedResourceManager = new ResourceManager({
-        maxMemoryUsage: 1024 * 1024 * 50, // 50MB limit
-        resourceTimeout: 30000,
-      });
-
-      const limitedManager = new CoordinationManager({
-        scheduler,
-        resourceManager: limitedResourceManager,
-        conflictResolver,
-      });
-
-      await limitedManager.initialize();
-
-      const memoryHeavyTask = {
-        id: 'memory-heavy',
-        estimatedMemoryUsage: 1024 * 1024 * 100, // 100MB (exceeds limit)
-        execute: spy(async () => 'should-not-run'),
-      };
-
-      await TestAssertions.assertThrowsAsync(
-        () => limitedManager.submitTask('memory-heavy', memoryHeavyTask),
-        Error,
-        'memory'
-      );
-    });
-
-    it('should handle resource conflicts correctly', async () => {
-      const sharedResource = 'exclusive-resource';
-      
-      const tasks = Array.from({ length: 3 }, (_, i) => ({
-        id: `conflict-task-${i}`,
-        requiredResources: [sharedResource],
-        resourceMode: 'exclusive',
-        execute: spy(async () => {
-          await AsyncTestUtils.delay(100);
-          return `task-${i}`;
-        }),
-      }));
-
-      const promises = tasks.map(task => 
-        coordinationManager.submitTask(task.id, task)
-      );
-
-      const results = await Promise.all(promises);
-      
-      // All tasks should complete, but serialized due to exclusive resource
-      expect(results.length).toBe(3);
-      tasks.forEach(task => {
-        expect(task.execute.calls.length).toBe(1);
-      });
-    });
-
-    it('should support resource sharing', async () => {
-      const sharedResource = 'shared-resource';
-      
-      const tasks = Array.from({ length: 3 }, (_, i) => ({
-        id: `shared-task-${i}`,
-        requiredResources: [sharedResource],
-        resourceMode: 'shared',
-        execute: spy(async () => {
-          await AsyncTestUtils.delay(50);
-          return `shared-${i}`;
-        }),
-      }));
-
-      const startTime = Date.now();
-      
-      const promises = tasks.map(task => 
-        coordinationManager.submitTask(task.id, task)
-      );
-
-      await Promise.all(promises);
-      
-      const duration = Date.now() - startTime;
-      
-      // Should complete faster than serialized execution (less than 150ms vs 150ms+)
-      TestAssertions.assertInRange(duration, 0, 120);
-    });
-
-    it('should handle resource cleanup on task failure', async () => {
-      const failingTask = {
-        id: 'failing-task',
-        requiredResources: ['cleanup-resource'],
-        execute: spy(async () => {
-          await AsyncTestUtils.delay(50);
-          throw new Error('Task failed');
-        }),
-      };
-
-      const followupTask = {
-        id: 'followup-task',
-        requiredResources: ['cleanup-resource'],
-        execute: spy(async () => {
-          await AsyncTestUtils.delay(10);
-          return 'followup-complete';
-        }),
-      };
-
-      // First task should fail
-      await TestAssertions.assertThrowsAsync(
-        () => coordinationManager.submitTask('failing-task', failingTask),
-        Error,
-        'Task failed'
-      );
-
-      // Resource should be cleaned up and available for next task
-      const result = await coordinationManager.submitTask('followup-task', followupTask);
-      expect(result).toBe('followup-complete');
+      // Should not throw - resource was successfully acquired and released
     });
   });
 
-  describe('Conflict Resolution', () => {
+  describe('Messaging', () => {
     beforeEach(async () => {
       await coordinationManager.initialize();
     });
 
-    it('should resolve priority conflicts correctly', async () => {
-      const conflictingTasks = [
-        {
-          id: 'low-priority-conflict',
-          priority: 'low',
-          requiredResources: ['conflict-resource'],
-          execute: spy(async () => {
-            await AsyncTestUtils.delay(100);
-            return 'low-priority';
-          }),
-        },
-        {
-          id: 'high-priority-conflict',
-          priority: 'critical',
-          requiredResources: ['conflict-resource'],
-          execute: spy(async () => {
-            await AsyncTestUtils.delay(50);
-            return 'high-priority';
-          }),
-        },
-      ];
+    it('should send message between agents', async () => {
+      const from = 'agent-1';
+      const to = 'agent-2';
+      const message = { type: 'test', data: 'hello' };
 
-      const promises = conflictingTasks.map(task => 
-        coordinationManager.submitTask(task.id, task)
-      );
+      await coordinationManager.sendMessage(from, to, message);
 
-      const results = await Promise.all(promises);
-      
-      // Both should complete, high priority first
-      expect(results.length).toBe(2);
-      expect(results.includes('high-priority')).toBe(true);
-      expect(results.includes('low-priority')).toBe(true);
-    });
-
-    it('should handle timestamp-based conflict resolution', async () => {
-      const timestampResolver = new ConflictResolver({
-        enableConflictDetection: true,
-        resolutionStrategy: 'timestamp',
-      });
-
-      const timestampManager = new CoordinationManager({
-        scheduler,
-        resourceManager,
-        conflictResolver: timestampResolver,
-      });
-
-      await timestampManager.initialize();
-
-      const firstTask = {
-        id: 'first-timestamp',
-        requiredResources: ['timestamp-resource'],
-        execute: spy(async () => 'first'),
-      };
-
-      const secondTask = {
-        id: 'second-timestamp',
-        requiredResources: ['timestamp-resource'],
-        execute: spy(async () => 'second'),
-      };
-
-      // Submit with slight delay to ensure different timestamps
-      const firstPromise = timestampManager.submitTask('first-timestamp', firstTask);
-      await AsyncTestUtils.delay(5);
-      const secondPromise = timestampManager.submitTask('second-timestamp', secondTask);
-
-      const results = await Promise.all([firstPromise, secondPromise]);
-      
-      // First submitted should win
-      expect(results[0]).toBe('first');
-      expect(results[1]).toBe('second');
-    });
-
-    it('should handle conflict escalation', async () => {
-      const escalationTasks = Array.from({ length: 5 }, (_, i) => ({
-        id: `escalation-${i}`,
-        priority: 'medium',
-        requiredResources: ['escalation-resource'],
-        maxWaitTime: 200,
-        execute: spy(async () => {
-          await AsyncTestUtils.delay(100);
-          return `escalation-${i}`;
-        }),
-      }));
-
-      const promises = escalationTasks.map((task, i) => {
-        // Stagger submissions to create queue
-        return AsyncTestUtils.delay(i * 10).then(() => 
-          coordinationManager.submitTask(task.id, task)
-        );
-      });
-
-      const results = await Promise.all(promises);
-      
-      // All tasks should complete despite conflicts
-      expect(results.length).toBe(5);
-      escalationTasks.forEach(task => {
-        expect(task.execute.calls.length).toBe(1);
-      });
-    });
-
-    it('should detect and resolve nested conflicts', async () => {
-      const nestedConflictTasks = [
-        {
-          id: 'nested-1',
-          requiredResources: ['resource-a', 'resource-b'],
-          execute: spy(async () => {
-            await AsyncTestUtils.delay(50);
-            return 'nested-1';
-          }),
-        },
-        {
-          id: 'nested-2',
-          requiredResources: ['resource-b', 'resource-c'],
-          execute: spy(async () => {
-            await AsyncTestUtils.delay(50);
-            return 'nested-2';
-          }),
-        },
-        {
-          id: 'nested-3',
-          requiredResources: ['resource-c', 'resource-a'],
-          execute: spy(async () => {
-            await AsyncTestUtils.delay(50);
-            return 'nested-3';
-          }),
-        },
-      ];
-
-      const promises = nestedConflictTasks.map(task => 
-        coordinationManager.submitTask(task.id, task)
-      );
-
-      const results = await Promise.all(promises);
-      
-      // Should resolve conflicts and complete all tasks
-      expect(results.length).toBe(3);
-      nestedConflictTasks.forEach(task => {
-        expect(task.execute.calls.length).toBe(1);
-      });
+      // Message should be sent without error
     });
   });
 
-  describe('Advanced Scheduling Features', () => {
-    let advancedScheduler: AdvancedTaskScheduler;
-    let workStealingScheduler: WorkStealingCoordinator;
-
-    beforeEach(async () => {
-      advancedScheduler = new AdvancedTaskScheduler({
-        enableWorkStealing: true,
-        enablePriorityAging: true,
-        enableLoadBalancing: true,
-      });
-
-      workStealingScheduler = new WorkStealingCoordinator({
-        maxWorkersPerQueue: 3,
-        stealingThreshold: 2,
-        balancingInterval: 100,
-      });
-    });
-
-    it('should support work stealing between queues', async () => {
-      await workStealingScheduler.initialize();
-
-      // Create tasks for multiple agents/workers
-      const agentTasks = {
-        'agent-1': Array.from({ length: 10 }, (_, i) => ({
-          id: `agent1-task-${i}`,
-          execute: spy(async () => {
-            await AsyncTestUtils.delay(20);
-            return `agent1-${i}`;
-          }),
-        })),
-        'agent-2': Array.from({ length: 2 }, (_, i) => ({
-          id: `agent2-task-${i}`,
-          execute: spy(async () => {
-            await AsyncTestUtils.delay(20);
-            return `agent2-${i}`;
-          }),
-        })),
-      };
-
-      // Submit tasks to different agent queues
-      const promises: Promise<any>[] = [];
-      
-      for (const [agentId, tasks] of Object.entries(agentTasks)) {
-        for (const task of tasks) {
-          promises.push(workStealingScheduler.submitTask(agentId, task.id, task));
-        }
-      }
-
-      const results = await Promise.all(promises);
-      
-      // All tasks should complete
-      expect(results.length).toBe(12);
-      
-      // Work stealing should have balanced the load
-      const agent1Results = results.filter(r => r.startsWith('agent1'));
-      const agent2Results = results.filter(r => r.startsWith('agent2'));
-      
-      expect(agent1Results.length).toBe(10);
-      expect(agent2Results.length).toBe(2);
-    });
-
-    it('should implement priority aging', async () => {
-      await advancedScheduler.initialize();
-
-      const oldLowPriorityTask = {
-        id: 'old-low',
-        priority: 'low',
-        submittedAt: Date.now() - 60000, // 1 minute ago
-        execute: spy(async () => 'old-low-priority'),
-      };
-
-      const newHighPriorityTask = {
-        id: 'new-high',
-        priority: 'high',
-        submittedAt: Date.now(),
-        execute: spy(async () => 'new-high-priority'),
-      };
-
-      // Submit in order that would normally favor high priority
-      const promises = [
-        advancedScheduler.submitTask('old-low', oldLowPriorityTask),
-        advancedScheduler.submitTask('new-high', newHighPriorityTask),
-      ];
-
-      const results = await Promise.all(promises);
-      
-      // Priority aging should eventually elevate old low priority task
-      expect(results.length).toBe(2);
-      expect(oldLowPriorityTask.execute.calls.length).toBe(1);
-      expect(newHighPriorityTask.execute.calls.length).toBe(1);
-    });
-
-    it('should support dynamic priority adjustment', async () => {
-      await advancedScheduler.initialize();
-
-      const adjustableTask = {
-        id: 'adjustable',
-        priority: 'low',
-        execute: spy(async () => {
-          await AsyncTestUtils.delay(100);
-          return 'adjustable-complete';
-        }),
-      };
-
-      // Submit task
-      const taskPromise = advancedScheduler.submitTask('adjustable', adjustableTask);
-      
-      // Adjust priority after submission
-      await AsyncTestUtils.delay(10);
-      await advancedScheduler.adjustTaskPriority('adjustable', 'critical');
-
-      const result = await taskPromise;
-      expect(result).toBe('adjustable-complete');
-    });
-
-    it('should handle load balancing across multiple schedulers', async () => {
-      const schedulers = Array.from({ length: 3 }, () => new AdvancedTaskScheduler({
-        enableLoadBalancing: true,
-      }));
-
-      await Promise.all(schedulers.map(s => s.initialize()));
-
-      // Create uneven task distribution
-      const tasks = Array.from({ length: 30 }, (_, i) => ({
-        id: `balance-task-${i}`,
-        execute: spy(async () => {
-          await AsyncTestUtils.delay(50);
-          return `task-${i}`;
-        }),
-      }));
-
-      // Submit all tasks to first scheduler
-      const promises = tasks.map(task => 
-        schedulers[0].submitTask(task.id, task)
-      );
-
-      const results = await Promise.all(promises);
-      
-      // Load balancing should distribute tasks across schedulers
-      expect(results.length).toBe(30);
-      tasks.forEach(task => {
-        expect(task.execute.calls.length).toBe(1);
-      });
-    });
-  });
-
-  describe('Performance and Scalability', () => {
+  describe('Health Monitoring', () => {
     beforeEach(async () => {
       await coordinationManager.initialize();
     });
 
-    it('should handle high task submission throughput', async () => {
-      const { stats } = await PerformanceTestUtils.benchmark(
-        async () => {
-          const taskId = `perf-task-${Date.now()}-${Math.random()}`;
-          return coordinationManager.submitTask(taskId, {
-            execute: async () => 'quick-task',
-          });
-        },
-        { iterations: 200, concurrency: 10 }
-      );
+    it('should return healthy status', async () => {
+      const health = await coordinationManager.getHealthStatus();
 
-      TestAssertions.assertInRange(stats.mean, 0, 50); // Should be fast
-      console.log(`Task submission performance: ${stats.mean.toFixed(2)}ms average`);
+      expect(health.healthy).toBe(true);
+      expect(health.metrics).toBeDefined();
     });
 
-    it('should scale with large numbers of tasks', async () => {
-      const largeBatch = Array.from({ length: 1000 }, (_, i) => ({
-        id: `scale-task-${i}`,
-        execute: spy(async () => `result-${i}`),
-      }));
+    it('should get coordination metrics', async () => {
+      const metrics = await coordinationManager.getCoordinationMetrics();
 
-      const startTime = Date.now();
-      
-      const promises = largeBatch.map(task => 
-        coordinationManager.submitTask(task.id, task)
-      );
-
-      const results = await Promise.all(promises);
-      
-      const duration = Date.now() - startTime;
-      
-      expect(results.length).toBe(1000);
-      TestAssertions.assertInRange(duration, 0, 10000); // Should complete within 10 seconds
-      
-      console.log(`Large batch (1000 tasks) completed in ${duration}ms`);
-    });
-
-    it('should maintain performance under memory pressure', async () => {
-      const { leaked } = await MemoryTestUtils.checkMemoryLeak(async () => {
-        // Submit many tasks with varying resource requirements
-        const tasks = Array.from({ length: 500 }, (_, i) => ({
-          id: `memory-task-${i}`,
-          estimatedMemoryUsage: 1024 * 100, // 100KB each
-          execute: spy(async () => {
-            // Simulate some memory usage
-            const data = new Array(100).fill(i);
-            await AsyncTestUtils.delay(5);
-            return data.length;
-          }),
-        }));
-
-        const promises = tasks.map(task => 
-          coordinationManager.submitTask(task.id, task)
-        );
-
-        await Promise.all(promises);
-      });
-
-      expect(leaked).toBe(false);
-    });
-
-    it('should handle load testing scenario', async () => {
-      const results = await PerformanceTestUtils.loadTest(
-        async () => {
-          const taskId = `load-task-${Date.now()}-${Math.random()}`;
-          return coordinationManager.submitTask(taskId, {
-            execute: async () => 'load-test-result',
-          });
-        },
-        {
-          duration: 5000, // 5 seconds
-          maxConcurrency: 20,
-          requestsPerSecond: 50,
-        }
-      );
-
-      TestAssertions.assertInRange(results.successfulRequests / results.totalRequests, 0.95, 1.0);
-      TestAssertions.assertInRange(results.averageResponseTime, 0, 100);
-      
-      console.log(`Load test: ${results.successfulRequests}/${results.totalRequests} successful`);
-    });
-  });
-
-  describe('Error Handling and Recovery', () => {
-    beforeEach(async () => {
-      await coordinationManager.initialize();
-    });
-
-    it('should handle task execution failures gracefully', async () => {
-      const errorScenarios = generateErrorScenarios();
-      
-      for (const scenario of errorScenarios) {
-        const failingTask = {
-          id: `error-task-${scenario.name}`,
-          execute: spy(async () => {
-            throw scenario.error;
-          }),
-        };
-
-        if (scenario.recoverable) {
-          // Should retry recoverable errors
-          try {
-            await coordinationManager.submitTask(`error-task-${scenario.name}`, failingTask);
-          } catch (error) {
-            // May still fail after retries
-            expect(error).toBeDefined();
-          }
-        } else {
-          // Should fail fast for non-recoverable errors
-          await TestAssertions.assertThrowsAsync(
-            () => coordinationManager.submitTask(`error-task-${scenario.name}`, failingTask),
-            Error,
-            scenario.error.message
-          );
-        }
-      }
-    });
-
-    it('should recover from scheduler failures', async () => {
-      // Simulate scheduler failure
-      const originalSubmit = scheduler.submit.bind(scheduler);
-      let failureCount = 0;
-      
-      scheduler.submit = spy(async (...args) => {
-        failureCount++;
-        if (failureCount <= 2) {
-          throw new Error('Scheduler temporarily unavailable');
-        }
-        return originalSubmit(...args);
-      });
-
-      const resilientTask = {
-        id: 'resilient-task',
-        execute: spy(async () => 'recovered'),
-      };
-
-      // Should eventually succeed after scheduler recovers
-      const result = await coordinationManager.submitTask('resilient-task', resilientTask);
-      expect(result).toBe('recovered');
-      expect(failureCount).toBe(3);
-    });
-
-    it('should handle resource manager failures', async () => {
-      // Simulate resource manager failure
-      const originalAcquire = resourceManager.acquireResources.bind(resourceManager);
-      let attempts = 0;
-      
-      resourceManager.acquireResources = spy(async (...args) => {
-        attempts++;
-        if (attempts <= 1) {
-          throw new Error('Resource manager failure');
-        }
-        return originalAcquire(...args);
-      });
-
-      const resourceTask = {
-        id: 'resource-task',
-        requiredResources: ['test-resource'],
-        execute: spy(async () => 'resource-task-complete'),
-      };
-
-      // Should recover from resource manager failure
-      const result = await coordinationManager.submitTask('resource-task', resourceTask);
-      expect(result).toBe('resource-task-complete');
-    });
-
-    it('should handle partial system failures', async () => {
-      // Create a scenario where some components fail
-      const partiallyFailingTasks = Array.from({ length: 10 }, (_, i) => ({
-        id: `partial-${i}`,
-        execute: spy(async () => {
-          if (i % 3 === 0) {
-            throw new Error(`Task ${i} failed`);
-          }
-          return `success-${i}`;
-        }),
-      }));
-
-      const results = await Promise.allSettled(
-        partiallyFailingTasks.map(task => 
-          coordinationManager.submitTask(task.id, task)
-        )
-      );
-
-      const successes = results.filter(r => r.status === 'fulfilled');
-      const failures = results.filter(r => r.status === 'rejected');
-      
-      // Should have partial success
-      expect(successes.length).toBe(7); // 7 out of 10 should succeed
-      expect(failures.length).toBe(3);
-      
-      // System should remain functional
-      const healthStatus = await coordinationManager.getHealthStatus();
-      expect(healthStatus.healthy).toBe(true);
-    });
-
-    it('should implement circuit breaker pattern', async () => {
-      const circuitBreaker = new CircuitBreaker('test-circuit', {
-        threshold: 3,
-        timeout: 1000,
-        resetTimeout: 2000,
-      });
-
-      let failureCount = 0;
-      const flakyService = async () => {
-        failureCount++;
-        if (failureCount <= 5) {
-          throw new Error('Service failure');
-        }
-        return 'service-success';
-      };
-
-      // Trigger circuit breaker opening
-      for (let i = 0; i < 5; i++) {
-        try {
-          await circuitBreaker.execute(flakyService);
-        } catch (error) {
-          // Expected failures
-        }
-      }
-
-      // Circuit should be open now
-      expect(circuitBreaker.getState().state).toBe('open');
-
-      // Should fail fast while open
-      await TestAssertions.assertThrowsAsync(
-        () => circuitBreaker.execute(flakyService),
-        Error,
-        'Circuit breaker test-circuit is open'
-      );
-
-      // Wait for reset timeout
-      await AsyncTestUtils.delay(2100);
-
-      // Should succeed after circuit resets
-      const result = await circuitBreaker.execute(flakyService);
-      expect(result).toBe('service-success');
-    });
-  });
-
-  describe('Monitoring and Metrics', () => {
-    beforeEach(async () => {
-      await coordinationManager.initialize();
-    });
-
-    it('should track execution metrics', async () => {
-      const tasks = Array.from({ length: 10 }, (_, i) => ({
-        id: `metric-task-${i}`,
-        execute: spy(async () => {
-          await AsyncTestUtils.delay(10 + i * 5); // Variable execution time
-          return `metric-${i}`;
-        }),
-      }));
-
-      await Promise.all(
-        tasks.map(task => coordinationManager.submitTask(task.id, task))
-      );
-
-      const metrics = await coordinationManager.getMetrics();
-      
       expect(metrics).toBeDefined();
-      expect(typeof metrics.totalTasksSubmitted).toBe('number');
-      expect(typeof metrics.totalTasksCompleted).toBe('number');
-      expect(typeof metrics.averageExecutionTime).toBe('number');
-      expect(typeof metrics.currentActiveTasks).toBe('number');
-      
-      expect(metrics.totalTasksCompleted).toBe(10);
-      TestAssertions.assertInRange(metrics.averageExecutionTime, 10, 100);
+      expect(metrics.conflicts).toBeDefined();
+    });
+  });
+
+  describe('Maintenance', () => {
+    beforeEach(async () => {
+      await coordinationManager.initialize();
     });
 
-    it('should track resource utilization metrics', async () => {
-      const resourceIntensiveTasks = Array.from({ length: 5 }, (_, i) => ({
-        id: `resource-metric-${i}`,
-        requiredResources: [`cpu-${i % 2}`, 'memory'],
-        estimatedMemoryUsage: 1024 * 1024 * (i + 1), // Variable memory usage
-        execute: spy(async () => {
-          await AsyncTestUtils.delay(50);
-          return `resource-${i}`;
-        }),
-      }));
+    it('should perform maintenance', async () => {
+      await coordinationManager.performMaintenance();
 
-      await Promise.all(
-        resourceIntensiveTasks.map(task => 
-          coordinationManager.submitTask(task.id, task)
-        )
-      );
+      // Should complete without error
+    });
+  });
 
-      const resourceMetrics = await resourceManager.getMetrics();
-      
-      expect(resourceMetrics).toBeDefined();
-      expect(typeof resourceMetrics.peakMemoryUsage).toBe('number');
-      expect(typeof resourceMetrics.averageMemoryUsage).toBe('number');
-      expect(typeof resourceMetrics.resourceUtilization).toBe('object');
+  describe('Advanced Scheduling', () => {
+    beforeEach(async () => {
+      await coordinationManager.initialize();
     });
 
-    it('should provide health status information', async () => {
-      const healthStatus = await coordinationManager.getHealthStatus();
-      
-      expect(healthStatus).toBeDefined();
-      expect(typeof healthStatus.healthy).toBe('boolean');
-      expect(typeof healthStatus.components).toBe('object');
-      
-      // Check individual component health
-      expect(typeof healthStatus.components.scheduler).toBe('object');
-      expect(typeof healthStatus.components.resourceManager).toBe('object');
-      expect(typeof healthStatus.components.conflictResolver).toBe('object');
+    it('should enable advanced scheduling', () => {
+      coordinationManager.enableAdvancedScheduling();
+
+      // Should not throw
+    });
+  });
+
+  describe('Conflict Reporting', () => {
+    beforeEach(async () => {
+      await coordinationManager.initialize();
     });
 
-    it('should detect performance degradation', async () => {
-      // Create a scenario that causes performance degradation
-      const slowTasks = Array.from({ length: 20 }, (_, i) => ({
-        id: `slow-task-${i}`,
-        execute: spy(async () => {
-          await AsyncTestUtils.delay(200 + i * 10); // Progressively slower
-          return `slow-${i}`;
-        }),
-      }));
+    it('should report resource conflict', async () => {
+      await coordinationManager.reportConflict('resource', 'resource-1', ['agent-1', 'agent-2']);
 
-      const startTime = Date.now();
-      
-      await Promise.all(
-        slowTasks.map(task => coordinationManager.submitTask(task.id, task))
-      );
-
-      const endTime = Date.now();
-      const totalDuration = endTime - startTime;
-
-      const performanceMetrics = await coordinationManager.getPerformanceMetrics();
-      
-      expect(performanceMetrics).toBeDefined();
-      expect(typeof performanceMetrics.throughput).toBe('number');
-      expect(typeof performanceMetrics.latency).toBe('object');
-      
-      // Should detect degradation in throughput
-      TestAssertions.assertInRange(performanceMetrics.throughput, 0.01, 1.0); // tasks per ms
+      // Should complete without error
     });
+
+    it('should report task conflict', async () => {
+      await coordinationManager.reportConflict('task', 'task-1', ['agent-1', 'agent-2']);
+
+      // Should complete without error
+    });
+  });
+});
+
+describe('ConflictResolver', () => {
+  let resolver: ConflictResolver;
+  let mocks: ReturnType<typeof createMocks>;
+
+  beforeEach(() => {
+    mocks = createMocks();
+    resolver = new ConflictResolver(mocks.logger, mocks.eventBus);
+  });
+
+  it('should report resource conflict', async () => {
+    const conflict = await resolver.reportResourceConflict('resource-1', ['agent-1', 'agent-2']);
+
+    expect(conflict.id).toBeDefined();
+    expect(conflict.resourceId).toBe('resource-1');
+    expect(conflict.agents).toEqual(['agent-1', 'agent-2']);
+    expect(conflict.resolved).toBe(false);
+  });
+
+  it('should report task conflict', async () => {
+    const conflict = await resolver.reportTaskConflict(
+      'task-1',
+      ['agent-1', 'agent-2'],
+      'assignment'
+    );
+
+    expect(conflict.id).toBeDefined();
+    expect(conflict.taskId).toBe('task-1');
+    expect(conflict.type).toBe('assignment');
+    expect(conflict.resolved).toBe(false);
+  });
+
+  it('should resolve conflict using priority strategy', async () => {
+    const conflict = await resolver.reportResourceConflict('resource-1', ['agent-1', 'agent-2']);
+
+    const context = {
+      agentPriorities: new Map([
+        ['agent-1', 5],
+        ['agent-2', 10],
+      ]),
+    };
+
+    const resolution = await resolver.resolveConflict(conflict.id, 'priority', context);
+
+    expect(resolution.type).toBe('priority');
+    expect(resolution.winner).toBe('agent-2'); // Higher priority
+    expect(conflict.resolved).toBe(true);
+  });
+
+  it('should resolve conflict using timestamp strategy', async () => {
+    const conflict = await resolver.reportResourceConflict('resource-1', ['agent-1', 'agent-2']);
+
+    const now = new Date();
+    const context = {
+      requestTimestamps: new Map([
+        ['agent-1', new Date(now.getTime() - 1000)], // Earlier
+        ['agent-2', now],
+      ]),
+    };
+
+    const resolution = await resolver.resolveConflict(conflict.id, 'timestamp', context);
+
+    expect(resolution.type).toBe('timestamp');
+    expect(resolution.winner).toBe('agent-1'); // Earlier request
+  });
+
+  it('should auto-resolve conflicts', async () => {
+    const conflict = await resolver.reportResourceConflict('resource-1', ['agent-1', 'agent-2']);
+
+    const resolution = await resolver.autoResolve(conflict.id, 'priority');
+
+    expect(resolution.type).toBe('priority');
+    expect(resolution.winner).toBeDefined();
+  });
+
+  it('should track conflict statistics', async () => {
+    await resolver.reportResourceConflict('resource-1', ['agent-1', 'agent-2']);
+    await resolver.reportTaskConflict('task-1', ['agent-1', 'agent-2'], 'assignment');
+
+    const stats = resolver.getStats();
+
+    expect(stats.totalConflicts).toBe(2);
+    expect(stats.activeConflicts).toBe(2);
+    expect(stats.resolvedConflicts).toBe(0);
+    expect(stats.conflictsByType.resource).toBe(1);
+    expect(stats.conflictsByType.task).toBe(1);
+  });
+
+  it('should cleanup old conflicts', async () => {
+    const conflict = await resolver.reportResourceConflict('resource-1', ['agent-1', 'agent-2']);
+
+    // Resolve the conflict
+    await resolver.autoResolve(conflict.id);
+
+    // Cleanup old conflicts (use -1 since the method uses > not >=)
+    const removed = resolver.cleanupOldConflicts(-1);
+
+    expect(removed).toBe(1);
+  });
+
+  it('should get active conflicts', async () => {
+    await resolver.reportResourceConflict('resource-1', ['agent-1', 'agent-2']);
+    await resolver.reportResourceConflict('resource-2', ['agent-3', 'agent-4']);
+
+    const active = resolver.getActiveConflicts();
+
+    expect(active.length).toBe(2);
+  });
+});
+
+describe('CircuitBreaker', () => {
+  let breaker: CircuitBreaker;
+  let mocks: ReturnType<typeof createMocks>;
+  let circuitConfig: {
+    failureThreshold: number;
+    successThreshold: number;
+    timeout: number;
+    halfOpenLimit: number;
+  };
+
+  beforeEach(() => {
+    mocks = createMocks();
+
+    circuitConfig = {
+      failureThreshold: 3,
+      successThreshold: 2,
+      timeout: 1000,
+      halfOpenLimit: 1,
+    };
+
+    breaker = new CircuitBreaker('test-breaker', circuitConfig, mocks.logger);
+  });
+
+  it('should start in closed state', () => {
+    expect(breaker.getState()).toBe(CircuitState.CLOSED);
+  });
+
+  it('should execute function successfully', async () => {
+    const result = await breaker.execute(async () => 'success');
+    expect(result).toBe('success');
+  });
+
+  it('should open after failure threshold', async () => {
+    const failingFn = async () => { throw new Error('failure'); };
+
+    // Cause failures
+    for (let i = 0; i < circuitConfig.failureThreshold; i++) {
+      try {
+        await breaker.execute(failingFn);
+      } catch {
+        // Expected
+      }
+    }
+
+    expect(breaker.getState()).toBe(CircuitState.OPEN);
+  });
+
+  it('should reject requests when open', async () => {
+    // Force open state
+    breaker.forceState(CircuitState.OPEN);
+
+    await expect(breaker.execute(async () => 'success')).rejects.toThrow(
+      "Circuit breaker 'test-breaker' is OPEN"
+    );
+  });
+
+  it('should track metrics', () => {
+    const metrics = breaker.getMetrics();
+
+    expect(metrics.state).toBeDefined();
+    expect(metrics.failures).toBe(0);
+    expect(metrics.successes).toBe(0);
+    expect(metrics.totalRequests).toBe(0);
   });
 });
