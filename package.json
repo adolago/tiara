@@ -5,8 +5,7 @@
   "mcpName": "io.github.adolago/tiara",
   "main": "cli.mjs",
   "bin": {
-    "tiara": "bin/tiara.js",
-    "claude-flow": "bin/tiara.js"
+    "tiara": "bin/tiara.js"
   },
   "scripts": {
     "preinstall": "node -e \"if(process.platform === 'win32' && process.env.npm_config_user_agent && process.env.npm_config_user_agent.includes('npm')) { console.warn('⚠️  Warning: On Windows, it is recommended to use pnpm to install this package to avoid potential native dependency build issues.'); console.warn('💡 Try: pnpm install or pnpx claude-flow@alpha'); }\"",
