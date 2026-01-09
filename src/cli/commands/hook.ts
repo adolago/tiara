@@ -16,6 +16,7 @@ import type {
   PerformanceOptions,
   MemorySyncOptions,
   TelemetryOptions,
+  TodoContinuationOptions,
 } from './hook-types.js';
 
 const logger = new Logger(
@@ -147,6 +148,11 @@ const hookHandlers: Record<string, (args: string[]) => Promise<void>> = {
       throw new Error('--event is required for telemetry hook');
     }
     await executeHook('telemetry', options);
+  },
+
+  'todo-continuation': async (args: string[]) => {
+    const options = parseArgs<TodoContinuationOptions>(args);
+    await executeHook('todo-continuation', options);
   },
 };
 
@@ -315,6 +321,13 @@ Available hooks:
     --data <json>            Event data as JSON
     --tags <list>            Comma-separated tags
 
+  todo-continuation - Continue incomplete tasks automatically
+    --check-completion-threshold <n>  Minimum % before continuing (default: 0)
+    --auto-inject-reminder            Auto-inject reminder message
+    --proceed-without-asking          Continue without asking permission
+    --status-format <format>          Format: summary|detailed|brief
+    --todos <json>                    Current todos as JSON array
+
 Common options:
   --verbose                  Show detailed output
   --metadata <json>          Additional metadata as JSON
@@ -326,6 +339,7 @@ Examples:
   claude hook performance --operation "api-build" --duration 1234
   claude hook memory-sync --namespace "project" --direction push
   claude hook telemetry --event "task-completed" --data '{"taskId":"123"}'
+  claude hook todo-continuation --proceed-without-asking --status-format summary
 `);
 }
 
@@ -345,4 +359,5 @@ export const hookSubcommands = [
   'performance',
   'memory-sync',
   'telemetry',
+  'todo-continuation',
 ];

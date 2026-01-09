@@ -5,7 +5,7 @@
  * agentic-flow with Claude Flow's existing infrastructure.
  */
 
-import type { HookType, HookResult } from '../../cli/commands/hook-types.js';
+import type { HookType, HookResult, TodoItem, TodoState } from '../../cli/commands/hook-types.js';
 
 // ===== Core Hook Types =====
 
@@ -17,6 +17,8 @@ export interface AgenticHookContext {
   memory: MemoryContext;
   neural: NeuralContext;
   performance: PerformanceContext;
+  /** Todo state for continuation tracking */
+  todoState?: TodoState;
 }
 
 export interface MemoryContext {
@@ -291,6 +293,29 @@ export interface WorkflowMetrics {
   improvementRate: number;
 }
 
+// ===== Todo Continuation Hook Types =====
+
+export type TodoContinuationHookType =
+  | 'todo-continuation'
+  | 'todo-status-check'
+  | 'todo-reminder-inject';
+
+export interface TodoContinuationHookPayload {
+  operation: 'check' | 'continue' | 'inject-reminder' | 'complete';
+  todoState: TodoState;
+  /** Whether to proceed without asking for permission */
+  proceedWithoutAsking: boolean;
+  /** Generated reminder message */
+  reminderMessage?: string;
+  /** Completion threshold percentage (0-100) */
+  completionThreshold: number;
+  /** Whether continuation should trigger */
+  shouldContinue: boolean;
+}
+
+// Re-export for convenience
+export type { TodoItem, TodoState } from '../../cli/commands/hook-types.js';
+
 // ===== Hook Registration & Management =====
 
 export interface HookRegistration {
@@ -302,12 +327,13 @@ export interface HookRegistration {
   options?: HookOptions;
 }
 
-export type AgenticHookType = 
-  | LLMHookType 
-  | MemoryHookType 
-  | NeuralHookType 
-  | PerformanceHookType 
+export type AgenticHookType =
+  | LLMHookType
+  | MemoryHookType
+  | NeuralHookType
+  | PerformanceHookType
   | WorkflowHookType
+  | TodoContinuationHookType
   | HookType; // Include existing Claude Flow hooks
 
 export type HookHandler = (
@@ -315,12 +341,13 @@ export type HookHandler = (
   context: AgenticHookContext
 ) => Promise<HookHandlerResult>;
 
-export type HookPayload = 
+export type HookPayload =
   | LLMHookPayload
   | MemoryHookPayload
   | NeuralHookPayload
   | PerformanceHookPayload
-  | WorkflowHookPayload;
+  | WorkflowHookPayload
+  | TodoContinuationHookPayload;
 
 export interface HookHandlerResult {
   continue: boolean;

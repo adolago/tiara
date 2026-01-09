@@ -120,6 +120,35 @@ export interface TelemetryOptions extends BaseHookOptions {
   tags?: string[];
 }
 
+export interface TodoContinuationOptions extends BaseHookOptions {
+  /** Minimum completion percentage before auto-continuing (0-100, default: 0 = always continue) */
+  checkCompletionThreshold?: number;
+  /** Automatically inject reminder to continue with incomplete tasks */
+  autoInjectReminder?: boolean;
+  /** Continue working without asking for permission until all tasks done */
+  proceedWithoutAsking?: boolean;
+  /** Format of the status message */
+  statusFormat?: 'summary' | 'detailed' | 'brief';
+  /** Current todo items to track (optional, can be injected from context) */
+  todos?: TodoItem[];
+}
+
+export interface TodoItem {
+  id: string;
+  content: string;
+  status: 'pending' | 'in_progress' | 'completed';
+  priority?: 'low' | 'medium' | 'high';
+}
+
+export interface TodoState {
+  total: number;
+  completed: number;
+  remaining: number;
+  inProgress: number;
+  percentage: number;
+  items: TodoItem[];
+}
+
 export type HookType =
   | 'pre-task'
   | 'post-task'
@@ -134,7 +163,8 @@ export type HookType =
   | 'notification'
   | 'performance'
   | 'memory-sync'
-  | 'telemetry';
+  | 'telemetry'
+  | 'todo-continuation';
 
 export interface HookResult {
   success: boolean;

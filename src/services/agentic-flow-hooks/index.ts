@@ -11,6 +11,7 @@ import { registerMemoryHooks } from './memory-hooks.js';
 import { registerNeuralHooks } from './neural-hooks.js';
 import { registerPerformanceHooks } from './performance-hooks.js';
 import { registerWorkflowHooks } from './workflow-hooks.js';
+import { registerTodoContinuationHooks } from './todo-continuation-hooks.js';
 import { Logger } from '../../core/logger.js';
 
 export * from './types.js';
@@ -20,6 +21,7 @@ export * from './memory-hooks.js';
 export * from './neural-hooks.js';
 export * from './performance-hooks.js';
 export * from './workflow-hooks.js';
+export * from './todo-continuation-hooks.js';
 
 const logger = new Logger({
   level: 'info',
@@ -49,7 +51,10 @@ export async function initializeAgenticFlowHooks(): Promise<void> {
     
     registerWorkflowHooks();
     logger.debug('Workflow hooks registered');
-    
+
+    registerTodoContinuationHooks();
+    logger.debug('Todo continuation hooks registered');
+
     // Set up default pipelines
     await setupDefaultPipelines();
     
@@ -142,6 +147,32 @@ async function setupDefaultPipelines(): Promise<void> {
     ],
     errorStrategy: 'fail-fast',
   });
+
+  // Todo Continuation Pipeline
+  agenticHookManager.createPipeline({
+    id: 'todo-continuation-pipeline',
+    name: 'Todo Continuation Pipeline',
+    stages: [
+      {
+        name: 'status-check',
+        hooks: agenticHookManager.getHooks('todo-status-check'),
+        parallel: false,
+      },
+      {
+        name: 'continuation',
+        hooks: agenticHookManager.getHooks('todo-continuation'),
+        parallel: false,
+        condition: (ctx) => ctx.todoState?.remaining > 0,
+      },
+      {
+        name: 'reminder-injection',
+        hooks: agenticHookManager.getHooks('todo-reminder-inject'),
+        parallel: false,
+        condition: (ctx) => ctx.metadata.shouldContinue === true,
+      },
+    ],
+    errorStrategy: 'continue',
+  });
 }
 
 /**
@@ -212,6 +243,7 @@ export function getHookSystemStatus(): {
       'llm-call-pipeline',
       'memory-operation-pipeline',
       'workflow-execution-pipeline',
+      'todo-continuation-pipeline',
     ],
     activeExecutions: metrics['executions.active'] || 0,
   };
