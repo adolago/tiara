@@ -105,6 +105,33 @@ const hookHandlers: Record<string, (args: string[]) => Promise<void>> = {
 
   'session-end': async (args: string[]) => {
     const options = parseArgs<SessionEndOptions>(args);
+
+    // If persisting state, save current todos to memory for restoration
+    if (options.persistState !== false && options.sessionId) {
+      try {
+        const { createHookContext } = await import(
+          '../../services/agentic-flow-hooks/index.js'
+        );
+
+        const context = createHookContext()
+          .withSession(options.sessionId)
+          .withMetadata({ sessionEnd: true })
+          .build();
+
+        // Store todos in session memory if provided via metadata
+        if (options.metadata?.todos) {
+          const todosKey = `session/${options.sessionId}/todos`;
+          context.memory.cache.set(todosKey, options.metadata.todos);
+          logger.debug('Saved todos to session memory', {
+            sessionId: options.sessionId,
+            todoCount: options.metadata.todos.length,
+          });
+        }
+      } catch (err) {
+        logger.debug('Failed to save todos to session memory:', err);
+      }
+    }
+
     await executeHook('session-end', options);
   },
 
@@ -114,6 +141,67 @@ const hookHandlers: Record<string, (args: string[]) => Promise<void>> = {
       throw new Error('--session-id is required for session-restore hook');
     }
     await executeHook('session-restore', options);
+
+    // If loading tasks and not skipping continuation, trigger todo-continuation check
+    if (options.loadTasks !== false && !options.skipTodoContinuation) {
+      try {
+        const {
+          createTodoContinuationPayload,
+          shouldTriggerContinuation,
+        } = await import('../../services/agentic-flow-hooks/todo-continuation-hooks.js');
+        const { createHookContext, agenticHookManager } = await import(
+          '../../services/agentic-flow-hooks/index.js'
+        );
+
+        // Try to load todos from options or session memory
+        const context = createHookContext()
+          .withSession(options.sessionId)
+          .withMetadata({ sessionRestore: true })
+          .build();
+
+        // Use provided todos or load from memory
+        let storedTodos = options.todos || [];
+        if (storedTodos.length === 0) {
+          // Check for todos in memory (key pattern: session/<id>/todos)
+          const todosKey = `session/${options.sessionId}/todos`;
+          storedTodos = context.memory.cache.get(todosKey) || [];
+        }
+
+        // Create payload and check if continuation is needed
+        const payload = createTodoContinuationPayload(storedTodos, {
+          proceedWithoutAsking: true,
+          completionThreshold: 100,
+        });
+
+        if (shouldTriggerContinuation(payload.todoState)) {
+          // Add todoState to context
+          context.todoState = payload.todoState;
+
+          // Execute todo-continuation hook
+          await agenticHookManager.executeHooks('todo-continuation', payload, context);
+
+          // Output the reminder
+          console.log('\n[SYSTEM REMINDER - TODO CONTINUATION]\n');
+          console.log('Incomplete tasks remain in your todo list. Continue working on the next pending task.\n');
+          console.log('- Proceed without asking for permission');
+          console.log('- Mark each task complete when finished');
+          console.log('- Do not stop until all tasks are done\n');
+          console.log(
+            `[Status: ${payload.todoState.completed}/${payload.todoState.total} completed, ${payload.todoState.remaining} remaining]\n`
+          );
+
+          logger.info('Session restored with todo continuation', {
+            sessionId: options.sessionId,
+            todoState: payload.todoState,
+          });
+        } else {
+          logger.debug('Session restored, no incomplete tasks');
+        }
+      } catch (err) {
+        // Don't fail session restore if todo-continuation fails
+        logger.debug('Todo continuation check skipped:', err);
+      }
+    }
   },
 
   'pre-search': async (args: string[]) => {
@@ -340,7 +428,9 @@ Available hooks:
     --session-id <id>        Session ID to restore (required)
     --load-memory            Load memory state
     --load-agents            Load agent configuration
-    --load-tasks             Load task list
+    --load-tasks             Load task list (triggers todo-continuation)
+    --skip-todo-continuation Skip automatic todo continuation check
+    --todos <json>           Todos to restore as JSON array
 
   pre-search    - Run before searching
     --query <text>           Search query (required)

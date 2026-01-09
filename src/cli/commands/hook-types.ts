@@ -87,6 +87,10 @@ export interface SessionRestoreOptions extends BaseHookOptions {
   loadMemory?: boolean;
   loadAgents?: boolean;
   loadTasks?: boolean;
+  /** Skip todo continuation check on restore */
+  skipTodoContinuation?: boolean;
+  /** Todos to restore (if not loading from memory) */
+  todos?: TodoItem[];
 }
 
 export interface PreSearchOptions extends BaseHookOptions {
