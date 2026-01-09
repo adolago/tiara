@@ -152,7 +152,54 @@ const hookHandlers: Record<string, (args: string[]) => Promise<void>> = {
 
   'todo-continuation': async (args: string[]) => {
     const options = parseArgs<TodoContinuationOptions>(args);
-    await executeHook('todo-continuation', options);
+    // Use local hook implementation
+    const {
+      createTodoContinuationPayload,
+      calculateTodoState,
+    } = await import('../../services/agentic-flow-hooks/todo-continuation-hooks.js');
+    const { createHookContext, agenticHookManager } = await import(
+      '../../services/agentic-flow-hooks/index.js'
+    );
+
+    // Parse todos from options or create empty state
+    const todos = options.todos || [];
+    const payload = createTodoContinuationPayload(todos, {
+      proceedWithoutAsking: options.proceedWithoutAsking ?? true,
+      completionThreshold: options.checkCompletionThreshold ?? 100,
+    });
+
+    // Build context
+    const context = createHookContext()
+      .withSession(`cli-${Date.now()}`)
+      .withMetadata({ cliInvoked: true, statusFormat: options.statusFormat })
+      .build();
+
+    // Add todoState to context
+    context.todoState = payload.todoState;
+
+    // Execute the hook
+    const results = await agenticHookManager.executeHooks('todo-continuation', payload, context);
+
+    // Output the result
+    console.log('\n[SYSTEM REMINDER - TODO CONTINUATION]\n');
+    if (payload.todoState.remaining === 0) {
+      console.log('All tasks completed. No continuation needed.\n');
+    } else {
+      console.log('Incomplete tasks remain in your todo list. Continue working on the next pending task.\n');
+      if (options.proceedWithoutAsking) {
+        console.log('- Proceed without asking for permission');
+      }
+      console.log('- Mark each task complete when finished');
+      console.log('- Do not stop until all tasks are done\n');
+      console.log(
+        `[Status: ${payload.todoState.completed}/${payload.todoState.total} completed, ${payload.todoState.remaining} remaining]\n`
+      );
+    }
+
+    logger.info('Todo continuation hook executed', {
+      todoState: payload.todoState,
+      results: results.length,
+    });
   },
 };
 
