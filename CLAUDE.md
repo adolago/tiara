@@ -1,5 +1,24 @@
 # Claude Code Configuration - SPARC Development Environment
 
+## 📖 REQUIRED CONTEXT: Always Read These Repositories
+
+**Before starting any work, always read the CLAUDE.md files from these locations:**
+
+1. **Agent-Core** (`/home/artur/Repositories/agent-core/`)
+   - `CLAUDE.md` - Main project instructions, personas system, architecture overview
+   - Contains the triad personas: Zee, Stanley, Johny
+   - Defines the engine that powers the agent system
+
+2. **Personas** (`/home/artur/Repositories/personas/`)
+   - `johny/` - Study assistant with knowledge graph and spaced repetition
+   - `stanley/` - Investing platform with NautilusTrader integration
+   - `zee/` - Personal assistant with memory, messaging, calendar
+   - Each persona has its own configuration and capabilities
+
+**Why this matters:** Tiara is a vendor submodule within agent-core. Understanding the full system context from agent-core and the persona implementations is essential for coherent development.
+
+---
+
 ## 🚨 CRITICAL: CONCURRENT EXECUTION & FILE MANAGEMENT
 
 **ABSOLUTE RULES**:
