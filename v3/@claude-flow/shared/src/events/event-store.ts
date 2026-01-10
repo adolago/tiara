@@ -17,8 +17,23 @@
 
 import { EventEmitter } from 'node:events';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import initSqlJs, { Database as SqlJsDatabase } from 'sql.js';
 import { DomainEvent, AllDomainEvents } from './domain-events.js';
+
+// Resolve sql.js WASM file path for Node.js environment
+function getSqlJsWasmPath(): string {
+  try {
+    // require.resolve('sql.js') returns path to dist/sql-wasm.js
+    // So dirname gives us the dist folder directly
+    const sqlJsDistPath = dirname(require.resolve('sql.js'));
+    return join(sqlJsDistPath, 'sql-wasm.wasm');
+  } catch {
+    // Fallback: try relative to node_modules
+    return join(process.cwd(), 'node_modules', 'sql.js', 'dist', 'sql-wasm.wasm');
+  }
+}
 
 // =============================================================================
 // Event Store Configuration
@@ -129,11 +144,10 @@ export class EventStore extends EventEmitter {
   async initialize(): Promise<void> {
     if (this.initialized) return;
 
-    // Load sql.js WASM
+    // Load sql.js WASM - use local file in Node.js environment
+    const wasmPath = this.config.wasmPath || getSqlJsWasmPath();
     this.SQL = await initSqlJs({
-      locateFile: this.config.wasmPath
-        ? () => this.config.wasmPath!
-        : (file) => `https://sql.js.org/dist/${file}`,
+      locateFile: () => wasmPath,
     });
 
     // Load existing database if exists
@@ -364,13 +378,15 @@ export class EventStore extends EventEmitter {
   }
 
   /**
-   * Replay events from a specific version
+   * Replay events from a specific position (1-indexed global sequence)
+   * Uses rowid for global event ordering across all aggregates
    */
-  async *replay(fromVersion: number = 0): AsyncIterable<DomainEvent> {
+  async *replay(fromPosition: number = 1): AsyncIterable<DomainEvent> {
     this.ensureInitialized();
 
-    const stmt = this.db!.prepare('SELECT * FROM events WHERE version >= ? ORDER BY version ASC');
-    stmt.bind([fromVersion]);
+    // Use rowid for global ordering (rowid is 1-indexed in SQLite)
+    const stmt = this.db!.prepare('SELECT *, rowid FROM events WHERE rowid >= ? ORDER BY rowid ASC');
+    stmt.bind([fromPosition]);
 
     while (stmt.step()) {
       const row = stmt.getAsObject();
@@ -435,8 +451,9 @@ export class EventStore extends EventEmitter {
   async getStats(): Promise<EventStoreStats> {
     this.ensureInitialized();
 
-    // Total events
+    // Total events - must call step() before getAsObject() in sql.js
     const totalStmt = this.db!.prepare('SELECT COUNT(*) as count FROM events');
+    totalStmt.step();
     const totalRow = totalStmt.getAsObject();
     totalStmt.free();
     const totalEvents = (totalRow.count as number) || 0;
@@ -463,11 +480,13 @@ export class EventStore extends EventEmitter {
 
     // Timestamp range
     const rangeStmt = this.db!.prepare('SELECT MIN(timestamp) as oldest, MAX(timestamp) as newest FROM events');
+    rangeStmt.step();
     const rangeRow = rangeStmt.getAsObject();
     rangeStmt.free();
 
     // Snapshot count
     const snapshotStmt = this.db!.prepare('SELECT COUNT(*) as count FROM snapshots');
+    snapshotStmt.step();
     const snapshotRow = snapshotStmt.getAsObject();
     snapshotStmt.free();
 
