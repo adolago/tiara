@@ -82,14 +82,27 @@ export default defineConfig({
     // Reporter configuration
     reporters: ['default'],
 
-    // Parallel execution
+    // Parallel execution with memory limits
     pool: 'threads',
     poolOptions: {
       threads: {
         singleThread: false,
         isolate: true,
+        // Increase memory limit for workers (default is too low for agentic-flow)
+        execArgv: ['--max-old-space-size=4096'],
       },
     },
+
+    // Run integration tests sequentially to avoid port conflicts
+    // (agentic-flow starts health server on port 8080)
+    sequence: {
+      // Run tests in each file sequentially
+      concurrent: true,
+    },
+
+    // Disable file-level parallelism for integration tests
+    // This prevents multiple agentic-flow instances binding to same port
+    fileParallelism: true,
 
     // Globals for easier testing
     globals: true,
