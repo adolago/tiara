@@ -23,6 +23,8 @@ export default defineConfig({
       '__tests__/**/*.spec.ts',
       '@claude-flow/**/__tests__/**/*.test.ts',
       '@claude-flow/**/__tests__/**/*.spec.ts',
+      '@claude-flow/**/src/**/*.test.ts',
+      '@claude-flow/**/src/**/*.spec.ts',
       'mcp/__tests__/**/*.test.ts',
       'mcp/__tests__/**/*.spec.ts',
     ],
@@ -112,5 +114,12 @@ export default defineConfig({
       '@swarm': path.resolve(__dirname, './modules/swarm'),
       '@core': path.resolve(__dirname, './modules/core'),
     },
+    // Resolve .js imports to .ts files (ESM TypeScript convention)
+    extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
+  },
+
+  // ESBuild configuration for .js → .ts resolution
+  esbuild: {
+    loader: 'ts',
   },
 });
