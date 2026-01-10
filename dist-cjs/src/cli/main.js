@@ -4,7 +4,7 @@ import { setupCommands } from './commands/index.js';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 async function main() {
-    const cli = new CLI('claude-flow', 'Advanced AI Agent Orchestration System');
+    const cli = new CLI('tiara', 'Advanced AI Agent Orchestration System');
     setupCommands(cli);
     await cli.run();
 }

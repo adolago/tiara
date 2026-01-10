@@ -242,7 +242,7 @@ function info(message) {
 export { CLI, success, error, warning, info };
 async function main() {
     if (process.argv[1] && (process.argv[1].endsWith('cli-core.js') || process.argv[1].endsWith('cli-core.ts'))) {
-        const cli = new CLI('claude-flow', 'Advanced AI Agent Orchestration System');
+        const cli = new CLI('tiara', 'Advanced AI Agent Orchestration System');
         const { setupCommands } = await import('./commands/index.js');
         setupCommands(cli);
         await cli.run();

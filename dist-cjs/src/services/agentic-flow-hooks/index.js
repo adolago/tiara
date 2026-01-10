@@ -4,6 +4,7 @@ import { registerMemoryHooks } from './memory-hooks.js';
 import { registerNeuralHooks } from './neural-hooks.js';
 import { registerPerformanceHooks } from './performance-hooks.js';
 import { registerWorkflowHooks } from './workflow-hooks.js';
+import { registerTodoContinuationHooks } from './todo-continuation-hooks.js';
 import { Logger } from '../../core/logger.js';
 export * from './types.js';
 export { agenticHookManager } from './hook-manager.js';
@@ -12,6 +13,7 @@ export * from './memory-hooks.js';
 export * from './neural-hooks.js';
 export * from './performance-hooks.js';
 export * from './workflow-hooks.js';
+export * from './todo-continuation-hooks.js';
 const logger = new Logger({
     level: 'info',
     format: 'text',
@@ -32,6 +34,8 @@ export async function initializeAgenticFlowHooks() {
         logger.debug('Performance hooks registered');
         registerWorkflowHooks();
         logger.debug('Workflow hooks registered');
+        registerTodoContinuationHooks();
+        logger.debug('Todo continuation hooks registered');
         await setupDefaultPipelines();
         startMetricsCollection();
         logger.info('Agentic-flow hook system initialized successfully');
@@ -111,6 +115,30 @@ async function setupDefaultPipelines() {
         ],
         errorStrategy: 'fail-fast'
     });
+    agenticHookManager.createPipeline({
+        id: 'todo-continuation-pipeline',
+        name: 'Todo Continuation Pipeline',
+        stages: [
+            {
+                name: 'status-check',
+                hooks: agenticHookManager.getHooks('todo-status-check'),
+                parallel: false
+            },
+            {
+                name: 'continuation',
+                hooks: agenticHookManager.getHooks('todo-continuation'),
+                parallel: false,
+                condition: (ctx)=>ctx.todoState?.remaining > 0
+            },
+            {
+                name: 'reminder-injection',
+                hooks: agenticHookManager.getHooks('todo-reminder-inject'),
+                parallel: false,
+                condition: (ctx)=>ctx.metadata.shouldContinue === true
+            }
+        ],
+        errorStrategy: 'continue'
+    });
 }
 function startMetricsCollection() {
     setInterval(()=>{
@@ -151,7 +179,8 @@ export function getHookSystemStatus() {
         pipelines: [
             'llm-call-pipeline',
             'memory-operation-pipeline',
-            'workflow-execution-pipeline'
+            'workflow-execution-pipeline',
+            'todo-continuation-pipeline'
         ],
         activeExecutions: metrics['executions.active'] || 0
     };

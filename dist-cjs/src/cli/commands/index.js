@@ -2271,33 +2271,12 @@ Now, please proceed with the task: ${task}`;
     });
     cli.command({
         name: 'hook',
-        description: 'Execute ruv-swarm hooks for agent coordination',
+        description: 'Execute hooks for agent coordination',
         action: async (ctx)=>{
             try {
-                const { spawn } = await import('child_process');
-                const args = ctx.args.length > 0 ? ctx.args : [
-                    '--help'
-                ];
-                const child = spawn('npx', [
-                    'ruv-swarm',
-                    'hook',
-                    ...args
-                ], {
-                    stdio: 'inherit',
-                    shell: true
-                });
-                await new Promise((resolve, reject)=>{
-                    child.on('exit', (code)=>{
-                        if (code === 0) {
-                            resolve();
-                        } else {
-                            resolve();
-                        }
-                    });
-                    child.on('error', (err)=>{
-                        error(`Failed to execute hook command: ${getErrorMessage(err)}`);
-                        resolve();
-                    });
+                const { hookCommand } = await import('./hook.js');
+                await hookCommand.action({
+                    args: ctx.args
                 });
             } catch (err) {
                 error(`Hook command error: ${getErrorMessage(err)}`);

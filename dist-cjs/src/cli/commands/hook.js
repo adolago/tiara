@@ -110,6 +110,38 @@ const hookHandlers = {
             throw new Error('--event is required for telemetry hook');
         }
         await executeHook('telemetry', options);
+    },
+    'todo-continuation': async (args)=>{
+        const options = parseArgs(args);
+        const { createTodoContinuationPayload, calculateTodoState } = await import('../../services/agentic-flow-hooks/todo-continuation-hooks.js');
+        const { createHookContext, agenticHookManager } = await import('../../services/agentic-flow-hooks/index.js');
+        const todos = options.todos || [];
+        const payload = createTodoContinuationPayload(todos, {
+            proceedWithoutAsking: options.proceedWithoutAsking ?? true,
+            completionThreshold: options.checkCompletionThreshold ?? 100
+        });
+        const context = createHookContext().withSession(`cli-${Date.now()}`).withMetadata({
+            cliInvoked: true,
+            statusFormat: options.statusFormat
+        }).build();
+        context.todoState = payload.todoState;
+        const results = await agenticHookManager.executeHooks('todo-continuation', payload, context);
+        console.log('\n[SYSTEM REMINDER - TODO CONTINUATION]\n');
+        if (payload.todoState.remaining === 0) {
+            console.log('All tasks completed. No continuation needed.\n');
+        } else {
+            console.log('Incomplete tasks remain in your todo list. Continue working on the next pending task.\n');
+            if (options.proceedWithoutAsking) {
+                console.log('- Proceed without asking for permission');
+            }
+            console.log('- Mark each task complete when finished');
+            console.log('- Do not stop until all tasks are done\n');
+            console.log(`[Status: ${payload.todoState.completed}/${payload.todoState.total} completed, ${payload.todoState.remaining} remaining]\n`);
+        }
+        logger.info('Todo continuation hook executed', {
+            todoState: payload.todoState,
+            results: results.length
+        });
     }
 };
 function parseArgs(args) {
@@ -261,6 +293,13 @@ Available hooks:
     --data <json>            Event data as JSON
     --tags <list>            Comma-separated tags
 
+  todo-continuation - Continue incomplete tasks automatically
+    --check-completion-threshold <n>  Minimum % before continuing (default: 0)
+    --auto-inject-reminder            Auto-inject reminder message
+    --proceed-without-asking          Continue without asking permission
+    --status-format <format>          Format: summary|detailed|brief
+    --todos <json>                    Current todos as JSON array
+
 Common options:
   --verbose                  Show detailed output
   --metadata <json>          Additional metadata as JSON
@@ -272,6 +311,7 @@ Examples:
   claude hook performance --operation "api-build" --duration 1234
   claude hook memory-sync --namespace "project" --direction push
   claude hook telemetry --event "task-completed" --data '{"taskId":"123"}'
+  claude hook todo-continuation --proceed-without-asking --status-format summary
 `);
 }
 export const hookSubcommands = [
@@ -288,7 +328,8 @@ export const hookSubcommands = [
     'notification',
     'performance',
     'memory-sync',
-    'telemetry'
+    'telemetry',
+    'todo-continuation'
 ];
 
 //# sourceMappingURL=hook.js.map

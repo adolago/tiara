@@ -113,18 +113,37 @@ describe('Cross-Agent Communication Verification', ()=>{
         return `hash-${JSON.stringify(content).length}-${Date.now()}`;
     }
     function calculateTruthScore(message, evidence) {
-        const baseScore = 0.8;
-        const evidenceQuality = evidence?.quality || 0.5;
-        const messageIntegrity = message.hash ? 0.2 : 0;
-        return Math.min(1.0, baseScore + evidenceQuality * 0.15 + messageIntegrity);
+        let score = 0.5;
+        const evidenceQuality = evidence?.quality ?? 0.5;
+        score += evidenceQuality * 0.4;
+        if (message.hash) score += 0.1;
+        if (message.content?.claimed_success && evidence?.actual_success === false) {
+            score -= 0.5;
+        }
+        if (message.content?.claimed_success === evidence?.actual_success) {
+            score += 0.1;
+        }
+        if (message.content?.performance_improved && evidence?.performance_metrics) {
+            const metrics = evidence.performance_metrics;
+            if (metrics.before && metrics.after && metrics.after.query_time > metrics.before.query_time) {
+                score -= 0.5;
+            }
+        }
+        return Math.max(0, Math.min(1.0, score));
     }
     function detectConflicts(message, evidence) {
         const conflicts = [];
         if (message.content?.claimed_success && evidence?.actual_success === false) {
             conflicts.push('Claimed success but evidence shows failure');
         }
-        if (message.content?.test_count && evidence?.actual_test_count !== message.content.test_count) {
+        if (message.content?.test_count && evidence?.actual_test_count !== undefined && evidence.actual_test_count !== message.content.test_count) {
             conflicts.push(`Test count mismatch: claimed ${message.content.test_count}, actual ${evidence.actual_test_count}`);
+        }
+        if (message.content?.performance_improved && evidence?.performance_metrics) {
+            const metrics = evidence.performance_metrics;
+            if (metrics.before && metrics.after && metrics.after.query_time > metrics.before.query_time) {
+                conflicts.push('Performance claimed improved but metrics show degradation');
+            }
         }
         return conflicts;
     }
