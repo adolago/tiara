@@ -377,6 +377,7 @@ export class WorkflowEngine {
     const tasks = workflow.tasks.map(t => new Task(t));
     const completedTasks = new Set<string>();
     const errors: Error[] = [];
+    let nestedTasksCompleted = 0; // Track tasks completed in nested workflows
 
     // Resolve execution order
     const orderedTasks = Task.resolveExecutionOrder(tasks);
@@ -411,6 +412,8 @@ export class WorkflowEngine {
           if (nestedResult.status === 'failed') {
             throw new Error(`Nested workflow failed`);
           }
+          // Add nested workflow's completed tasks to parent count
+          nestedTasksCompleted += nestedResult.tasksCompleted;
         } else {
           // Get assigned agent or distribute
           let agentId = task.assignedTo;
@@ -487,7 +490,7 @@ export class WorkflowEngine {
     return {
       id: workflow.id,
       status: finalStatus,
-      tasksCompleted: completedTasks.size,
+      tasksCompleted: completedTasks.size + nestedTasksCompleted,
       errors,
       executionOrder: execution.executionOrder,
       duration: execution.state.completedAt - (execution.state.startedAt || 0)
