@@ -94,10 +94,10 @@ class PluginManager {
 ```
 
 **Official Plugins:**
-1. `@claude-flow/hive-mind` - Queen-led coordination
-2. `@claude-flow/neural` - Neural training system
-3. `@claude-flow/verification` - Truth scoring
-4. `@claude-flow/enterprise` - Advanced features
+1. `@tiara/hive-mind` - Queen-led coordination
+2. `@tiara/neural` - Neural training system
+3. `@tiara/verification` - Truth scoring
+4. `@tiara/enterprise` - Advanced features
 
 ## Success Metrics
 

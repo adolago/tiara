@@ -27,7 +27,7 @@ v2/src/memory/
 
 ### V3 Memory Architecture
 ```
-v3/@claude-flow/memory/
+v3/@tiara/memory/
 ├── src/
 │   ├── types.ts              # Type definitions
 │   ├── index.ts              # UnifiedMemoryService
@@ -92,7 +92,7 @@ const memory = new MemoryManager({
 });
 
 // V3: Initialize memory
-import { UnifiedMemoryService } from '@claude-flow/memory';
+import { UnifiedMemoryService } from '@tiara/memory';
 const memory = new UnifiedMemoryService({
   backend: 'hybrid',  // SQLite + AgentDB
   sqlite: {
@@ -157,7 +157,7 @@ const results = await memory.search({
 });
 
 // V3: Fluent query builder
-import { QueryBuilder } from '@claude-flow/memory';
+import { QueryBuilder } from '@tiara/memory';
 const results = await new QueryBuilder(memory)
   .semantic('feature request')
   .type('episodic')
@@ -171,7 +171,7 @@ const results = await new QueryBuilder(memory)
 
 ```typescript
 // V3: HNSW vector search
-import { HNSWIndex } from '@claude-flow/memory';
+import { HNSWIndex } from '@tiara/memory';
 
 const index = new HNSWIndex({
   dimensions: 384,
@@ -192,7 +192,7 @@ const results = await index.search(queryEmbedding, k: 10);
 
 ```typescript
 // Migrate V2 data to V3
-import { migrateMemoryData } from '@claude-flow/memory/migration';
+import { migrateMemoryData } from '@tiara/memory/migration';
 
 await migrateMemoryData({
   source: {
@@ -228,7 +228,7 @@ v2/src/
 
 ### V3 Neural Architecture
 ```
-v3/@claude-flow/neural/
+v3/@tiara/neural/
 ├── src/
 │   ├── index.ts              # NeuralLearningSystem
 │   ├── sona-manager.ts       # SONA modes
@@ -296,7 +296,7 @@ const mapper = new NeuralDomainMapper();
 registerNeuralHooks(mapper);
 
 // V3: Neural learning system
-import { NeuralLearningSystem } from '@claude-flow/neural';
+import { NeuralLearningSystem } from '@tiara/neural';
 
 const neural = new NeuralLearningSystem({
   mode: 'balanced',  // real-time | balanced | research | edge | batch
@@ -349,7 +349,7 @@ await rb.store(memory);
 const patterns = await rb.retrieve(query);
 
 // V3: Native implementation
-import { ReasoningBank } from '@claude-flow/neural';
+import { ReasoningBank } from '@tiara/neural';
 
 const rb = new ReasoningBank({
   memory: agentDbBackend,  // Uses AgentDB for 150x faster search
@@ -370,7 +370,7 @@ await rb.consolidate();                               // CONSOLIDATE
 
 ```typescript
 // V3 only: Configure learning modes
-import { SONAManager, LearningMode } from '@claude-flow/neural';
+import { SONAManager, LearningMode } from '@tiara/neural';
 
 const sona = new SONAManager();
 
@@ -394,7 +394,7 @@ sona.setMode(LearningMode.BATCH);
 
 ```typescript
 // V3 only: Use RL algorithms
-import { createPPO, createDQN, createA2C } from '@claude-flow/neural/algorithms';
+import { createPPO, createDQN, createA2C } from '@tiara/neural/algorithms';
 
 // PPO for continuous action spaces
 const ppo = createPPO({
@@ -422,7 +422,7 @@ const a2c = createA2C({
 
 ```typescript
 // V3 only: LoRA and EWC
-import { SONAManager } from '@claude-flow/neural';
+import { SONAManager } from '@tiara/neural';
 
 const sona = new SONAManager({
   enableLoRA: true,
@@ -455,7 +455,7 @@ await sona.train(newTask);
 ## Migration Checklist
 
 ### Memory Migration
-- [ ] Update imports to `@claude-flow/memory`
+- [ ] Update imports to `@tiara/memory`
 - [ ] Configure hybrid backend
 - [ ] Run data migration script
 - [ ] Generate embeddings for existing entries
@@ -463,7 +463,7 @@ await sona.train(newTask);
 - [ ] Test HNSW index performance
 
 ### Neural Migration
-- [ ] Update imports to `@claude-flow/neural`
+- [ ] Update imports to `@tiara/neural`
 - [ ] Initialize NeuralLearningSystem
 - [ ] Configure SONA mode
 - [ ] Migrate training code to trajectories

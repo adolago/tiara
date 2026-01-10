@@ -25,7 +25,7 @@ The V3 hooks CLI provides command-line access to the hooks system for shell scri
 
 ```bash
 # Hooks are available through the main claude-flow CLI
-npm install -g @claude-flow/cli
+npm install -g @tiara/cli
 
 # Or via npx
 npx claude-flow hooks --help

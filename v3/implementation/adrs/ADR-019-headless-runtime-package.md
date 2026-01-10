@@ -1,4 +1,4 @@
-# ADR-019: @claude-flow/headless Runtime Package
+# ADR-019: @tiara/headless Runtime Package
 
 **Status:** Proposed
 **Date:** 2026-01-07
@@ -17,7 +17,7 @@ The undocumented `CLAUDE_CODE_HEADLESS` and `CLAUDE_CODE_SANDBOX_MODE` environme
 
 ## Decision
 
-Create `@claude-flow/headless` package providing:
+Create `@tiara/headless` package providing:
 - Programmatic Claude Code invocation with environment control
 - Sandbox-aware execution contexts
 - Batch task queue with persistence
@@ -29,7 +29,7 @@ Create `@claude-flow/headless` package providing:
 ## Package Architecture
 
 ```
-@claude-flow/headless/
+@tiara/headless/
 ├── src/
 │   ├── index.ts                 # Main exports
 │   ├── executor/
@@ -571,27 +571,27 @@ export class ContainerExecutor {
 
 ```bash
 # Start headless server
-npx @claude-flow/headless serve --port 3001 --sandbox strict
+npx @tiara/headless serve --port 3001 --sandbox strict
 
 # Execute single prompt
-npx @claude-flow/headless exec "Fix the bug in auth.ts" --cwd ./project
+npx @tiara/headless exec "Fix the bug in auth.ts" --cwd ./project
 
 # Execute from file
-npx @claude-flow/headless exec --file tasks.txt --parallel 3
+npx @tiara/headless exec --file tasks.txt --parallel 3
 
 # Queue management
-npx @claude-flow/headless queue add "Refactor utils" --priority high
-npx @claude-flow/headless queue list
-npx @claude-flow/headless queue cancel <id>
+npx @tiara/headless queue add "Refactor utils" --priority high
+npx @tiara/headless queue list
+npx @tiara/headless queue cancel <id>
 
 # Docker mode
-npx @claude-flow/headless docker start --containers 3
-npx @claude-flow/headless docker exec "Run tests" --isolated
-npx @claude-flow/headless docker scale 5
+npx @tiara/headless docker start --containers 3
+npx @tiara/headless docker exec "Run tests" --isolated
+npx @tiara/headless docker scale 5
 
 # Monitoring
-npx @claude-flow/headless status
-npx @claude-flow/headless metrics --prometheus
+npx @tiara/headless status
+npx @tiara/headless metrics --prometheus
 ```
 
 ---
@@ -617,7 +617,7 @@ jobs:
           CLAUDE_CODE_HEADLESS: "true"
           CLAUDE_CODE_SANDBOX_MODE: "strict"
         run: |
-          npx @claude-flow/headless exec \
+          npx @tiara/headless exec \
             "Review this PR for bugs, security issues, and code quality. \
              Provide actionable feedback." \
             --output review.md
@@ -638,7 +638,7 @@ jobs:
 ### 2. Batch Test Generation
 
 ```typescript
-import { HeadlessExecutor, TaskQueue } from '@claude-flow/headless';
+import { HeadlessExecutor, TaskQueue } from '@tiara/headless';
 
 const executor = new HeadlessExecutor({
   sandbox: { mode: 'permissive' },
@@ -700,7 +700,7 @@ spec:
           value: "strict"
         command:
         - npx
-        - "@claude-flow/headless"
+        - "@tiara/headless"
         - exec
         - "Migrate database schema from v2 to v3"
         volumeMounts:
@@ -716,7 +716,7 @@ spec:
 ### 4. Distributed Swarm Execution
 
 ```typescript
-import { ContainerExecutor } from '@claude-flow/headless';
+import { ContainerExecutor } from '@tiara/headless';
 
 const executor = new ContainerExecutor({
   image: 'ghcr.io/ruvnet/claude-flow-headless:latest',
@@ -824,10 +824,10 @@ const HARD_LIMITS = {
 
 ```json
 {
-  "name": "@claude-flow/headless",
+  "name": "@tiara/headless",
   "version": "3.0.0-alpha.1",
   "dependencies": {
-    "@claude-flow/shared": "^3.0.0-alpha.1",
+    "@tiara/shared": "^3.0.0-alpha.1",
     "better-sqlite3": "^9.0.0",
     "express": "^4.18.2",
     "ws": "^8.14.2",

@@ -1,11 +1,11 @@
 {
-  "name": "@claude-flow/v3-monorepo",
+  "name": "@tiara/v3-monorepo",
   "version": "3.0.0-alpha.1",
   "private": true,
   "type": "module",
   "description": "Claude Flow V3 - Modular AI Agent Coordination System",
   "workspaces": [
-    "@claude-flow/*",
+    "@tiara/*",
     "claude-flow"
   ],
   "scripts": {
@@ -21,13 +21,13 @@
     "test:integration:workflow": "vitest run __tests__/integration/workflow-integration.test.ts",
     "test:coverage": "vitest run --coverage",
     "test:coverage:integration": "vitest run __tests__/integration --coverage",
-    "test:security": "pnpm --filter @claude-flow/security test",
-    "test:memory": "pnpm --filter @claude-flow/memory test",
-    "test:swarm": "pnpm --filter @claude-flow/swarm test",
-    "bench": "pnpm --filter @claude-flow/performance bench",
-    "bench:attention": "pnpm --filter @claude-flow/performance bench:attention",
+    "test:security": "pnpm --filter @tiara/security test",
+    "test:memory": "pnpm --filter @tiara/memory test",
+    "test:swarm": "pnpm --filter @tiara/swarm test",
+    "bench": "pnpm --filter @tiara/performance bench",
+    "bench:attention": "pnpm --filter @tiara/performance bench:attention",
     "typecheck": "pnpm -r typecheck",
-    "clean": "rm -rf node_modules @claude-flow/*/node_modules claude-flow/node_modules",
+    "clean": "rm -rf node_modules @tiara/*/node_modules claude-flow/node_modules",
     "publish:dry": "pnpm --filter claude-flow publish --dry-run --tag v3alpha --no-git-checks",
     "publish:v3alpha": "pnpm --filter claude-flow publish --tag v3alpha --no-git-checks",
     "version:patch": "pnpm -r exec npm version patch",

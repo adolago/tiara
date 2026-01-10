@@ -16,25 +16,25 @@ The V3 init system creates a complete development environment including:
 
 ```bash
 # Default initialization (recommended settings)
-npx @claude-flow/cli init
+npx @tiara/cli init
 
 # Minimal setup (lightweight)
-npx @claude-flow/cli init --minimal
+npx @tiara/cli init --minimal
 
 # Full setup (everything enabled)
-npx @claude-flow/cli init --full
+npx @tiara/cli init --full
 
 # Force overwrite existing files
-npx @claude-flow/cli init --force
+npx @tiara/cli init --force
 
 # Interactive wizard
-npx @claude-flow/cli init wizard
+npx @tiara/cli init wizard
 ```
 
 ### Programmatic Usage
 
 ```typescript
-import { executeInit, DEFAULT_INIT_OPTIONS } from '@claude-flow/cli/init';
+import { executeInit, DEFAULT_INIT_OPTIONS } from '@tiara/cli/init';
 
 const result = await executeInit({
   ...DEFAULT_INIT_OPTIONS,

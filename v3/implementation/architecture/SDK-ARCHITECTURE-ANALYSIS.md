@@ -606,7 +606,7 @@ Claude-Flow v3 will be architected as a **modular constellation of npm packages*
 
 ```
                         ┌─────────────────────────┐
-                        │    @claude-flow/core    │
+                        │    @tiara/core    │
                         │   (Central Connector)   │
                         │       ~50KB base        │
                         └───────────┬─────────────┘
@@ -630,13 +630,13 @@ Claude-Flow v3 will be architected as a **modular constellation of npm packages*
 
 ### 11.2 Package Specifications
 
-#### @claude-flow/core (Central Connector)
+#### @tiara/core (Central Connector)
 
 **Purpose:** Minimal core that connects all packages, provides unified configuration, and manages inter-package communication.
 
 ```typescript
-// Package: @claude-flow/core
-// Size: ~50KB (no dependencies on other @claude-flow/* packages)
+// Package: @tiara/core
+// Size: ~50KB (no dependencies on other @tiara/* packages)
 
 export interface ClaudeFlowConfig {
   enabledModules: string[];
@@ -662,7 +662,7 @@ export class ClaudeFlowCore {
 }
 
 // Usage:
-import { ClaudeFlowCore } from '@claude-flow/core';
+import { ClaudeFlowCore } from '@tiara/core';
 const core = new ClaudeFlowCore();
 ```
 
@@ -670,34 +670,34 @@ const core = new ClaudeFlowCore();
 - Event bus for inter-module communication
 - Shared configuration management
 - Module lifecycle management
-- Zero dependencies on other @claude-flow/* packages
+- Zero dependencies on other @tiara/* packages
 - Can run standalone for minimal setups
 
 ---
 
-#### @claude-flow/hooks
+#### @tiara/hooks
 
 **Purpose:** Claude Code event hooks for pre/post operations with intelligent routing.
 
 ```typescript
-// Package: @claude-flow/hooks
-// Dependencies: @claude-flow/core (optional peer)
+// Package: @tiara/hooks
+// Dependencies: @tiara/core (optional peer)
 // SDK: agentic-flow/hooks
 
 export interface HookConfig {
   enabled: boolean;
   events: ClaudeCodeEvent[];
-  learning?: boolean;  // Requires @claude-flow/learning
+  learning?: boolean;  // Requires @tiara/learning
 }
 
 // Standalone usage
-import { createHookDispatcher } from '@claude-flow/hooks';
+import { createHookDispatcher } from '@tiara/hooks';
 const dispatcher = createHookDispatcher();
 dispatcher.register('PreToolUse', preEditHook);
 
 // With core integration
-import { ClaudeFlowCore } from '@claude-flow/core';
-import { HooksModule } from '@claude-flow/hooks';
+import { ClaudeFlowCore } from '@tiara/core';
+import { HooksModule } from '@tiara/hooks';
 core.register(new HooksModule());
 ```
 
@@ -717,13 +717,13 @@ core.register(new HooksModule());
 
 ---
 
-#### @claude-flow/learning
+#### @tiara/learning
 
 **Purpose:** Self-optimizing learning system with multiple RL algorithms.
 
 ```typescript
-// Package: @claude-flow/learning
-// Dependencies: @claude-flow/core (optional peer)
+// Package: @tiara/learning
+// Dependencies: @tiara/core (optional peer)
 // SDK: agentic-flow (SONA + AgentDB)
 
 export interface LearningConfig {
@@ -734,13 +734,13 @@ export interface LearningConfig {
 }
 
 // Standalone usage
-import { createLearningEngine } from '@claude-flow/learning';
+import { createLearningEngine } from '@tiara/learning';
 const engine = createLearningEngine({ algorithm: 'PPO' });
 await engine.train(pattern);
 const similar = await engine.query(embedding);
 
 // With core integration
-import { LearningModule } from '@claude-flow/learning';
+import { LearningModule } from '@tiara/learning';
 core.register(new LearningModule({ profile: 'balanced' }));
 ```
 
@@ -768,13 +768,13 @@ type RLAlgorithm =
 
 ---
 
-#### @claude-flow/swarm
+#### @tiara/swarm
 
 **Purpose:** Multi-agent swarm coordination with topology support.
 
 ```typescript
-// Package: @claude-flow/swarm
-// Dependencies: @claude-flow/core (optional peer)
+// Package: @tiara/swarm
+// Dependencies: @tiara/core (optional peer)
 // SDK: agentic-flow/swarm
 
 export interface SwarmConfig {
@@ -785,7 +785,7 @@ export interface SwarmConfig {
 }
 
 // Standalone usage
-import { createSwarm } from '@claude-flow/swarm';
+import { createSwarm } from '@tiara/swarm';
 const swarm = await createSwarm({
   topology: 'hierarchical',
   maxAgents: 10
@@ -793,7 +793,7 @@ const swarm = await createSwarm({
 await swarm.spawnAgent({ type: 'researcher' });
 
 // With core integration
-import { SwarmModule } from '@claude-flow/swarm';
+import { SwarmModule } from '@tiara/swarm';
 core.register(new SwarmModule({ topology: 'mesh' }));
 ```
 
@@ -808,13 +808,13 @@ core.register(new SwarmModule({ topology: 'mesh' }));
 
 ---
 
-#### @claude-flow/memory
+#### @tiara/memory
 
 **Purpose:** Persistent memory and pattern storage.
 
 ```typescript
-// Package: @claude-flow/memory
-// Dependencies: @claude-flow/core (optional peer)
+// Package: @tiara/memory
+// Dependencies: @tiara/core (optional peer)
 // SDK: agentic-flow/reasoningbank
 
 export interface MemoryConfig {
@@ -825,13 +825,13 @@ export interface MemoryConfig {
 }
 
 // Standalone usage
-import { createMemoryStore } from '@claude-flow/memory';
+import { createMemoryStore } from '@tiara/memory';
 const memory = createMemoryStore({ backend: 'hybrid' });
 await memory.store('task/123', pattern);
 const similar = await memory.retrieve('code review', { k: 5 });
 
 // With core integration
-import { MemoryModule } from '@claude-flow/memory';
+import { MemoryModule } from '@tiara/memory';
 core.register(new MemoryModule());
 ```
 
@@ -844,13 +844,13 @@ core.register(new MemoryModule());
 
 ---
 
-#### @claude-flow/agents
+#### @tiara/agents
 
 **Purpose:** Agent definitions and dynamic agent generation.
 
 ```typescript
-// Package: @claude-flow/agents
-// Dependencies: @claude-flow/core (optional peer)
+// Package: @tiara/agents
+// Dependencies: @tiara/core (optional peer)
 
 export interface AgentDefinition {
   id: string;
@@ -861,14 +861,14 @@ export interface AgentDefinition {
 }
 
 // Standalone usage
-import { defineAgent, loadAgents } from '@claude-flow/agents';
+import { defineAgent, loadAgents } from '@tiara/agents';
 const researcher = defineAgent({
   type: 'researcher',
   capabilities: ['web-search', 'code-analysis']
 });
 
 // With core integration
-import { AgentsModule } from '@claude-flow/agents';
+import { AgentsModule } from '@tiara/agents';
 core.register(new AgentsModule());
 ```
 
@@ -881,13 +881,13 @@ core.register(new AgentsModule());
 
 ---
 
-#### @claude-flow/mcp
+#### @tiara/mcp
 
 **Purpose:** MCP server and tool definitions.
 
 ```typescript
-// Package: @claude-flow/mcp
-// Dependencies: @claude-flow/core (optional peer)
+// Package: @tiara/mcp
+// Dependencies: @tiara/core (optional peer)
 
 export interface MCPConfig {
   servers: MCPServerConfig[];
@@ -896,13 +896,13 @@ export interface MCPConfig {
 }
 
 // Standalone usage
-import { startMCPServer } from '@claude-flow/mcp';
+import { startMCPServer } from '@tiara/mcp';
 const server = await startMCPServer({
   tools: ['swarm_init', 'agent_spawn', 'task_orchestrate']
 });
 
 // With core integration
-import { MCPModule } from '@claude-flow/mcp';
+import { MCPModule } from '@tiara/mcp';
 core.register(new MCPModule());
 ```
 
@@ -915,13 +915,13 @@ core.register(new MCPModule());
 
 ---
 
-#### @claude-flow/neural
+#### @tiara/neural
 
 **Purpose:** Neural network operations and attention mechanisms.
 
 ```typescript
-// Package: @claude-flow/neural
-// Dependencies: @claude-flow/core (optional peer)
+// Package: @tiara/neural
+// Dependencies: @tiara/core (optional peer)
 // SDK: @ruvector/attention, @ruvector/gnn
 
 export interface NeuralConfig {
@@ -931,12 +931,12 @@ export interface NeuralConfig {
 }
 
 // Standalone usage
-import { createAttentionService } from '@claude-flow/neural';
+import { createAttentionService } from '@tiara/neural';
 const attention = createAttentionService({ mechanism: 'flash' });
 const result = await attention.compute(Q, K, V);
 
 // With core integration
-import { NeuralModule } from '@claude-flow/neural';
+import { NeuralModule } from '@tiara/neural';
 core.register(new NeuralModule());
 ```
 
@@ -952,13 +952,13 @@ core.register(new NeuralModule());
 
 ---
 
-#### @claude-flow/attention
+#### @tiara/attention
 
 **Purpose:** Attention-based agent coordination and consensus.
 
 ```typescript
-// Package: @claude-flow/attention
-// Dependencies: @claude-flow/core, @claude-flow/neural (optional peers)
+// Package: @tiara/attention
+// Dependencies: @tiara/core, @tiara/neural (optional peers)
 
 export interface AttentionCoordinatorConfig {
   mechanism: AttentionMechanism;
@@ -966,24 +966,24 @@ export interface AttentionCoordinatorConfig {
 }
 
 // Standalone usage
-import { createAttentionCoordinator } from '@claude-flow/attention';
+import { createAttentionCoordinator } from '@tiara/attention';
 const coordinator = createAttentionCoordinator({ mechanism: 'flash' });
 const consensus = await coordinator.coordinateAgents(outputs);
 
 // With core integration
-import { AttentionModule } from '@claude-flow/attention';
+import { AttentionModule } from '@tiara/attention';
 core.register(new AttentionModule());
 ```
 
 ---
 
-#### @claude-flow/vector
+#### @tiara/vector
 
 **Purpose:** Vector database operations with HNSW indexing.
 
 ```typescript
-// Package: @claude-flow/vector
-// Dependencies: @claude-flow/core (optional peer)
+// Package: @tiara/vector
+// Dependencies: @tiara/core (optional peer)
 // SDK: @ruvector/core, agentdb
 
 export interface VectorConfig {
@@ -994,13 +994,13 @@ export interface VectorConfig {
 }
 
 // Standalone usage
-import { createVectorStore } from '@claude-flow/vector';
+import { createVectorStore } from '@tiara/vector';
 const vectors = createVectorStore({ dimensions: 384 });
 await vectors.add('id', embedding, metadata);
 const results = await vectors.search(query, { k: 5 });
 
 // With core integration
-import { VectorModule } from '@claude-flow/vector';
+import { VectorModule } from '@tiara/vector';
 core.register(new VectorModule());
 ```
 
@@ -1011,13 +1011,13 @@ core.register(new VectorModule());
 
 ---
 
-#### @claude-flow/cli
+#### @tiara/cli
 
 **Purpose:** Command-line interface for all modules.
 
 ```typescript
-// Package: @claude-flow/cli
-// Dependencies: All @claude-flow/* packages (optional peers)
+// Package: @tiara/cli
+// Dependencies: All @tiara/* packages (optional peers)
 
 // Commands auto-detect installed modules
 ```
@@ -1025,31 +1025,31 @@ core.register(new VectorModule());
 **Commands:**
 ```bash
 # Core
-npx @claude-flow/cli init           # Initialize project
-npx @claude-flow/cli status         # Show module status
-npx @claude-flow/cli config         # Configure modules
+npx @tiara/cli init           # Initialize project
+npx @tiara/cli status         # Show module status
+npx @tiara/cli config         # Configure modules
 
-# Hooks (if @claude-flow/hooks installed)
-npx @claude-flow/cli hooks list
-npx @claude-flow/cli hooks enable <hook>
+# Hooks (if @tiara/hooks installed)
+npx @tiara/cli hooks list
+npx @tiara/cli hooks enable <hook>
 
-# Learning (if @claude-flow/learning installed)
-npx @claude-flow/cli learn status
-npx @claude-flow/cli learn train <patterns>
-npx @claude-flow/cli learn export
+# Learning (if @tiara/learning installed)
+npx @tiara/cli learn status
+npx @tiara/cli learn train <patterns>
+npx @tiara/cli learn export
 
-# Swarm (if @claude-flow/swarm installed)
-npx @claude-flow/cli swarm init <topology>
-npx @claude-flow/cli swarm spawn <type>
-npx @claude-flow/cli swarm status
+# Swarm (if @tiara/swarm installed)
+npx @tiara/cli swarm init <topology>
+npx @tiara/cli swarm spawn <type>
+npx @tiara/cli swarm status
 
-# Memory (if @claude-flow/memory installed)
-npx @claude-flow/cli memory stats
-npx @claude-flow/cli memory consolidate
+# Memory (if @tiara/memory installed)
+npx @tiara/cli memory stats
+npx @tiara/cli memory consolidate
 
-# MCP (if @claude-flow/mcp installed)
-npx @claude-flow/cli mcp start
-npx @claude-flow/cli mcp list-tools
+# MCP (if @tiara/mcp installed)
+npx @tiara/cli mcp start
+npx @tiara/cli mcp list-tools
 ```
 
 ---
@@ -1058,7 +1058,7 @@ npx @claude-flow/cli mcp list-tools
 
 ```
                  core  hooks  learn  swarm  memory  agents  mcp  neural  attn  vector  cli
-@claude-flow/
+@tiara/
   core            -     -      -      -      -       -      -     -       -     -      -
   hooks           P     -      P      -      P       -      -     -       -     -      -
   learning        P     -      -      -      P       -      -     P       -     P      -
@@ -1079,49 +1079,49 @@ P = Optional peer dependency (enhances features when present)
 
 #### Minimal (Core Only)
 ```bash
-npm install @claude-flow/core
+npm install @tiara/core
 # 50KB, event bus and configuration only
 ```
 
 #### Hooks Only
 ```bash
-npm install @claude-flow/hooks
+npm install @tiara/hooks
 # Works standalone, no core required
 # 200KB, Claude Code hook integration
 ```
 
 #### Learning Stack
 ```bash
-npm install @claude-flow/core @claude-flow/learning @claude-flow/memory @claude-flow/vector
+npm install @tiara/core @tiara/learning @tiara/memory @tiara/vector
 # 3MB, full learning system
 ```
 
 #### Swarm Stack
 ```bash
-npm install @claude-flow/core @claude-flow/swarm @claude-flow/agents @claude-flow/attention
+npm install @tiara/core @tiara/swarm @tiara/agents @tiara/attention
 # 4MB, multi-agent coordination
 ```
 
 #### Full Installation
 ```bash
 npm install claude-flow
-# Meta-package that includes all @claude-flow/* packages
+# Meta-package that includes all @tiara/* packages
 # 15MB, everything included
 ```
 
 #### Mix and Match Examples
 ```bash
 # Hooks + Learning (self-optimizing hooks)
-npm install @claude-flow/hooks @claude-flow/learning
+npm install @tiara/hooks @tiara/learning
 
 # Swarm + Memory (persistent swarm state)
-npm install @claude-flow/swarm @claude-flow/memory
+npm install @tiara/swarm @tiara/memory
 
 # Neural + Vector (embeddings + search)
-npm install @claude-flow/neural @claude-flow/vector
+npm install @tiara/neural @tiara/vector
 
 # CLI with specific modules
-npm install @claude-flow/cli @claude-flow/hooks @claude-flow/swarm
+npm install @tiara/cli @tiara/hooks @tiara/swarm
 ```
 
 ### 11.5 Module Communication Protocol
@@ -1155,7 +1155,7 @@ interface ModuleEvents {
 }
 
 // Cross-module communication example
-// @claude-flow/hooks emits, @claude-flow/learning listens
+// @tiara/hooks emits, @tiara/learning listens
 core.on('hook:completed', async (data) => {
   if (data.hookId === 'postEdit') {
     await learningModule.train({
@@ -1169,9 +1169,9 @@ core.on('hook:completed', async (data) => {
 
 ### 11.6 SDK Mapping to Packages
 
-Each @claude-flow/* package maps to specific agentic-flow SDK components:
+Each @tiara/* package maps to specific agentic-flow SDK components:
 
-| @claude-flow/* | agentic-flow SDK |
+| @tiara/* | agentic-flow SDK |
 |----------------|------------------|
 | hooks | `agentic-flow/hooks`, `agentic-flow/mcp/fastmcp/tools/hooks` |
 | learning | `agentic-flow/services/sona-agentdb-integration`, `agentic-flow/hooks/swarm-learning-optimizer` |
@@ -1187,7 +1187,7 @@ Each @claude-flow/* package maps to specific agentic-flow SDK components:
 ### 11.7 Version Compatibility Matrix
 
 ```
-@claude-flow/*  | agentic-flow | @ruvector/* | Node.js
+@tiara/*  | agentic-flow | @ruvector/* | Node.js
 ----------------|--------------|-------------|--------
 3.0.x           | 2.0.x-alpha  | 0.1.x       | ≥18.x
 3.1.x           | 2.1.x-alpha  | 0.2.x       | ≥18.x
@@ -1198,9 +1198,9 @@ Each @claude-flow/* package maps to specific agentic-flow SDK components:
 **Standalone (No Core):**
 ```typescript
 // Each package works independently
-import { createHookDispatcher } from '@claude-flow/hooks';
-import { createLearningEngine } from '@claude-flow/learning';
-import { createSwarm } from '@claude-flow/swarm';
+import { createHookDispatcher } from '@tiara/hooks';
+import { createLearningEngine } from '@tiara/learning';
+import { createSwarm } from '@tiara/swarm';
 
 // Manual coordination required
 const dispatcher = createHookDispatcher();
@@ -1215,10 +1215,10 @@ dispatcher.on('postEdit', async (data) => {
 **Integrated (With Core):**
 ```typescript
 // Automatic cross-module communication
-import { ClaudeFlowCore } from '@claude-flow/core';
-import { HooksModule } from '@claude-flow/hooks';
-import { LearningModule } from '@claude-flow/learning';
-import { SwarmModule } from '@claude-flow/swarm';
+import { ClaudeFlowCore } from '@tiara/core';
+import { HooksModule } from '@tiara/hooks';
+import { LearningModule } from '@tiara/learning';
+import { SwarmModule } from '@tiara/swarm';
 
 const core = new ClaudeFlowCore();
 core.register(new HooksModule());
@@ -1233,12 +1233,12 @@ core.register(new SwarmModule());
 
 ### 11.9 Shared Types Package
 
-#### @claude-flow/types
+#### @tiara/types
 
 **Purpose:** Zero-runtime TypeScript definitions shared across all packages.
 
 ```typescript
-// Package: @claude-flow/types
+// Package: @tiara/types
 // Size: ~20KB (types only, no runtime)
 // Dependencies: None
 
@@ -1422,9 +1422,9 @@ describe('HookDispatcher', () => {
 
 ```typescript
 // packages/integration-tests/core-hooks.test.ts
-import { ClaudeFlowCore } from '@claude-flow/core';
-import { HooksModule } from '@claude-flow/hooks';
-import { LearningModule } from '@claude-flow/learning';
+import { ClaudeFlowCore } from '@tiara/core';
+import { HooksModule } from '@tiara/hooks';
+import { LearningModule } from '@tiara/learning';
 
 describe('Core + Hooks + Learning Integration', () => {
   let core: ClaudeFlowCore;
@@ -1494,7 +1494,7 @@ export const createMockLearningEngine = () => ({
 #### Cross-Module Error Propagation
 
 ```typescript
-// @claude-flow/core error types
+// @tiara/core error types
 export class ClaudeFlowError extends Error {
   constructor(
     message: string,
@@ -1537,7 +1537,7 @@ export enum ErrorCode {
 #### Graceful Degradation
 
 ```typescript
-// @claude-flow/core graceful degradation
+// @tiara/core graceful degradation
 class ClaudeFlowCore {
   async safeGetModule<T>(id: string): Promise<T | null> {
     try {
@@ -1575,7 +1575,7 @@ class ClaudeFlowCore {
 #### Circuit Breaker Pattern
 
 ```typescript
-// @claude-flow/core circuit breaker
+// @tiara/core circuit breaker
 interface CircuitBreakerConfig {
   failureThreshold: number;  // Failures before opening
   resetTimeout: number;      // Ms before half-open
@@ -1615,7 +1615,7 @@ class CircuitBreaker {
 #### API Key Management
 
 ```typescript
-// @claude-flow/core secrets
+// @tiara/core secrets
 interface SecretsConfig {
   provider: 'env' | 'keychain' | 'vault';
   keyPrefix?: string;
@@ -1654,7 +1654,7 @@ class SecretsManager {
 #### Agent Sandboxing
 
 ```typescript
-// @claude-flow/agents sandboxing
+// @tiara/agents sandboxing
 interface SandboxConfig {
   maxMemoryMB: number;
   maxCpuPercent: number;
@@ -1675,7 +1675,7 @@ const DEFAULT_SANDBOX: SandboxConfig = {
 #### PII Handling
 
 ```typescript
-// @claude-flow/memory PII scrubbing (from agentic-flow)
+// @tiara/memory PII scrubbing (from agentic-flow)
 import { scrubPII, containsPII } from 'agentic-flow/reasoningbank';
 
 class SecureMemoryStore {
@@ -1695,7 +1695,7 @@ class SecureMemoryStore {
 #### Audit Logging
 
 ```typescript
-// @claude-flow/core audit
+// @tiara/core audit
 interface AuditEvent {
   timestamp: number;
   module: string;
@@ -1725,12 +1725,12 @@ class AuditLogger {
 #### OpenTelemetry Integration
 
 ```typescript
-// @claude-flow/core telemetry
+// @tiara/core telemetry
 import { trace, metrics, context } from '@opentelemetry/api';
 
 class Telemetry {
-  private tracer = trace.getTracer('@claude-flow/core');
-  private meter = metrics.getMeter('@claude-flow/core');
+  private tracer = trace.getTracer('@tiara/core');
+  private meter = metrics.getMeter('@tiara/core');
 
   // Counters
   private hookCounter = this.meter.createCounter('claude_flow.hooks.total');
@@ -1828,9 +1828,9 @@ class SwarmTracer {
 
 | v2 API | v3 API | Migration |
 |--------|--------|-----------|
-| `require('claude-flow')` | `import { ClaudeFlowCore } from '@claude-flow/core'` | ESM only |
+| `require('claude-flow')` | `import { ClaudeFlowCore } from '@tiara/core'` | ESM only |
 | `claudeFlow.init()` | `new ClaudeFlowCore()` | Constructor-based |
-| `claudeFlow.swarm.create()` | `import { createSwarm } from '@claude-flow/swarm'` | Modular import |
+| `claudeFlow.swarm.create()` | `import { createSwarm } from '@tiara/swarm'` | Modular import |
 | `claudeFlow.memory.store()` | `memoryModule.store()` | Module instance |
 | Callbacks | Promises/async-await | All async |
 
@@ -1838,14 +1838,14 @@ class SwarmTracer {
 
 ```bash
 # Install migration tool
-npx @claude-flow/migrate
+npx @tiara/migrate
 
 # Analyze codebase
-npx @claude-flow/migrate analyze ./src
+npx @tiara/migrate analyze ./src
 
 # Apply migrations
-npx @claude-flow/migrate run ./src --dry-run
-npx @claude-flow/migrate run ./src
+npx @tiara/migrate run ./src --dry-run
+npx @tiara/migrate run ./src
 ```
 
 #### Codemod Transforms
@@ -1863,7 +1863,7 @@ export default function transformer(file, api) {
   }).replaceWith(() =>
     j.importDeclaration(
       [j.importSpecifier(j.identifier('ClaudeFlowCore'))],
-      j.literal('@claude-flow/core')
+      j.literal('@tiara/core')
     )
   );
 
@@ -1874,15 +1874,15 @@ export default function transformer(file, api) {
 #### Compatibility Shim (Temporary)
 
 ```typescript
-// @claude-flow/compat - Temporary v2 compatibility
-import { ClaudeFlowCore } from '@claude-flow/core';
-import { HooksModule } from '@claude-flow/hooks';
-import { SwarmModule } from '@claude-flow/swarm';
-import { MemoryModule } from '@claude-flow/memory';
+// @tiara/compat - Temporary v2 compatibility
+import { ClaudeFlowCore } from '@tiara/core';
+import { HooksModule } from '@tiara/hooks';
+import { SwarmModule } from '@tiara/swarm';
+import { MemoryModule } from '@tiara/memory';
 
 // v2-style API
 export function createClaudeFlow(config?: any) {
-  console.warn('[@claude-flow/compat] Deprecated: Migrate to v3 modular imports');
+  console.warn('[@tiara/compat] Deprecated: Migrate to v3 modular imports');
 
   const core = new ClaudeFlowCore();
 
@@ -1919,7 +1919,7 @@ export function createClaudeFlow(config?: any) {
 #### Plugin Interface
 
 ```typescript
-// @claude-flow/core plugin system
+// @tiara/core plugin system
 interface ClaudeFlowPlugin {
   name: string;
   version: string;
@@ -2061,7 +2061,7 @@ CLAUDE_FLOW_HOOKS_TIMEOUT=10000
 #### Configuration API
 
 ```typescript
-// @claude-flow/core configuration
+// @tiara/core configuration
 class ConfigManager {
   // Load from all sources
   async load(): Promise<ResolvedConfig> {
@@ -2196,7 +2196,7 @@ jobs:
 #### Feature Detection
 
 ```typescript
-// @claude-flow/core feature detection
+// @tiara/core feature detection
 class FeatureDetector {
   async detect(): Promise<AvailableFeatures> {
     return {
@@ -2238,7 +2238,7 @@ class FeatureDetector {
 #### Degraded Mode Configuration
 
 ```typescript
-// @claude-flow/core degraded mode
+// @tiara/core degraded mode
 interface DegradedModeConfig {
   // What to do when network unavailable
   offline: {
@@ -2299,17 +2299,17 @@ const DEFAULT_DEGRADED: DegradedModeConfig = {
 
 | Package | Purpose | Size | Standalone |
 |---------|---------|------|------------|
-| `@claude-flow/core` | Central connector | ~50KB | ✅ |
-| `@claude-flow/hooks` | Claude Code events | ~200KB | ✅ |
-| `@claude-flow/learning` | Self-optimization | ~2MB | ✅ |
-| `@claude-flow/swarm` | Multi-agent coordination | ~1MB | ✅ |
-| `@claude-flow/memory` | Persistent storage | ~500KB | ✅ |
-| `@claude-flow/agents` | Agent definitions | ~300KB | ✅ |
-| `@claude-flow/mcp` | MCP server/tools | ~400KB | ✅ |
-| `@claude-flow/neural` | Neural operations | ~1MB | ✅ |
-| `@claude-flow/attention` | Agent consensus | ~200KB | ✅ |
-| `@claude-flow/vector` | HNSW search | ~800KB | ✅ |
-| `@claude-flow/cli` | CLI interface | ~100KB | ❌ |
+| `@tiara/core` | Central connector | ~50KB | ✅ |
+| `@tiara/hooks` | Claude Code events | ~200KB | ✅ |
+| `@tiara/learning` | Self-optimization | ~2MB | ✅ |
+| `@tiara/swarm` | Multi-agent coordination | ~1MB | ✅ |
+| `@tiara/memory` | Persistent storage | ~500KB | ✅ |
+| `@tiara/agents` | Agent definitions | ~300KB | ✅ |
+| `@tiara/mcp` | MCP server/tools | ~400KB | ✅ |
+| `@tiara/neural` | Neural operations | ~1MB | ✅ |
+| `@tiara/attention` | Agent consensus | ~200KB | ✅ |
+| `@tiara/vector` | HNSW search | ~800KB | ✅ |
+| `@tiara/cli` | CLI interface | ~100KB | ❌ |
 
 ### 12.3 Key Architectural Decisions
 
@@ -2322,23 +2322,23 @@ const DEFAULT_DEGRADED: DegradedModeConfig = {
 ### 12.4 Implementation Roadmap
 
 **Phase 1: Core Packages**
-- `@claude-flow/core` - Event bus, configuration, module registry
-- `@claude-flow/hooks` - Claude Code event mapping
-- `@claude-flow/cli` - Basic CLI with init/status
+- `@tiara/core` - Event bus, configuration, module registry
+- `@tiara/hooks` - Claude Code event mapping
+- `@tiara/cli` - Basic CLI with init/status
 
 **Phase 2: Learning Stack**
-- `@claude-flow/learning` - SONA + AgentDB integration
-- `@claude-flow/memory` - ReasoningBank wrapper
-- `@claude-flow/vector` - HNSW indexing
+- `@tiara/learning` - SONA + AgentDB integration
+- `@tiara/memory` - ReasoningBank wrapper
+- `@tiara/vector` - HNSW indexing
 
 **Phase 3: Swarm Stack**
-- `@claude-flow/swarm` - QUIC coordination
-- `@claude-flow/agents` - Agent definitions
-- `@claude-flow/attention` - Consensus mechanisms
+- `@tiara/swarm` - QUIC coordination
+- `@tiara/agents` - Agent definitions
+- `@tiara/attention` - Consensus mechanisms
 
 **Phase 4: Neural Stack**
-- `@claude-flow/neural` - Attention mechanisms
-- `@claude-flow/mcp` - Full MCP server
+- `@tiara/neural` - Attention mechanisms
+- `@tiara/mcp` - Full MCP server
 
 ### 12.5 Final Architecture
 
@@ -2347,7 +2347,7 @@ const DEFAULT_DEGRADED: DegradedModeConfig = {
 │                         claude-flow (meta-package)                       │
 │                      npm install claude-flow@3                           │
 ├─────────────────────────────────────────────────────────────────────────┤
-│  @claude-flow/*                                                          │
+│  @tiara/*                                                          │
 │  ┌───────┬─────────┬───────┬────────┬────────┬──────┬──────┬─────────┐ │
 │  │ core  │  hooks  │ learn │ swarm  │ memory │agents│ mcp  │ neural  │ │
 │  └───────┴─────────┴───────┴────────┴────────┴──────┴──────┴─────────┘ │
@@ -2705,13 +2705,13 @@ const learningResult = await ruvector.completeTrajectory(
 const patterns = await ruvector.findPatterns(topic, 5);
 ```
 
-### 13.7 @claude-flow/workers Package
+### 13.7 @tiara/workers Package
 
 Claude-Flow v3 workers package specification:
 
 ```typescript
-// @claude-flow/workers
-// Dependencies: @claude-flow/core (optional peer)
+// @tiara/workers
+// Dependencies: @tiara/core (optional peer)
 // SDK: agentic-flow/workers
 
 export interface WorkersConfig {
@@ -2773,8 +2773,8 @@ export {
 Workers can be triggered from Claude Code hooks:
 
 ```typescript
-import { HooksModule } from '@claude-flow/hooks';
-import { WorkersModule } from '@claude-flow/workers';
+import { HooksModule } from '@tiara/hooks';
+import { WorkersModule } from '@tiara/workers';
 
 const core = new ClaudeFlowCore();
 core.register(new HooksModule());

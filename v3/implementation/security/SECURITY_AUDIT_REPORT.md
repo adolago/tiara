@@ -106,7 +106,7 @@ private initializeDefaultUsers(): void {
   // Create default admin user
   const adminUser: User = {
     id: 'admin_default',
-    email: 'admin@claude-flow.local',
+    email: 'admin@tiara.local',
     passwordHash: createHash('sha256').update('admin123' + 'salt').digest('hex'),
     role: 'admin',
     // ...
@@ -115,7 +115,7 @@ private initializeDefaultUsers(): void {
   // Create default service user
   const serviceUser: User = {
     id: 'service_default',
-    email: 'service@claude-flow.local',
+    email: 'service@tiara.local',
     passwordHash: createHash('sha256').update('service123' + 'salt').digest('hex'),
     role: 'service',
     // ...
@@ -124,8 +124,8 @@ private initializeDefaultUsers(): void {
 ```
 
 **Default Credentials:**
-- Admin: `admin@claude-flow.local` / `admin123`
-- Service: `service@claude-flow.local` / `service123`
+- Admin: `admin@tiara.local` / `admin123`
+- Service: `service@tiara.local` / `service123`
 
 **Impact:**
 - Trivial to gain admin access
@@ -701,7 +701,7 @@ The Claude-Flow codebase shows **strong security foundations** in some areas (ti
 ## 10. Contact & Support
 
 For security vulnerabilities, please contact:
-- **Security Team:** security@claude-flow.io
+- **Security Team:** security@tiara.io
 - **GitHub Security Advisories:** https://github.com/ruvnet/claude-code-flow/security/advisories
 
 **Report Format:**

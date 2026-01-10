@@ -88,7 +88,7 @@ npm run test -- auth-service.test
 private initializeDefaultUsers(): void {
   const adminUser: User = {
     id: 'admin_default',
-    email: 'admin@claude-flow.local',
+    email: 'admin@tiara.local',
     passwordHash: createHash('sha256').update('admin123' + 'salt').digest('hex'),
     // ...
   };
@@ -108,7 +108,7 @@ private async initializeDefaultUsers(): Promise<void> {
     console.log('IMPORTANT: SAVE THESE CREDENTIALS NOW');
     console.log('═══════════════════════════════════════════');
     console.log('Default Admin Credentials:');
-    console.log(`Email: admin@claude-flow.local`);
+    console.log(`Email: admin@tiara.local`);
     console.log(`Password: ${randomPassword}`);
     console.log('═══════════════════════════════════════════');
     console.log('You will NOT see this password again!');
@@ -117,7 +117,7 @@ private async initializeDefaultUsers(): Promise<void> {
 
     const adminUser: User = {
       id: 'admin_default',
-      email: 'admin@claude-flow.local',
+      email: 'admin@tiara.local',
       passwordHash: await this.hashPassword(randomPassword),
       role: 'admin',
       permissions: ROLE_PERMISSIONS.admin,

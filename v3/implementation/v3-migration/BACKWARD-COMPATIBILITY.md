@@ -42,7 +42,7 @@ V3 introduces breaking changes per ADR-001 through ADR-010. This document outlin
 ### Import Aliases
 
 ```typescript
-// v3/@claude-flow/shared/src/compat/v2-aliases.ts
+// v3/@tiara/shared/src/compat/v2-aliases.ts
 // Provides V2-compatible imports
 
 // V2 imports
@@ -51,9 +51,9 @@ import { SwarmCoordinator } from 'claude-flow/swarm';
 import { MemoryManager } from 'claude-flow/memory';
 
 // V3 compatibility layer
-export { UnifiedSwarmCoordinator as HiveMind } from '@claude-flow/swarm';
-export { UnifiedSwarmCoordinator as SwarmCoordinator } from '@claude-flow/swarm';
-export { UnifiedMemoryService as MemoryManager } from '@claude-flow/memory';
+export { UnifiedSwarmCoordinator as HiveMind } from '@tiara/swarm';
+export { UnifiedSwarmCoordinator as SwarmCoordinator } from '@tiara/swarm';
+export { UnifiedMemoryService as MemoryManager } from '@tiara/memory';
 ```
 
 ### Tool Name Mapping
@@ -148,7 +148,7 @@ export function translateMemoryQueryParams(v2Params: any): any {
 ### CLI Command Mapping
 
 ```typescript
-// v3/@claude-flow/cli/src/compat/v2-commands.ts
+// v3/@tiara/cli/src/compat/v2-commands.ts
 // Provides V2 command aliases
 
 export const commandMapping: Record<string, string[]> = {
@@ -208,7 +208,7 @@ hooks:
 ### Migration Script
 
 ```typescript
-// v3/@claude-flow/cli/src/commands/migrate.ts
+// v3/@tiara/cli/src/commands/migrate.ts
 export async function migrateConfig(v2ConfigPath: string): Promise<void> {
   const v2Config = await loadYaml(v2ConfigPath);
 
@@ -292,7 +292,7 @@ ALTER TABLE memory_entries ADD COLUMN access_count INTEGER DEFAULT 0;
 ### Migration Script
 
 ```typescript
-// v3/@claude-flow/memory/src/migration.ts
+// v3/@tiara/memory/src/migration.ts
 export async function migrateMemoryData(v2DbPath: string, v3DbPath: string): Promise<void> {
   const v2Db = new Database(v2DbPath);
   const v3Db = new Database(v3DbPath);

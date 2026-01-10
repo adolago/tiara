@@ -173,7 +173,7 @@ Claude Code statusline module showing:
   "mcpServers": {
     "claude-flow": {
       "command": "npx",
-      "args": ["@claude-flow/cli", "mcp", "start"],
+      "args": ["@tiara/cli", "mcp", "start"],
       "env": {
         "CLAUDE_FLOW_MODE": "v3",
         "CLAUDE_FLOW_HOOKS_ENABLED": "true",

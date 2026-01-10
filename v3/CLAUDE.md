@@ -1,4 +1,22 @@
-# Claude Code Configuration - Claude Flow V3
+# Claude Code Configuration - Tiara
+
+## Credits & Acknowledgments
+
+**Tiara is a fork of [Claude Flow](https://github.com/ruvnet/claude-flow)** by [ruvnet](https://github.com/ruvnet).
+
+All credit for the exceptional architecture, SONA learning system, HNSW indexing, hierarchical-mesh topology, and domain-driven design patterns goes to the original creators and maintainers of Claude Flow. Their brilliant work made this possible.
+
+**Original Repository**: [github.com/ruvnet/claude-flow](https://github.com/ruvnet/claude-flow)
+
+### Why "Tiara"?
+
+The name reflects the **queen-led hierarchical architecture** at the heart of this system:
+
+- **Crown of orchestration** - Tiara sits atop the persona system (Zee, Stanley, Johny) as the coordination layer
+- **Queen coordinator pattern** - The "queen" agent leads worker agents in hierarchical-mesh topology
+- **Regal namespace** - A distinct, memorable name (`@tiara/*`) allowing parallel installation with `@claude-flow/*`
+
+---
 
 ## 🚨 AUTOMATIC SWARM ORCHESTRATION
 
@@ -23,11 +41,11 @@ When the user requests a complex task (multi-file changes, feature implementatio
 
 ```bash
 # STEP 1: Initialize swarm coordination via CLI tool (in parallel with agent spawning)
-Bash("npx @claude-flow/cli@latest swarm init --topology hierarchical --max-agents 15 --strategy adaptive")
+Bash("npx @tiara/cli@latest swarm init --topology hierarchical --max-agents 15 --strategy adaptive")
 
 # STEP 2: Spawn agents concurrently using Claude Code's Task tool
 # ALL Task calls MUST be in the SAME message for parallel execution
-Task("Coordinator", "You are the swarm coordinator. Initialize session, coordinate other agents via memory. Run: npx @claude-flow/cli@latest hooks session-start", "hierarchical-coordinator")
+Task("Coordinator", "You are the swarm coordinator. Initialize session, coordinate other agents via memory. Run: npx @tiara/cli@latest hooks session-start", "hierarchical-coordinator")
 Task("Researcher", "Analyze requirements and existing code patterns. Store findings in memory via hooks.", "researcher")
 Task("Architect", "Design implementation approach based on research. Document decisions in memory.", "system-architect")
 Task("Coder", "Implement the solution following architect's design. Coordinate via hooks.", "coder")
@@ -45,7 +63,7 @@ TodoWrite({ todos: [
 ]})
 
 # STEP 4: Store swarm state in memory via CLI
-Bash("npx @claude-flow/cli@latest memory store --namespace swarm --key current-session --value '{\"task\": \"[user task]\", \"agents\": 6}'")
+Bash("npx @tiara/cli@latest memory store --namespace swarm --key current-session --value '{\"task\": \"[user task]\", \"agents\": 6}'")
 ```
 
 ### 📋 Agent Routing by Task Type
@@ -107,7 +125,7 @@ Bash("npx @claude-flow/cli@latest memory store --namespace swarm --key current-s
 
 ## Project Configuration
 
-This project is configured with Claude Flow V3:
+This project is configured with Tiara:
 - **Topology**: hierarchical
 - **Max Agents**: 15
 - **Memory Backend**: hybrid (SQLite + AgentDB)
@@ -156,28 +174,28 @@ This project is configured with Claude Flow V3:
 
 ```bash
 # Initialize project
-npx @claude-flow/cli@latest init --wizard
+npx @tiara/cli@latest init --wizard
 
 # Start daemon with background workers
-npx @claude-flow/cli@latest daemon start
+npx @tiara/cli@latest daemon start
 
 # Spawn an agent
-npx @claude-flow/cli@latest agent spawn -t coder --name my-coder
+npx @tiara/cli@latest agent spawn -t coder --name my-coder
 
 # Initialize swarm
-npx @claude-flow/cli@latest swarm init --v3-mode
+npx @tiara/cli@latest swarm init --v3-mode
 
 # Search memory (HNSW-indexed)
-npx @claude-flow/cli@latest memory search -q "authentication patterns"
+npx @tiara/cli@latest memory search -q "authentication patterns"
 
 # System diagnostics
-npx @claude-flow/cli@latest doctor --fix
+npx @tiara/cli@latest doctor --fix
 
 # Security scan
-npx @claude-flow/cli@latest security scan --depth full
+npx @tiara/cli@latest security scan --depth full
 
 # Performance benchmark
-npx @claude-flow/cli@latest performance benchmark --suite all
+npx @tiara/cli@latest performance benchmark --suite all
 ```
 
 ## 🚀 Available Agents (60+ Types)
@@ -241,27 +259,27 @@ npx @claude-flow/cli@latest performance benchmark --suite all
 
 ```bash
 # Core hooks
-npx @claude-flow/cli@latest hooks pre-task --description "[task]"
-npx @claude-flow/cli@latest hooks post-task --task-id "[id]" --success true
-npx @claude-flow/cli@latest hooks post-edit --file "[file]" --train-patterns
+npx @tiara/cli@latest hooks pre-task --description "[task]"
+npx @tiara/cli@latest hooks post-task --task-id "[id]" --success true
+npx @tiara/cli@latest hooks post-edit --file "[file]" --train-patterns
 
 # Session management
-npx @claude-flow/cli@latest hooks session-start --session-id "[id]"
-npx @claude-flow/cli@latest hooks session-end --export-metrics true
-npx @claude-flow/cli@latest hooks session-restore --session-id "[id]"
+npx @tiara/cli@latest hooks session-start --session-id "[id]"
+npx @tiara/cli@latest hooks session-end --export-metrics true
+npx @tiara/cli@latest hooks session-restore --session-id "[id]"
 
 # Intelligence routing
-npx @claude-flow/cli@latest hooks route --task "[task]"
-npx @claude-flow/cli@latest hooks explain --topic "[topic]"
+npx @tiara/cli@latest hooks route --task "[task]"
+npx @tiara/cli@latest hooks explain --topic "[topic]"
 
 # Neural learning
-npx @claude-flow/cli@latest hooks pretrain --model-type moe --epochs 10
-npx @claude-flow/cli@latest hooks build-agents --agent-types coder,tester
+npx @tiara/cli@latest hooks pretrain --model-type moe --epochs 10
+npx @tiara/cli@latest hooks build-agents --agent-types coder,tester
 
 # Background workers
-npx @claude-flow/cli@latest hooks worker list
-npx @claude-flow/cli@latest hooks worker dispatch --trigger audit
-npx @claude-flow/cli@latest hooks worker status
+npx @tiara/cli@latest hooks worker list
+npx @tiara/cli@latest hooks worker dispatch --trigger audit
+npx @tiara/cli@latest hooks worker status
 ```
 
 ## 🧠 Intelligence System (RuVector)
@@ -339,7 +357,7 @@ CLAUDE_FLOW_MEMORY_PATH=./data/memory
 
 ## 🔍 Doctor Health Checks
 
-Run `npx @claude-flow/cli@latest doctor` to check:
+Run `npx @tiara/cli@latest doctor` to check:
 - Node.js version (20+)
 - npm version (9+)
 - Git installation
@@ -355,15 +373,15 @@ Run `npx @claude-flow/cli@latest doctor` to check:
 
 ```bash
 # Add MCP servers (auto-detects MCP mode when stdin is piped)
-claude mcp add claude-flow -- npx -y @claude-flow/cli@alpha
+claude mcp add claude-flow -- npx -y @tiara/cli@alpha
 claude mcp add ruv-swarm -- npx -y ruv-swarm mcp start  # Optional
 claude mcp add flow-nexus -- npx -y flow-nexus@latest mcp start  # Optional
 
 # Start daemon
-npx @claude-flow/cli@latest daemon start
+npx @tiara/cli@latest daemon start
 
 # Run doctor
-npx @claude-flow/cli@latest doctor --fix
+npx @tiara/cli@latest doctor --fix
 ```
 
 ## 🎯 Claude Code vs CLI Tools
@@ -377,12 +395,12 @@ npx @claude-flow/cli@latest doctor --fix
 - Git operations
 
 ### CLI Tools Handle Coordination (via Bash):
-- **Swarm init**: `npx @claude-flow/cli@latest swarm init --topology <type>`
-- **Swarm status**: `npx @claude-flow/cli@latest swarm status`
-- **Agent spawn**: `npx @claude-flow/cli@latest agent spawn -t <type> --name <name>`
-- **Memory store**: `npx @claude-flow/cli@latest memory store --namespace <ns> --key <k> --value <v>`
-- **Memory search**: `npx @claude-flow/cli@latest memory search -q "<query>"`
-- **Hooks**: `npx @claude-flow/cli@latest hooks <hook-name> [options]`
+- **Swarm init**: `npx @tiara/cli@latest swarm init --topology <type>`
+- **Swarm status**: `npx @tiara/cli@latest swarm status`
+- **Agent spawn**: `npx @tiara/cli@latest agent spawn -t <type> --name <name>`
+- **Memory store**: `npx @tiara/cli@latest memory store --namespace <ns> --key <k> --value <v>`
+- **Memory search**: `npx @tiara/cli@latest memory search -q "<query>"`
+- **Hooks**: `npx @tiara/cli@latest hooks <hook-name> [options]`
 
 **KEY**: CLI coordinates the strategy via Bash, Claude Code's Task tool executes with real agents.
 

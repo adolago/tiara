@@ -22,7 +22,7 @@
 | ADR-001 | Adopt agentic-flow as Core Foundation | ✅ Complete | AgenticFlowAgent, AgentAdapter implemented |
 | ADR-002 | Domain-Driven Design Structure | ✅ Complete | 15 bounded context modules |
 | ADR-003 | Single Coordination Engine | ✅ Complete | UnifiedSwarmCoordinator canonical |
-| ADR-004 | Plugin Architecture | ✅ Complete | @claude-flow/plugins |
+| ADR-004 | Plugin Architecture | ✅ Complete | @tiara/plugins |
 | ADR-005 | MCP-First API Design | ✅ Complete | 45+ MCP tools |
 
 ### Memory & Data
@@ -44,7 +44,7 @@
 
 | ADR | Title | Status | Notes |
 |-----|-------|--------|-------|
-| ADR-011 | LLM Provider System | ✅ Complete | @claude-flow/providers |
+| ADR-011 | LLM Provider System | ✅ Complete | @tiara/providers |
 | ADR-012 | MCP Security Features | ✅ Complete | Security hardening |
 | ADR-013 | Core Security Module | ✅ Complete | CVE remediation (444/444 tests) |
 
@@ -83,17 +83,17 @@
 | Package | Version | Published |
 |---------|---------|-----------|
 | claude-flow | 3.0.0-alpha.18 | 2026-01-07 |
-| @claude-flow/cli | 3.0.0-alpha.56 | 2026-01-08 |
-| @claude-flow/memory | 3.0.0-alpha.2 | 2026-01-07 |
-| @claude-flow/mcp | 3.0.0-alpha.8 | 2026-01-07 |
-| @claude-flow/neural | 3.0.0-alpha.2 | 2026-01-06 |
-| @claude-flow/security | 3.0.0-alpha.1 | 2026-01-05 |
-| @claude-flow/swarm | 3.0.0-alpha.1 | 2026-01-04 |
-| @claude-flow/hooks | 3.0.0-alpha.2 | 2026-01-06 |
-| @claude-flow/plugins | 3.0.0-alpha.2 | 2026-01-06 |
-| @claude-flow/providers | 3.0.0-alpha.1 | 2026-01-04 |
-| @claude-flow/embeddings | 3.0.0-alpha.12 | 2026-01-05 |
-| @claude-flow/shared | 3.0.0-alpha.1 | 2026-01-03 |
+| @tiara/cli | 3.0.0-alpha.56 | 2026-01-08 |
+| @tiara/memory | 3.0.0-alpha.2 | 2026-01-07 |
+| @tiara/mcp | 3.0.0-alpha.8 | 2026-01-07 |
+| @tiara/neural | 3.0.0-alpha.2 | 2026-01-06 |
+| @tiara/security | 3.0.0-alpha.1 | 2026-01-05 |
+| @tiara/swarm | 3.0.0-alpha.1 | 2026-01-04 |
+| @tiara/hooks | 3.0.0-alpha.2 | 2026-01-06 |
+| @tiara/plugins | 3.0.0-alpha.2 | 2026-01-06 |
+| @tiara/providers | 3.0.0-alpha.1 | 2026-01-04 |
+| @tiara/embeddings | 3.0.0-alpha.12 | 2026-01-05 |
+| @tiara/shared | 3.0.0-alpha.1 | 2026-01-03 |
 
 ---
 
@@ -185,17 +185,17 @@
 | Package | Version | Published |
 |---------|---------|-----------|
 | claude-flow | 3.0.0-alpha.18 | 2026-01-07 |
-| @claude-flow/cli | 3.0.0-alpha.56 | 2026-01-08 |
-| @claude-flow/memory | 3.0.0-alpha.2 | 2026-01-07 |
-| @claude-flow/mcp | 3.0.0-alpha.8 | 2026-01-07 |
-| @claude-flow/neural | 3.0.0-alpha.2 | 2026-01-06 |
-| @claude-flow/security | 3.0.0-alpha.1 | 2026-01-05 |
-| @claude-flow/swarm | 3.0.0-alpha.1 | 2026-01-04 |
-| @claude-flow/hooks | 3.0.0-alpha.2 | 2026-01-06 |
-| @claude-flow/plugins | 3.0.0-alpha.2 | 2026-01-06 |
-| @claude-flow/providers | 3.0.0-alpha.1 | 2026-01-04 |
-| @claude-flow/embeddings | 3.0.0-alpha.12 | 2026-01-05 |
-| @claude-flow/shared | 3.0.0-alpha.1 | 2026-01-03 |
+| @tiara/cli | 3.0.0-alpha.56 | 2026-01-08 |
+| @tiara/memory | 3.0.0-alpha.2 | 2026-01-07 |
+| @tiara/mcp | 3.0.0-alpha.8 | 2026-01-07 |
+| @tiara/neural | 3.0.0-alpha.2 | 2026-01-06 |
+| @tiara/security | 3.0.0-alpha.1 | 2026-01-05 |
+| @tiara/swarm | 3.0.0-alpha.1 | 2026-01-04 |
+| @tiara/hooks | 3.0.0-alpha.2 | 2026-01-06 |
+| @tiara/plugins | 3.0.0-alpha.2 | 2026-01-06 |
+| @tiara/providers | 3.0.0-alpha.1 | 2026-01-04 |
+| @tiara/embeddings | 3.0.0-alpha.12 | 2026-01-05 |
+| @tiara/shared | 3.0.0-alpha.1 | 2026-01-03 |
 
 ---
 
@@ -222,9 +222,9 @@
 ### Hooks Statusline Command
 
 ```bash
-npx @claude-flow/cli@latest hooks statusline           # Full colored output
-npx @claude-flow/cli@latest hooks statusline --json    # JSON format
-npx @claude-flow/cli@latest hooks statusline --compact # Single-line format
+npx @tiara/cli@latest hooks statusline           # Full colored output
+npx @tiara/cli@latest hooks statusline --json    # JSON format
+npx @tiara/cli@latest hooks statusline --compact # Single-line format
 ```
 
 ---

@@ -386,7 +386,7 @@ interface CFPFormat {
 ### RuVector IPFS Adapter
 
 ```typescript
-// v3/@claude-flow/cli/src/transfer/ipfs-adapter.ts
+// v3/@tiara/cli/src/transfer/ipfs-adapter.ts
 
 import { create as createIpfsClient } from 'ipfs-http-client';
 
@@ -685,7 +685,7 @@ interface TrustPolicy {
 ## File Structure
 
 ```
-v3/@claude-flow/cli/src/
+v3/@tiara/cli/src/
 ├── commands/
 │   └── transfer.ts              # Main transfer command with subcommands
 ├── transfer/
@@ -812,7 +812,7 @@ v3/@claude-flow/cli/src/
 ### Transfer MCP Tools
 
 ```typescript
-// v3/@claude-flow/cli/src/mcp-tools/transfer-tools.ts
+// v3/@tiara/cli/src/mcp-tools/transfer-tools.ts
 
 import type { MCPTool } from './types.js';
 
@@ -1548,7 +1548,7 @@ export const transferTools: MCPTool[] = [
 ### MCP Tool Registration
 
 ```typescript
-// v3/@claude-flow/cli/src/mcp-tools/index.ts
+// v3/@tiara/cli/src/mcp-tools/index.ts
 
 import { transferTools } from './transfer-tools.js';
 
@@ -1655,7 +1655,7 @@ On Windows, MCP servers require a `cmd /c` wrapper to execute npx commands. With
   "mcpServers": {
     "claude-flow": {
       "command": "cmd",
-      "args": ["/c", "npx", "@claude-flow/cli@latest", "mcp", "start"],
+      "args": ["/c", "npx", "@tiara/cli@latest", "mcp", "start"],
       "env": {
         "CLAUDE_FLOW_LOG_LEVEL": "info"
       }
@@ -1671,7 +1671,7 @@ On Windows, MCP servers require a `cmd /c` wrapper to execute npx commands. With
   "mcpServers": {
     "claude-flow": {
       "command": "npx",
-      "args": ["@claude-flow/cli@latest", "mcp", "start"],
+      "args": ["@tiara/cli@latest", "mcp", "start"],
       "env": {
         "CLAUDE_FLOW_LOG_LEVEL": "info"
       }
@@ -1686,10 +1686,10 @@ The `init` command automatically detects the platform and generates the correct 
 
 ```bash
 # Auto-detects platform and generates correct .mcp.json
-npx @claude-flow/cli@latest init --force
+npx @tiara/cli@latest init --force
 
 # Or use the wizard for more options
-npx @claude-flow/cli@latest init wizard
+npx @tiara/cli@latest init wizard
 ```
 
 ### MCP Server Auto-Configuration
@@ -1697,7 +1697,7 @@ npx @claude-flow/cli@latest init wizard
 The init command generates platform-aware MCP configuration:
 
 ```typescript
-// v3/@claude-flow/cli/src/init/mcp-generator.ts
+// v3/@tiara/cli/src/init/mcp-generator.ts
 
 function generateMcpConfig(): MCPConfig {
   const isWindows = process.platform === 'win32';
@@ -1707,7 +1707,7 @@ function generateMcpConfig(): MCPConfig {
       mcpServers: {
         'claude-flow': {
           command: 'cmd',
-          args: ['/c', 'npx', '@claude-flow/cli@latest', 'mcp', 'start'],
+          args: ['/c', 'npx', '@tiara/cli@latest', 'mcp', 'start'],
           env: {
             CLAUDE_FLOW_LOG_LEVEL: 'info'
           }
@@ -1720,7 +1720,7 @@ function generateMcpConfig(): MCPConfig {
     mcpServers: {
       'claude-flow': {
         command: 'npx',
-        args: ['@claude-flow/cli@latest', 'mcp', 'start'],
+        args: ['@tiara/cli@latest', 'mcp', 'start'],
         env: {
           CLAUDE_FLOW_LOG_LEVEL: 'info'
         }
@@ -1737,7 +1737,7 @@ function generateMcpConfig(): MCPConfig {
   "mcpServers": {
     "claude-flow": {
       "command": "cmd",
-      "args": ["/c", "npx", "@claude-flow/cli@latest", "mcp", "start"],
+      "args": ["/c", "npx", "@tiara/cli@latest", "mcp", "start"],
       "tools": [
         "transfer/export",
         "transfer/import",
@@ -1765,13 +1765,13 @@ function generateMcpConfig(): MCPConfig {
 
 ```bash
 # Windows PowerShell
-cmd /c npx @claude-flow/cli@latest hooks transfer export --output patterns.cfp
+cmd /c npx @tiara/cli@latest hooks transfer export --output patterns.cfp
 
 # Windows CMD
-npx @claude-flow/cli@latest hooks transfer export --output patterns.cfp
+npx @tiara/cli@latest hooks transfer export --output patterns.cfp
 
 # macOS/Linux
-npx @claude-flow/cli@latest hooks transfer export --output patterns.cfp
+npx @tiara/cli@latest hooks transfer export --output patterns.cfp
 ```
 
 ### Troubleshooting
@@ -1872,7 +1872,7 @@ const BOOTSTRAP_REGISTRIES: KnownRegistry[] = [
 ### Implemented Files
 
 ```
-v3/@claude-flow/cli/src/transfer/store/
+v3/@tiara/cli/src/transfer/store/
 ├── types.ts           # Type definitions (PatternEntry, Registry, etc.)
 ├── registry.ts        # Registry management, signature verification
 ├── discovery.ts       # IPNS resolution, IPFS fetch, caching
@@ -2028,7 +2028,7 @@ CLI Commands:         Wired to real store modules ✅
 
 3. **Test Upload**:
    ```bash
-   npx @claude-flow/cli hooks transfer store publish \
+   npx @tiara/cli hooks transfer store publish \
      -i patterns.cfp \
      -n my-patterns \
      -d "My patterns" \

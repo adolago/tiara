@@ -632,7 +632,7 @@ const claimTools = [
 
 ## Success Metrics
 
-- [x] Claim service implemented (`@claude-flow/cli/src/services/claim-service.ts`)
+- [x] Claim service implemented (`@tiara/cli/src/services/claim-service.ts`)
 - [x] Human and agent claims work
 - [x] Human ↔ Agent handoff flow tested
 - [x] Agent ↔ Agent handoff flow tested
@@ -642,7 +642,7 @@ const claimTools = [
 - [x] Load balancing rebalance operation
 - [ ] GitHub sync operational (future)
 - [x] Auto-assignment rules configurable
-- [x] CLI commands functional (`@claude-flow/cli/src/commands/issues.ts`)
+- [x] CLI commands functional (`@tiara/cli/src/commands/issues.ts`)
 - [ ] MCP tools exposed (planned for MCP integration phase)
 - [x] Event sourcing for all claim/steal changes
 - [x] <30s average steal latency (sub-second in practice)
@@ -654,8 +654,8 @@ const claimTools = [
 
 | File | Lines | Description |
 |------|-------|-------------|
-| `@claude-flow/cli/src/services/claim-service.ts` | ~600 | Full claims service with work stealing |
-| `@claude-flow/cli/src/commands/issues.ts` | ~450 | CLI commands for issue claims |
+| `@tiara/cli/src/services/claim-service.ts` | ~600 | Full claims service with work stealing |
+| `@tiara/cli/src/commands/issues.ts` | ~450 | CLI commands for issue claims |
 
 ### CLI Commands Implemented
 

@@ -127,7 +127,7 @@ const hash = await bcrypt.hash(password, SALT_ROUNDS);
 
 ```typescript
 // REMOVE these hardcoded credentials
-email: 'admin@claude-flow.local'
+email: 'admin@tiara.local'
 password: 'admin123'  // CRITICAL RISK
 
 // v3: Generate random on installation

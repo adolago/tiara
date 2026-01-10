@@ -24,7 +24,7 @@ Complete guide for upgrading from Claude Flow v2 to v3.0.0-alpha.1
 Claude Flow v3 is a complete architectural overhaul based on 10 Architecture Decision Records (ADRs). The migration involves:
 
 - **Code reduction**: 15,000+ lines → <5,000 lines
-- **Module architecture**: Monolith → 10 @claude-flow modules
+- **Module architecture**: Monolith → 10 @tiara modules
 - **Foundation**: Custom implementation → agentic-flow@alpha core
 - **Memory**: 6+ fragmented systems → Unified AgentDB
 - **Testing**: Jest → Vitest (10x faster)
@@ -131,7 +131,7 @@ ls ~/.claude-flow/plugins/
 - npx agentic-flow memory --backend mongodb
 
 + # v3: Unified AgentDB
-+ npx @claude-flow/memory unify --backend agentdb
++ npx @tiara/memory unify --backend agentdb
 ```
 
 **Action Required**: Migrate all memory data to AgentDB.
@@ -144,7 +144,7 @@ ls ~/.claude-flow/plugins/
 - import { AdaptiveCoordinator } from './coordinators/adaptive'
 
 + # v3: Single UnifiedSwarmCoordinator
-+ import { SwarmCoordinator } from '@claude-flow/swarm'
++ import { SwarmCoordinator } from '@tiara/swarm'
 ```
 
 **Action Required**: Update all coordinator imports and usage.
@@ -180,9 +180,9 @@ ls ~/.claude-flow/plugins/
 - import { Security, Memory, Swarm } from 'agentic-flow';
 
 + # v3: Module imports
-+ import { SecurityModule } from '@claude-flow/security';
-+ import { MemoryModule } from '@claude-flow/memory';
-+ import { SwarmModule } from '@claude-flow/swarm';
++ import { SecurityModule } from '@tiara/security';
++ import { MemoryModule } from '@tiara/memory';
++ import { SwarmModule } from '@tiara/swarm';
 ```
 
 ### 3. Configuration Changes
@@ -247,13 +247,13 @@ rm package-lock.json
 # 2. Install v3 alpha
 npm install agentic-flow@3.0.0-alpha.1
 
-# 3. Install required @claude-flow modules
-npm install @claude-flow/security@latest
-npm install @claude-flow/memory@latest
-npm install @claude-flow/integration@latest
-npm install @claude-flow/performance@latest
-npm install @claude-flow/swarm@latest
-npm install @claude-flow/cli@latest
+# 3. Install required @tiara modules
+npm install @tiara/security@latest
+npm install @tiara/memory@latest
+npm install @tiara/integration@latest
+npm install @tiara/performance@latest
+npm install @tiara/swarm@latest
+npm install @tiara/cli@latest
 
 # 4. Install peer dependencies
 npm install agentdb@2.0.0-alpha.3.4
@@ -312,17 +312,17 @@ export CLAUDE_FLOW_CONFIG="$HOME/.claude-flow/config.json"
 npx agentic-flow@2.x memory export --output ./v2-memory.json
 
 # 2. Initialize v3 memory backend
-npx @claude-flow/memory init --backend agentdb
+npx @tiara/memory init --backend agentdb
 
 # 3. Import v2 memory into v3
-npx @claude-flow/memory import ./v2-memory.json --format v2
+npx @tiara/memory import ./v2-memory.json --format v2
 
 # 4. Verify migration
-npx @claude-flow/memory stats
+npx @tiara/memory stats
 # Should show: "Migrated X patterns from v2"
 
 # 5. Optimize with HNSW indexing
-npx @claude-flow/memory optimize --hnsw
+npx @tiara/memory optimize --hnsw
 ```
 
 ### Step 4: Update Code
@@ -339,9 +339,9 @@ import {
 
 // After (v3)
 import { Agent } from 'agentic-flow';
-import { SwarmCoordinator } from '@claude-flow/swarm';
-import { MemoryModule } from '@claude-flow/memory';
-import { SecurityModule } from '@claude-flow/security';
+import { SwarmCoordinator } from '@tiara/swarm';
+import { MemoryModule } from '@tiara/memory';
+import { SecurityModule } from '@tiara/security';
 ```
 
 #### 4b. Update Agent Initialization
@@ -470,16 +470,16 @@ export default defineConfig({
 
 ```bash
 # 1. Run v3 security audit
-npx @claude-flow/security audit --strict
+npx @tiara/security audit --strict
 
 # 2. Fix any CVEs automatically
-npx @claude-flow/security fix --auto
+npx @tiara/security fix --auto
 
 # 3. Validate credentials
-npx @claude-flow/security validate-credentials
+npx @tiara/security validate-credentials
 
 # 4. Check path security
-npx @claude-flow/security check-paths
+npx @tiara/security check-paths
 
 # 5. Review security report
 cat ~/.claude-flow/security-report.json
@@ -489,10 +489,10 @@ cat ~/.claude-flow/security-report.json
 
 ```bash
 # 1. Run performance benchmarks
-npx @claude-flow/performance benchmark
+npx @tiara/performance benchmark
 
 # 2. Compare with v2 baseline
-npx @claude-flow/performance compare --baseline v2
+npx @tiara/performance compare --baseline v2
 
 # 3. Validate targets
 # - Flash Attention: 2.49x-7.47x speedup
@@ -501,17 +501,17 @@ npx @claude-flow/performance compare --baseline v2
 # - CLI Startup: <500ms
 
 # 4. Profile memory usage
-npx @claude-flow/performance profile --memory
+npx @tiara/performance profile --memory
 
 # 5. Analyze bottlenecks
-npx @claude-flow/performance analyze
+npx @tiara/performance analyze
 ```
 
 ### Step 8: Integration Testing
 
 ```bash
 # 1. Test agentic-flow integration
-npx @claude-flow/integration test --agentic-flow-version alpha
+npx @tiara/integration test --agentic-flow-version alpha
 
 # 2. Test all modules
 npm run test:modules
@@ -523,14 +523,14 @@ npm run test:cross-platform
 npx agentic-flow --agent coder --task "Hello v3"
 
 # 5. Test swarm coordination
-npx @claude-flow/swarm test --agents 15
+npx @tiara/swarm test --agents 15
 ```
 
 ---
 
 ## Module-by-Module Guide
 
-### @claude-flow/security Migration
+### @tiara/security Migration
 
 #### Before (v2)
 ```typescript
@@ -540,7 +540,7 @@ npx @claude-flow/swarm test --agents 15
 
 #### After (v3)
 ```typescript
-import { SecurityModule } from '@claude-flow/security';
+import { SecurityModule } from '@tiara/security';
 
 const security = new SecurityModule({
   strict: true,
@@ -564,7 +564,7 @@ const safe = await security.sanitizeOutput(output);
 await security.validateCredentials();
 ```
 
-### @claude-flow/memory Migration
+### @tiara/memory Migration
 
 #### Before (v2)
 ```typescript
@@ -577,7 +577,7 @@ const result = await memory.retrieve('key');
 
 #### After (v3)
 ```typescript
-import { MemoryModule } from '@claude-flow/memory';
+import { MemoryModule } from '@tiara/memory';
 
 const memory = new MemoryModule({
   backend: 'hybrid', // SQLite + AgentDB
@@ -612,7 +612,7 @@ const enhanced = await memory.gnnEnhancedSearch(embedding, {
 });
 ```
 
-### @claude-flow/swarm Migration
+### @tiara/swarm Migration
 
 #### Before (v2)
 ```typescript
@@ -630,7 +630,7 @@ const coordinator = new HierarchicalCoordinator({
 
 #### After (v3)
 ```typescript
-import { SwarmCoordinator } from '@claude-flow/swarm';
+import { SwarmCoordinator } from '@tiara/swarm';
 
 // Single unified coordinator
 const swarm = new SwarmCoordinator({
@@ -652,7 +652,7 @@ const status = await swarm.getStatus();
 console.log(`Active: ${status.activeAgents}/${status.totalAgents}`);
 ```
 
-### @claude-flow/performance Migration
+### @tiara/performance Migration
 
 #### Before (v2)
 ```typescript
@@ -662,7 +662,7 @@ console.log(`Active: ${status.activeAgents}/${status.totalAgents}`);
 
 #### After (v3)
 ```typescript
-import { PerformanceModule } from '@claude-flow/performance';
+import { PerformanceModule } from '@tiara/performance';
 
 const perf = new PerformanceModule({
   targets: {
@@ -830,8 +830,8 @@ const agent = new Agent({
 
 // ✅ v3 Pattern
 import { Agent } from 'agentic-flow';
-import { MemoryModule } from '@claude-flow/memory';
-import { SecurityModule } from '@claude-flow/security';
+import { MemoryModule } from '@tiara/memory';
+import { SecurityModule } from '@tiara/security';
 
 const agent = new Agent({
   name: 'coder',
@@ -855,8 +855,8 @@ const swarm = new HierarchicalCoordinator({
 const result = await swarm.execute(task);
 
 // ✅ v3 Pattern
-import { SwarmCoordinator } from '@claude-flow/swarm';
-import { AttentionCoordinator } from '@claude-flow/swarm/attention';
+import { SwarmCoordinator } from '@tiara/swarm';
+import { AttentionCoordinator } from '@tiara/swarm/attention';
 
 const swarm = new SwarmCoordinator({
   topology: 'hierarchical-mesh',
@@ -881,7 +881,7 @@ await memory.store('user-123', userData);
 const user = await memory.retrieve('user-123');
 
 // ✅ v3 Pattern
-import { MemoryModule } from '@claude-flow/memory';
+import { MemoryModule } from '@tiara/memory';
 
 const memory = new MemoryModule({
   backend: 'hybrid',
@@ -919,7 +919,7 @@ try {
 }
 
 // ✅ v3 Pattern (Event Sourcing)
-import { SecurityError, MemoryError } from '@claude-flow/shared';
+import { SecurityError, MemoryError } from '@tiara/shared';
 
 try {
   const result = await agent.execute(task);
@@ -969,7 +969,7 @@ describe('Agent', () => {
 // ✅ v3 Pattern (Vitest)
 import { describe, it, expect, vi } from 'vitest';
 import { Agent } from 'agentic-flow';
-import { MemoryModule } from '@claude-flow/memory';
+import { MemoryModule } from '@tiara/memory';
 
 describe('Agent', () => {
   it('should execute task with memory', async () => {
@@ -1118,11 +1118,11 @@ npx agentic-flow --agent coder --task "Test rollback"
 ```bash
 # 1. Uninstall v3 completely
 npm uninstall agentic-flow
-npm uninstall @claude-flow/security
-npm uninstall @claude-flow/memory
-npm uninstall @claude-flow/swarm
-npm uninstall @claude-flow/integration
-npm uninstall @claude-flow/performance
+npm uninstall @tiara/security
+npm uninstall @tiara/memory
+npm uninstall @tiara/swarm
+npm uninstall @tiara/integration
+npm uninstall @tiara/performance
 npm uninstall agentdb
 npm uninstall @ruvector/attention
 npm uninstall @ruvector/sona
@@ -1179,19 +1179,19 @@ AgentDB not initialized
 **Solution**:
 ```bash
 # 1. Initialize AgentDB manually
-npx @claude-flow/memory init --backend agentdb --force
+npx @tiara/memory init --backend agentdb --force
 
 # 2. Create data directory
 mkdir -p ./data/agentdb
 
 # 3. Import v2 memory with verbose logging
-npx @claude-flow/memory import ./v2-memory-backup.json \
+npx @tiara/memory import ./v2-memory-backup.json \
   --format v2 \
   --verbose \
   --continue-on-error
 
 # 4. Verify
-npx @claude-flow/memory stats
+npx @tiara/memory stats
 ```
 
 ### Issue 3: Security Validation Errors
@@ -1208,12 +1208,12 @@ Path traversal detected: ../../../etc/passwd
 cat ~/.claude-flow/config.json | grep -A 10 security
 
 # 2. Update allowedDirectories
-npx @claude-flow/security configure \
+npx @tiara/security configure \
   --allowed-dirs "./src/,./tests/,./data/" \
   --blocked-patterns "../,~/,/etc/,/tmp/"
 
 # 3. Validate paths
-npx @claude-flow/security check-paths --fix
+npx @tiara/security check-paths --fix
 
 # 4. Re-run with strict mode disabled (temporary)
 export CLAUDE_FLOW_SECURITY_STRICT=false
@@ -1253,18 +1253,18 @@ npm test
 
 **Symptoms**:
 ```
-Error: Cannot find module '@claude-flow/security'
+Error: Cannot find module '@tiara/security'
 Module not found
 ```
 
 **Solution**:
 ```bash
 # 1. Install all v3 modules
-npm install @claude-flow/security@latest
-npm install @claude-flow/memory@latest
-npm install @claude-flow/swarm@latest
-npm install @claude-flow/integration@latest
-npm install @claude-flow/performance@latest
+npm install @tiara/security@latest
+npm install @tiara/memory@latest
+npm install @tiara/swarm@latest
+npm install @tiara/integration@latest
+npm install @tiara/performance@latest
 
 # 2. Clear npm cache
 npm cache clean --force
@@ -1274,8 +1274,8 @@ rm -rf node_modules package-lock.json
 npm install
 
 # 4. Verify modules
-npm list @claude-flow/security
-npm list @claude-flow/memory
+npm list @tiara/security
+npm list @tiara/memory
 ```
 
 ### Issue 6: Platform-Specific Errors
@@ -1314,7 +1314,7 @@ sudo chown -R $USER:$USER ~/.npm
 ## Post-Migration Checklist
 
 - [ ] v3 installed and running (`npx agentic-flow --version` shows 3.0.0-alpha.1)
-- [ ] All 10 @claude-flow modules installed
+- [ ] All 10 @tiara modules installed
 - [ ] Configuration migrated to v3 format
 - [ ] Memory data imported into AgentDB
 - [ ] Security audit passed
@@ -1347,7 +1347,7 @@ If you encounter issues not covered in this guide:
 1. **Collect diagnostic information**:
    ```bash
    npx agentic-flow diagnose --output diagnostics.json
-   npx @claude-flow/security audit --report security-report.json
+   npx @tiara/security audit --report security-report.json
    ```
 
 2. **Create detailed issue**:

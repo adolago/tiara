@@ -23,7 +23,7 @@ import {
   createReasoningBank,
   type Trajectory,
   type TrajectoryStep,
-} from '../../@claude-flow/neural/src/index.js';
+} from '../../@tiara/neural/src/index.js';
 
 // ============================================================================
 // Singleton ReasoningBank Instance

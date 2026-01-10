@@ -57,4 +57,4 @@ All ADRs are located in [`/v3/implementation/adrs/`](../../implementation/adrs/)
 ---
 
 **Last Updated:** 2026-01-08
-**CLI Version:** @claude-flow/cli@3.0.0-alpha.56
+**CLI Version:** @tiara/cli@3.0.0-alpha.56

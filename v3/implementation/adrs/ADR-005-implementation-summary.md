@@ -387,7 +387,7 @@ This implementation satisfies:
 
 ## Extension: Hooks MCP Tools (2026-01-06)
 
-Added hooks-related MCP tools in `@claude-flow/cli/src/mcp-tools/hooks-tools.ts`:
+Added hooks-related MCP tools in `@tiara/cli/src/mcp-tools/hooks-tools.ts`:
 
 ### Additional Tools (13 total hooks tools)
 
@@ -437,7 +437,7 @@ The implementation provides a solid foundation for CLI commands, web interfaces,
 
 ### CLI Implementation Complete
 
-All MCP tools now exposed via CLI commands in `@claude-flow/cli@3.0.0-alpha.7`:
+All MCP tools now exposed via CLI commands in `@tiara/cli@3.0.0-alpha.7`:
 
 #### File-Based Persistence Architecture
 
@@ -505,4 +505,4 @@ node bin/cli.js hive-mind broadcast -m "Hello"  # ✅ Works
 - **File Persistence**: 6 storage domains
 - **Architecture Compliance**: 100%
 
-**Published**: `@claude-flow/cli@3.0.0-alpha.7` with `v3alpha` tag
+**Published**: `@tiara/cli@3.0.0-alpha.7` with `v3alpha` tag

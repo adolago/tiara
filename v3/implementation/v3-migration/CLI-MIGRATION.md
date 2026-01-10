@@ -116,7 +116,7 @@ npx claude-flow init --minimal
 npx claude-flow init --flow-nexus
 
 # V3 Migration needed:
-# Add to v3/@claude-flow/cli/src/commands/init.ts
+# Add to v3/@tiara/cli/src/commands/init.ts
 export const initCommand = {
   command: 'init',
   description: 'Initialize Claude Code integration files',
@@ -144,7 +144,7 @@ npx claude-flow start --daemon
 npx claude-flow start --port 3000
 
 # V3 Migration needed:
-# Add to v3/@claude-flow/cli/src/commands/start.ts
+# Add to v3/@tiara/cli/src/commands/start.ts
 export const startCommand = {
   command: 'start',
   description: 'Start the orchestration system',
@@ -171,7 +171,7 @@ npx claude-flow status --json
 npx claude-flow status --health-check
 
 # V3 Migration needed:
-# Add to v3/@claude-flow/cli/src/commands/status.ts
+# Add to v3/@tiara/cli/src/commands/status.ts
 export const statusCommand = {
   command: 'status',
   description: 'Show enhanced system status',
@@ -205,7 +205,7 @@ npx claude-flow task cancel <taskId>
 npx claude-flow task assign <taskId> --agent <agentId>
 
 # V3 Migration needed:
-# Add to v3/@claude-flow/cli/src/commands/task.ts
+# Add to v3/@tiara/cli/src/commands/task.ts
 export const taskCommand = {
   command: 'task',
   description: 'Manage tasks',
@@ -238,7 +238,7 @@ npx claude-flow session export --include-memory
 npx claude-flow session import <file>
 
 # V3 Migration needed:
-# Add to v3/@claude-flow/cli/src/commands/session.ts
+# Add to v3/@tiara/cli/src/commands/session.ts
 export const sessionCommand = {
   command: 'session',
   description: 'Manage Claude-Flow sessions',
@@ -269,7 +269,7 @@ npx claude-flow hive-mind resume
 npx claude-flow hive-mind stop
 
 # V3 Migration needed:
-# Add to v3/@claude-flow/cli/src/commands/hive.ts
+# Add to v3/@tiara/cli/src/commands/hive.ts
 export const hiveCommand = {
   command: 'hive',
   description: 'Hive Mind multi-agent coordination',
@@ -301,7 +301,7 @@ npx claude-flow sparc tdd --sequential
 npx claude-flow sparc workflow --dry-run
 
 # V3 Migration needed:
-# Add to v3/@claude-flow/cli/src/commands/sparc.ts
+# Add to v3/@tiara/cli/src/commands/sparc.ts
 export const sparcCommand = {
   command: 'sparc',
   description: 'SPARC methodology commands',
@@ -324,7 +324,7 @@ npx claude-flow monitor --compact
 npx claude-flow monitor --focus agents
 
 # V3 Migration needed:
-# Add to v3/@claude-flow/cli/src/commands/monitor.ts
+# Add to v3/@tiara/cli/src/commands/monitor.ts
 export const monitorCommand = {
   command: 'monitor',
   description: 'Start live monitoring dashboard',
@@ -352,7 +352,7 @@ npx claude-flow github repo-architect
 npx claude-flow github sync-coordinator
 
 # V3 Migration needed:
-# Add to v3/@claude-flow/cli/src/commands/github.ts
+# Add to v3/@tiara/cli/src/commands/github.ts
 export const githubCommand = {
   command: 'github',
   description: 'GitHub workflow automation',
@@ -399,7 +399,7 @@ npx claude-flow hooks pretrain --include-goap
 npx claude-flow claude spawn --tools View,Edit,Bash --mode full
 
 # V3 Migration needed:
-# Add to v3/@claude-flow/cli/src/commands/claude.ts
+# Add to v3/@tiara/cli/src/commands/claude.ts
 export const claudeCommand = {
   command: 'claude',
   description: 'Spawn Claude instances',
@@ -424,7 +424,7 @@ npx claude-flow workflow execute <workflow>
 npx claude-flow workflow list
 
 # V3 Migration needed:
-# Add to v3/@claude-flow/cli/src/commands/workflow.ts
+# Add to v3/@tiara/cli/src/commands/workflow.ts
 ```
 
 #### repl
@@ -433,7 +433,7 @@ npx claude-flow workflow list
 npx claude-flow repl
 
 # V3 Migration needed:
-# Add to v3/@claude-flow/cli/src/commands/repl.ts
+# Add to v3/@tiara/cli/src/commands/repl.ts
 export const replCommand = {
   command: 'repl',
   description: 'Start interactive REPL mode',
@@ -461,7 +461,7 @@ npx claude-flow completion bash
 npx claude-flow completion --install
 
 # V3 Migration needed:
-# Add to v3/@claude-flow/cli/src/commands/completion.ts
+# Add to v3/@tiara/cli/src/commands/completion.ts
 ```
 
 ## Implementation Plan

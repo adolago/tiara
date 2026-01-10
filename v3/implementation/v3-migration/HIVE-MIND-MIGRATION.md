@@ -4,7 +4,7 @@
 
 ## Overview
 
-V2's Hive-Mind system is a comprehensive multi-agent coordination framework. V3 consolidates this into the `@claude-flow/swarm` module with a unified `SwarmCoordinator` per ADR-003.
+V2's Hive-Mind system is a comprehensive multi-agent coordination framework. V3 consolidates this into the `@tiara/swarm` module with a unified `SwarmCoordinator` per ADR-003.
 
 ## Architecture Comparison
 
@@ -26,7 +26,7 @@ v2/src/hive-mind/
 
 ### V3 Swarm Structure
 ```
-v3/@claude-flow/swarm/
+v3/@tiara/swarm/
 ├── src/
 │   ├── unified-coordinator.ts  # Main coordinator (ADR-003)
 │   ├── topology-manager.ts     # Topology handling
@@ -53,8 +53,8 @@ v3/@claude-flow/swarm/
 | `HiveMind.ts` | `unified-coordinator.ts` | ⚠️ Partial |
 | `Queen.ts` | Missing | ❌ Needs implementation |
 | `Agent.ts` | `domain/entities/agent.ts` | ✅ Complete |
-| `Memory.ts` | `@claude-flow/memory` | ✅ Enhanced |
-| `Communication.ts` | `@claude-flow/shared/events` | ✅ Complete |
+| `Memory.ts` | `@tiara/memory` | ✅ Enhanced |
+| `Communication.ts` | `@tiara/shared/events` | ✅ Complete |
 
 ### Queen Coordinator - MISSING
 
@@ -68,7 +68,7 @@ The V2 Queen provides:
 
 **Migration Path:**
 ```typescript
-// V3 Implementation needed in @claude-flow/swarm/src/queen-coordinator.ts
+// V3 Implementation needed in @tiara/swarm/src/queen-coordinator.ts
 export class QueenCoordinator {
   private swarm: UnifiedSwarmCoordinator;
   private neural: NeuralLearningSystem;
@@ -136,7 +136,7 @@ const topologyConfigs = {
 
 ### V3 Topology Configuration
 ```typescript
-// V3: v3/@claude-flow/swarm/src/topology-manager.ts
+// V3: v3/@tiara/swarm/src/topology-manager.ts
 const topologyConfigs = {
   mesh: { /* similar */ },
   hierarchical: { /* similar */ },
@@ -154,7 +154,7 @@ const topologyConfigs = {
 ### Implemented in V3 ✅
 
 ```typescript
-// V3: v3/@claude-flow/swarm/src/consensus/consensus-engine.ts
+// V3: v3/@tiara/swarm/src/consensus/consensus-engine.ts
 export class ConsensusEngine {
   async raft(proposal: Proposal): Promise<ConsensusResult>;
   async byzantine(proposal: Proposal): Promise<ConsensusResult>;
@@ -223,7 +223,7 @@ const hiveAgentTypes = {
 
 ### V3 Agent Types
 ```typescript
-// v3/@claude-flow/swarm/src/types.ts
+// v3/@tiara/swarm/src/types.ts
 // V3 has 15-agent hierarchical mesh but missing hive-specific types
 // Need to add hive agent type definitions for backward compatibility
 ```
@@ -300,7 +300,7 @@ import { HiveMind } from 'claude-flow/hive-mind';
 import { Queen } from 'claude-flow/hive-mind/core/Queen';
 
 // V3
-import { UnifiedSwarmCoordinator } from '@claude-flow/swarm';
+import { UnifiedSwarmCoordinator } from '@tiara/swarm';
 // Queen needs to be implemented
 ```
 

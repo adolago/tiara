@@ -78,7 +78,7 @@ allowed-tools: Read, Write, Bash
 
 ## V3 Hooks Bridge
 
-The `@claude-flow/hooks` package includes an official hooks bridge:
+The `@tiara/hooks` package includes an official hooks bridge:
 
 ```typescript
 import {
@@ -86,7 +86,7 @@ import {
   processOfficialHookInput,
   outputOfficialHookResult,
   executeWithBridge,
-} from '@claude-flow/hooks';
+} from '@tiara/hooks';
 
 // Process input from Claude Code
 const input = await processOfficialHookInput();
@@ -212,7 +212,7 @@ After installation, MCP tools are available:
 │         ▼             ▼             ▼             ▼          │
 │  ┌──────────────────────────────────────────────────────────┐│
 │  │              Official Hooks Bridge                        ││
-│  │  (v3/@claude-flow/hooks/src/bridge/official-hooks-bridge)││
+│  │  (v3/@tiara/hooks/src/bridge/official-hooks-bridge)││
 │  └──────────────────────────────────────────────────────────┘│
 │         │             │             │             │          │
 │         ▼             ▼             ▼             ▼          │
@@ -222,7 +222,7 @@ After installation, MCP tools are available:
 │  └─────────────┴─────────────┴─────────────┴──────────────┘ │
 │                     V3 Hooks System                          │
 ├─────────────────────────────────────────────────────────────┤
-│                    @claude-flow/hooks                        │
+│                    @tiara/hooks                        │
 │  ┌───────────┬───────────┬───────────┬───────────────────┐  │
 │  │ Registry  │ Executor  │ Daemons   │ MCP Tools         │  │
 │  └───────────┴───────────┴───────────┴───────────────────┘  │

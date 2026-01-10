@@ -24,12 +24,12 @@ The V3 Hooks System provides a comprehensive event-driven architecture for inter
 
 ## Components
 
-### 1. Hook Registry (`@claude-flow/shared/src/hooks/registry.ts`)
+### 1. Hook Registry (`@tiara/shared/src/hooks/registry.ts`)
 
 Manages hook registration, priority ordering, and lifecycle.
 
 ```typescript
-import { createHookRegistry, HookEvent, HookPriority } from '@claude-flow/shared';
+import { createHookRegistry, HookEvent, HookPriority } from '@tiara/shared';
 
 const registry = createHookRegistry();
 
@@ -51,12 +51,12 @@ registry.enable(hookId);
 const stats = registry.getStats();
 ```
 
-### 2. Hook Executor (`@claude-flow/shared/src/hooks/executor.ts`)
+### 2. Hook Executor (`@tiara/shared/src/hooks/executor.ts`)
 
 Executes registered hooks in priority order with error handling.
 
 ```typescript
-import { createHookExecutor, HookContext } from '@claude-flow/shared';
+import { createHookExecutor, HookContext } from '@tiara/shared';
 
 const executor = createHookExecutor(registry, eventBus);
 
@@ -95,7 +95,7 @@ MCP-accessible tools for hooks system operations.
 | `hooks/metrics` | Get learning metrics and statistics |
 | `hooks/list` | List registered hooks |
 
-### 4. CLI Commands (`@claude-flow/cli/src/commands/hooks.ts`)
+### 4. CLI Commands (`@tiara/cli/src/commands/hooks.ts`)
 
 User-accessible CLI for hooks operations.
 
@@ -178,7 +178,7 @@ V3 introduces **SwarmCommunication** for agent-to-agent coordination within swar
 Agents can share context and coordinate in real-time:
 
 ```typescript
-import { swarmComm } from '@claude-flow/hooks';
+import { swarmComm } from '@tiara/hooks';
 
 await swarmComm.initialize();
 
@@ -198,13 +198,13 @@ const messages = swarmComm.getMessages({ limit: 10, type: 'context' });
 **CLI Usage:**
 ```bash
 # Send message
-npx @claude-flow/hooks swarm-send security-auditor "Found vulnerability" context high
+npx @tiara/hooks swarm-send security-auditor "Found vulnerability" context high
 
 # Broadcast to all
-npx @claude-flow/hooks swarm-broadcast "Switching to security focus"
+npx @tiara/hooks swarm-broadcast "Switching to security focus"
 
 # Get messages
-npx @claude-flow/hooks swarm-messages 10
+npx @tiara/hooks swarm-messages 10
 ```
 
 ### 2. Pattern Broadcasting
@@ -228,13 +228,13 @@ for (const bc of broadcasts) {
 **CLI Usage:**
 ```bash
 # Broadcast a new pattern
-npx @claude-flow/hooks swarm-pattern-broadcast "Use HNSW for 150x faster search" memory
+npx @tiara/hooks swarm-pattern-broadcast "Use HNSW for 150x faster search" memory
 
 # List recent broadcasts
-npx @claude-flow/hooks swarm-patterns memory 0.8
+npx @tiara/hooks swarm-patterns memory 0.8
 
 # Import a broadcast pattern
-npx @claude-flow/hooks swarm-import-pattern bc_1234567890_abc123
+npx @tiara/hooks swarm-import-pattern bc_1234567890_abc123
 ```
 
 ### 3. Consensus Guidance
@@ -265,13 +265,13 @@ console.log(guidance);
 **CLI Usage:**
 ```bash
 # Start consensus
-npx @claude-flow/hooks swarm-consensus "Which auth method?" "JWT,OAuth2,Session" 30000
+npx @tiara/hooks swarm-consensus "Which auth method?" "JWT,OAuth2,Session" 30000
 
 # Vote
-npx @claude-flow/hooks swarm-vote cons_1234567890_abc "JWT"
+npx @tiara/hooks swarm-vote cons_1234567890_abc "JWT"
 
 # Check status
-npx @claude-flow/hooks swarm-consensus-status cons_1234567890_abc
+npx @tiara/hooks swarm-consensus-status cons_1234567890_abc
 ```
 
 ### 4. Task Handoff
@@ -309,17 +309,17 @@ swarmComm.completeHandoff(handoff.id, { testsWritten: 15 });
 **CLI Usage:**
 ```bash
 # Initiate handoff
-npx @claude-flow/hooks swarm-handoff test-architect "Write auth tests" \
+npx @tiara/hooks swarm-handoff test-architect "Write auth tests" \
   '{"filesModified":["src/auth/login.ts"],"nextSteps":["Write unit tests"]}'
 
 # Accept handoff
-npx @claude-flow/hooks swarm-accept-handoff ho_1234567890_abc
+npx @tiara/hooks swarm-accept-handoff ho_1234567890_abc
 
 # Complete handoff
-npx @claude-flow/hooks swarm-complete-handoff ho_1234567890_abc '{"testsWritten":15}'
+npx @tiara/hooks swarm-complete-handoff ho_1234567890_abc '{"testsWritten":15}'
 
 # List pending handoffs
-npx @claude-flow/hooks swarm-handoffs
+npx @tiara/hooks swarm-handoffs
 ```
 
 ### Swarm Communication Events
@@ -341,7 +341,7 @@ npx @claude-flow/hooks swarm-handoffs
 ### Swarm Statistics
 
 ```bash
-npx @claude-flow/hooks swarm-stats
+npx @tiara/hooks swarm-stats
 # {
 #   "agentId": "agent_1234567890_abc",
 #   "agentCount": 5,
@@ -471,7 +471,7 @@ const reasoningBank = createReasoningBank({
 
 ```
 v3/
-├── @claude-flow/hooks/src/
+├── @tiara/hooks/src/
 │   ├── types.ts                    # Hook type definitions
 │   ├── index.ts                    # Module exports
 │   ├── registry/
@@ -496,7 +496,7 @@ v3/
 │   └── __tests__/
 │       ├── reasoningbank.test.ts   # ReasoningBank tests
 │       └── guidance-provider.test.ts # GuidanceProvider tests
-├── @claude-flow/shared/src/hooks/
+├── @tiara/shared/src/hooks/
 │   ├── types.ts                    # Shared hook types
 │   ├── registry.ts                 # Hook registry (shared)
 │   └── index.ts                    # Shared exports
@@ -575,7 +575,7 @@ console.log(result.data?.confidence);        // 0.92
 
 ```bash
 # Run hooks tests
-cd v3/@claude-flow/shared
+cd v3/@tiara/shared
 npm test -- hooks.test.ts
 
 # Run with coverage

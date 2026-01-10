@@ -1,15 +1,30 @@
-# Claude Flow V3
+# Tiara
 
-> **Modular AI Agent Coordination System** - A complete reimagining of Claude-Flow with 15-agent hierarchical mesh swarm coordination.
+> **Modular AI Agent Coordination System** - 15-agent hierarchical mesh swarm coordination with SPARC methodology.
 
-[![Version](https://img.shields.io/badge/version-3.0.0--alpha.1-blue.svg)](https://github.com/ruvnet/claude-flow)
+[![Version](https://img.shields.io/badge/version-3.0.0--alpha.1-blue.svg)](https://github.com/adolago/tiara)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20.0.0-green.svg)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3+-blue.svg)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](../LICENSE)
 
+## Credits & Acknowledgments
+
+**Tiara is a fork of [Claude Flow](https://github.com/ruvnet/claude-flow)**, an exceptional AI agent coordination framework.
+
+We extend our deepest gratitude to the original creators and maintainers:
+
+- **[ruvnet](https://github.com/ruvnet)** - Creator and lead maintainer of Claude Flow
+- **The Claude Flow community** - For building an outstanding foundation for multi-agent orchestration
+
+The architectural brilliance, domain-driven design patterns, and innovative features (SONA, HNSW indexing, hierarchical-mesh topology) in this codebase are the direct result of their excellent work. Tiara exists to provide a parallel namespace (`@tiara/*`) allowing users to run both projects without conflicts, while preserving full compatibility with the original.
+
+**Original Repository**: [github.com/ruvnet/claude-flow](https://github.com/ruvnet/claude-flow)
+
+---
+
 ## Introduction
 
-Claude Flow V3 is a next-generation AI agent coordination system built on 10 Architecture Decision Records (ADRs). It provides a modular, security-first, high-performance platform for orchestrating multi-agent swarms with hierarchical mesh topology.
+Tiara is a next-generation AI agent coordination system built on 10 Architecture Decision Records (ADRs). It provides a modular, security-first, high-performance platform for orchestrating multi-agent swarms with hierarchical mesh topology.
 
 V3 represents a complete architectural overhaul:
 - **10x faster testing** with Vitest
@@ -67,7 +82,7 @@ V3 represents a complete architectural overhaul:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                     @claude-flow/v3-monorepo                    │
+│                      @tiara/v3-monorepo                         │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
@@ -100,7 +115,7 @@ V3 represents a complete architectural overhaul:
 
 ```
 v3/
-├── @claude-flow/                    # Modular packages
+├── @tiara/                    # Modular packages
 │   ├── security/                    # Security module
 │   │   └── src/
 │   │       ├── index.ts             # Password hashing, validators
@@ -192,8 +207,8 @@ v3/
 │   └── implementation/              # Implementation details
 │
 ├── helpers/                         # Cross-platform helpers
-│   ├── claude-flow-v3.sh            # Master helper (Linux/macOS)
-│   ├── claude-flow-v3.ps1           # Master helper (Windows)
+│   ├── tiara-v3.sh            # Master helper (Linux/macOS)
+│   ├── tiara-v3.ps1           # Master helper (Windows)
 │   └── templates/                   # Helper templates
 │
 ├── scripts/                         # Utility scripts
@@ -207,22 +222,22 @@ v3/
 
 ## Modules
 
-### @claude-flow/security
+### @tiara/security
 Security-first implementation with CVE fixes, input validation, and credential management.
 
 ```typescript
-import { PasswordHasher, validateInput, sanitizePath } from '@claude-flow/security';
+import { PasswordHasher, validateInput, sanitizePath } from '@tiara/security';
 
 const hasher = new PasswordHasher();
 const hash = await hasher.hash('password');
 const valid = await hasher.verify('password', hash);
 ```
 
-### @claude-flow/memory
+### @tiara/memory
 Unified memory service with AgentDB, HNSW indexing, and 150x-12,500x faster search.
 
 ```typescript
-import { HybridMemoryRepository, HNSWIndex } from '@claude-flow/memory';
+import { HybridMemoryRepository, HNSWIndex } from '@tiara/memory';
 
 const memory = new HybridMemoryRepository({
   backend: 'agentdb',
@@ -233,11 +248,11 @@ await memory.store({ key: 'knowledge', value: 'context', embedding: [...] });
 const results = await memory.search({ query: 'knowledge', limit: 10 });
 ```
 
-### @claude-flow/swarm
+### @tiara/swarm
 15-agent hierarchical mesh coordination with consensus protocols.
 
 ```typescript
-import { UnifiedSwarmCoordinator } from '@claude-flow/swarm';
+import { UnifiedSwarmCoordinator } from '@tiara/swarm';
 
 const coordinator = new UnifiedSwarmCoordinator({
   topology: 'hierarchical-mesh',
@@ -248,22 +263,22 @@ await coordinator.initialize();
 await coordinator.spawnAgent({ type: 'queen-coordinator' });
 ```
 
-### @claude-flow/integration
+### @tiara/integration
 Deep integration with agentic-flow@alpha per ADR-001.
 
 ```typescript
-import { AgenticFlowBridge } from '@claude-flow/integration';
+import { AgenticFlowBridge } from '@tiara/integration';
 
 const bridge = new AgenticFlowBridge();
 await bridge.initialize();
 const agent = await bridge.createAgent({ type: 'coder' });
 ```
 
-### @claude-flow/performance
+### @tiara/performance
 Benchmarking framework with Flash Attention validation.
 
 ```typescript
-import { BenchmarkRunner, formatTime } from '@claude-flow/performance';
+import { BenchmarkRunner, formatTime } from '@tiara/performance';
 
 const runner = new BenchmarkRunner();
 const result = await runner.run('map-lookup', () => map.get(key), {
@@ -272,49 +287,49 @@ const result = await runner.run('map-lookup', () => map.get(key), {
 });
 ```
 
-### @claude-flow/neural
+### @tiara/neural
 SONA learning integration for self-optimizing agents.
 
 ```typescript
-import { SONAAdapter } from '@claude-flow/neural';
+import { SONAAdapter } from '@tiara/neural';
 
 const sona = new SONAAdapter();
 await sona.train({ patterns: learningData });
 const prediction = await sona.predict(context);
 ```
 
-### @claude-flow/cli
+### @tiara/cli
 Modern CLI with interactive prompts and formatted output.
 
 ```bash
-npx @claude-flow/cli swarm init --topology hierarchical-mesh
-npx @claude-flow/cli agent spawn --type queen-coordinator
-npx @claude-flow/cli memory search "knowledge"
+npx @tiara/cli swarm init --topology hierarchical-mesh
+npx @tiara/cli agent spawn --type queen-coordinator
+npx @tiara/cli memory search "knowledge"
 ```
 
-### @claude-flow/testing
+### @tiara/testing
 TDD London School framework with mocks, fixtures, and regression testing.
 
 ```typescript
-import { createMockAgent, createTestFixture } from '@claude-flow/testing';
+import { createMockAgent, createTestFixture } from '@tiara/testing';
 
 const mockAgent = createMockAgent({ type: 'coder' });
 const fixture = createTestFixture('swarm-coordination');
 ```
 
-### @claude-flow/shared
+### @tiara/shared
 Common types, events, utilities, and core interfaces.
 
 ```typescript
-import { EventBus, Result, success, failure } from '@claude-flow/shared';
-import type { AgentId, TaskStatus } from '@claude-flow/shared/types';
+import { EventBus, Result, success, failure } from '@tiara/shared';
+import type { AgentId, TaskStatus } from '@tiara/shared/types';
 ```
 
-### @claude-flow/deployment
+### @tiara/deployment
 Release management and CI/CD automation.
 
 ```typescript
-import { ReleaseManager } from '@claude-flow/deployment';
+import { ReleaseManager } from '@tiara/deployment';
 
 const release = new ReleaseManager();
 await release.prepare({ version: '3.0.0', changelog: '...' });
@@ -325,7 +340,7 @@ await release.prepare({ version: '3.0.0', changelog: '...' });
 ### Quick Start
 
 ```typescript
-import { initializeV3Swarm } from '@claude-flow/v3';
+import { initializeV3Swarm } from '@tiara/v3';
 
 // Initialize the swarm
 const swarm = await initializeV3Swarm();
@@ -351,18 +366,18 @@ const result = await swarm.waitForTask(task.id);
 
 ```typescript
 // Import everything
-import * as claudeFlow from '@claude-flow/v3';
+import * as claudeFlow from '@tiara/v3';
 
 // Or import specific modules for tree-shaking
-import { UnifiedSwarmCoordinator } from '@claude-flow/swarm';
-import { PasswordHasher } from '@claude-flow/security';
-import { HNSWIndex } from '@claude-flow/memory';
+import { UnifiedSwarmCoordinator } from '@tiara/swarm';
+import { PasswordHasher } from '@tiara/security';
+import { HNSWIndex } from '@tiara/memory';
 ```
 
 ### MCP Server
 
 ```typescript
-import { createMCPServer } from '@claude-flow/v3/mcp';
+import { createMCPServer } from '@tiara/v3/mcp';
 
 const server = createMCPServer({
   transport: 'stdio',
@@ -378,14 +393,14 @@ Cross-platform automation for V3 development:
 
 ```bash
 # Linux/macOS
-./helpers/claude-flow-v3.sh init
-./helpers/claude-flow-v3.sh status
-./helpers/claude-flow-v3.sh update domain 3
+./helpers/tiara-v3.sh init
+./helpers/tiara-v3.sh status
+./helpers/tiara-v3.sh update domain 3
 
 # Windows (PowerShell)
-.\helpers\claude-flow-v3.ps1 init
-.\helpers\claude-flow-v3.ps1 status
-.\helpers\claude-flow-v3.ps1 update domain 3
+.\helpers\tiara-v3.ps1 init
+.\helpers\tiara-v3.ps1 status
+.\helpers\tiara-v3.ps1 update domain 3
 ```
 
 Features:
@@ -398,8 +413,8 @@ Features:
 
 ```bash
 # Clone the repository
-git clone https://github.com/ruvnet/claude-flow.git
-cd claude-flow/v3
+git clone https://github.com/adolago/tiara.git
+cd tiara/v3
 
 # Install dependencies
 pnpm install
@@ -452,20 +467,20 @@ pnpm test:coverage
 - [Helper System](./helpers/README.md)
 
 ### Modules
-- [@claude-flow/security](./@claude-flow/security/)
-- [@claude-flow/memory](./@claude-flow/memory/)
-- [@claude-flow/swarm](./@claude-flow/swarm/)
-- [@claude-flow/integration](./@claude-flow/integration/)
-- [@claude-flow/performance](./@claude-flow/performance/)
-- [@claude-flow/neural](./@claude-flow/neural/)
-- [@claude-flow/cli](./@claude-flow/cli/)
-- [@claude-flow/testing](./@claude-flow/testing/)
-- [@claude-flow/shared](./@claude-flow/shared/)
-- [@claude-flow/deployment](./@claude-flow/deployment/)
+- [@tiara/security](./@tiara/security/)
+- [@tiara/memory](./@tiara/memory/)
+- [@tiara/swarm](./@tiara/swarm/)
+- [@tiara/integration](./@tiara/integration/)
+- [@tiara/performance](./@tiara/performance/)
+- [@tiara/neural](./@tiara/neural/)
+- [@tiara/cli](./@tiara/cli/)
+- [@tiara/testing](./@tiara/testing/)
+- [@tiara/shared](./@tiara/shared/)
+- [@tiara/deployment](./@tiara/deployment/)
 
 ### Examples
-- [AgentDB Example](./@claude-flow/memory/examples/agentdb-example.ts)
-- [Cross-Platform Usage](./@claude-flow/memory/examples/cross-platform-usage.ts)
+- [AgentDB Example](./@tiara/memory/examples/agentdb-example.ts)
+- [Cross-Platform Usage](./@tiara/memory/examples/cross-platform-usage.ts)
 
 ### MCP Tools
 - [Agent Tools](./mcp/tools/agent-tools.ts)
@@ -474,7 +489,8 @@ pnpm test:coverage
 - [Hooks Tools](./mcp/tools/hooks-tools.ts)
 
 ### External
-- [GitHub Repository](https://github.com/ruvnet/claude-flow)
+- [Tiara Repository](https://github.com/adolago/tiara)
+- [Original Claude Flow](https://github.com/ruvnet/claude-flow)
 - [agentic-flow Integration](https://github.com/ruvnet/agentic-flow)
 - [AgentDB](https://github.com/ruvnet/agentdb)
 

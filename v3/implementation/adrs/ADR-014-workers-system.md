@@ -26,7 +26,7 @@ V2 relies on shell scripts (`.claude/helpers/`) which are:
 
 ## Decision
 
-### 1. Create TypeScript Worker System in `@claude-flow/hooks`
+### 1. Create TypeScript Worker System in `@tiara/hooks`
 
 A cross-platform worker system with:
 - **10 Built-in Workers**: performance, health, security, adr, ddd, patterns, learning, cache, git, swarm
@@ -39,7 +39,7 @@ A cross-platform worker system with:
 ### 2. Architecture
 
 ```
-@claude-flow/hooks/src/workers/
+@tiara/hooks/src/workers/
 ├── index.ts           # WorkerManager, all worker implementations
 ├── mcp-tools.ts       # MCP tool definitions for workers
 ├── session-hook.ts    # Claude Code session integration
@@ -196,7 +196,7 @@ Coverage:
 ### Basic Usage
 
 ```typescript
-import { createWorkerManager } from '@claude-flow/hooks';
+import { createWorkerManager } from '@tiara/hooks';
 
 const manager = createWorkerManager('/path/to/project');
 await manager.initialize();
@@ -217,7 +217,7 @@ const statusline = manager.getStatuslineString();
 ### MCP Integration
 
 ```typescript
-import { createWorkerToolHandler, workerMCPTools } from '@claude-flow/hooks';
+import { createWorkerToolHandler, workerMCPTools } from '@tiara/hooks';
 
 // Register tools with MCP server
 const handler = createWorkerToolHandler(manager);
@@ -229,7 +229,7 @@ const result = await handler('worker/run', { worker: 'health' });
 ### Session Hook
 
 ```typescript
-import { onSessionStart, formatSessionStartOutput } from '@claude-flow/hooks';
+import { onSessionStart, formatSessionStartOutput } from '@tiara/hooks';
 
 const result = await onSessionStart({
   projectRoot: '/path/to/project',
@@ -260,7 +260,7 @@ console.log(formatSessionStartOutput(result));
 
 ### CLI Hooks Worker Subcommand
 
-Extended the worker system with CLI integration via `hooks worker` command in `@claude-flow/cli`.
+Extended the worker system with CLI integration via `hooks worker` command in `@tiara/cli`.
 
 #### New Worker Types (12 Total)
 
@@ -305,7 +305,7 @@ claude-flow hooks worker cancel --id worker_refactor_1_abc123
 
 #### MCP Tools Added
 
-5 new MCP tools in `@claude-flow/cli/src/mcp-tools/hooks-tools.ts`:
+5 new MCP tools in `@tiara/cli/src/mcp-tools/hooks-tools.ts`:
 - `hooks/worker-list` - List all 12 background workers
 - `hooks/worker-dispatch` - Dispatch a worker by trigger type
 - `hooks/worker-status` - Get status of running workers
@@ -352,7 +352,7 @@ Fixed nested subcommand routing in `parser.ts` to support 3 levels of subcommand
 
 ### Daemon Service Architecture
 
-Extended the worker system with a full Node.js daemon service in `@claude-flow/cli/src/services/worker-daemon.ts`. This replaces the shell-based helpers in `.claude/helpers/` with a cross-platform TypeScript implementation.
+Extended the worker system with a full Node.js daemon service in `@tiara/cli/src/services/worker-daemon.ts`. This replaces the shell-based helpers in `.claude/helpers/` with a cross-platform TypeScript implementation.
 
 #### Key Components
 
@@ -464,7 +464,7 @@ The root `package.json` now links `claude-flow@v3alpha` to the V3 CLI:
 {
   "name": "claude-flow",
   "bin": {
-    "claude-flow": "./v3/@claude-flow/cli/bin/cli.js"
+    "claude-flow": "./v3/@tiara/cli/bin/cli.js"
   },
   "publishConfig": {
     "access": "public",

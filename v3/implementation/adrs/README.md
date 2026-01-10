@@ -37,7 +37,7 @@ This directory contains all Architecture Decision Records for Claude-Flow v3.
 | Test Coverage | ● In Progress | 85+ test files, target: >90% (ADR-008) |
 | Service Integration | ✅ Complete | agentic-flow@alpha integration |
 | RuVector Integration | ✅ Complete | Q-Learning, AST, Diff, Coverage (ADR-017) |
-| Performance Benchmarks | ✅ Complete | Full benchmark suite in @claude-flow/performance |
+| Performance Benchmarks | ✅ Complete | Full benchmark suite in @tiara/performance |
 
 **Overall V3 Implementation: ~97% Complete**
 
@@ -90,7 +90,7 @@ All ADRs consider security:
 
 ### Recent Updates (2026-01-07)
 
-#### Release: @claude-flow/cli@3.0.0-alpha.15 (Latest)
+#### Release: @tiara/cli@3.0.0-alpha.15 (Latest)
 
 **Doctor Command Enhancements**:
 - **Claude Code CLI Check**: Verifies `@anthropic-ai/claude-code` installation
@@ -108,9 +108,9 @@ npx claude-flow@v3alpha doctor --install
 npx claude-flow@v3alpha doctor -c claude
 ```
 
-**Package Resolution Fix**: Fixed Windows module resolution issue where `@claude-flow/cli` exports pointed to wrong paths (`dist/index.js` → `dist/src/index.js`).
+**Package Resolution Fix**: Fixed Windows module resolution issue where `@tiara/cli` exports pointed to wrong paths (`dist/index.js` → `dist/src/index.js`).
 
-#### Release: @claude-flow/cli@3.0.0-alpha.7
+#### Release: @tiara/cli@3.0.0-alpha.7
 - **Hive-Mind CLI**: All MCP tools now exposed via CLI subcommands:
   - `hive-mind join <agent-id>` - Join agent to hive
   - `hive-mind leave <agent-id>` - Remove agent from hive
@@ -136,10 +136,10 @@ npx claude-flow@v3alpha doctor -c claude
 
 #### Install
 ```bash
-npx @claude-flow/cli@v3alpha --help
+npx @tiara/cli@v3alpha --help
 ```
 
-### Release: @claude-flow/cli@3.0.0-alpha.11 (2026-01-07)
+### Release: @tiara/cli@3.0.0-alpha.11 (2026-01-07)
 
 #### New V3 Advanced CLI Commands
 All commands include subcommand help and "Created with ❤️ by ruv.io" branding.
@@ -427,10 +427,10 @@ claude-flow agent spawn -t security-analyst  # One of 66 types
 
 **Option C: Unified Package (Long-term)**
 ```bash
-@claude-flow/core      # Shared primitives
-@claude-flow/cli       # CLI (current)
-@claude-flow/agents    # From agentic-flow's 66 agents
-@claude-flow/transport # QUIC + HTTP + WebSocket
+@tiara/core      # Shared primitives
+@tiara/cli       # CLI (current)
+@tiara/agents    # From agentic-flow's 66 agents
+@tiara/transport # QUIC + HTTP + WebSocket
 ```
 
 ---
@@ -449,12 +449,12 @@ claude-flow agent spawn -t security-analyst  # One of 66 types
 
 ### Feature Overlap Analysis
 
-**claude-flow ALREADY HAS** (via @claude-flow/embeddings):
+**claude-flow ALREADY HAS** (via @tiara/embeddings):
 | Feature | claude-flow | ruvector | Status |
 |---------|-------------|----------|--------|
 | ONNX Embeddings | ✅ agentic-flow (~3ms) | ✅ @ruvector/core | **Equivalent** |
 | Local Embeddings | ✅ all-MiniLM-L6-v2 | ✅ all-MiniLM-L6-v2 | **Equivalent** |
-| HNSW Indexing | ✅ @claude-flow/memory | ✅ @ruvector/core | **Equivalent** |
+| HNSW Indexing | ✅ @tiara/memory | ✅ @ruvector/core | **Equivalent** |
 | Persistent Cache | ✅ SQLite + LRU | ✅ Memory cache | **Equivalent** |
 | Hyperbolic Embeddings | ✅ Poincaré ball | ❌ | **claude-flow ahead** |
 | Document Chunking | ✅ 4 strategies | ❌ | **claude-flow ahead** |
@@ -504,15 +504,15 @@ claude mcp add ruvector-mcp -- npx ruvector mcp-server
 - `hooks_graph_mincut`, `hooks_graph_cluster` — Code boundaries ✅
 
 **Already in claude-flow (skip):**
-- `hooks_rag_context` — Use @claude-flow/memory instead
-- `hooks_attention_info` — Use @claude-flow/neural instead
-- Embeddings tools — Use @claude-flow/embeddings instead
+- `hooks_rag_context` — Use @tiara/memory instead
+- `hooks_attention_info` — Use @tiara/neural instead
+- Embeddings tools — Use @tiara/embeddings instead
 
 ### Integration Approach
 
 **Recommended: Option A - Add as Optional Dependency (for unique features only)**
 ```json
-// @claude-flow/cli/package.json
+// @tiara/cli/package.json
 {
   "optionalDependencies": {
     "ruvector": "^0.1.95"
@@ -537,8 +537,8 @@ claude-flow route "task" --coverage-aware      # Uses hooks_coverage_route
 
 **Already in claude-flow (DO NOT import from ruvector):**
 ```bash
-claude-flow embeddings generate --local        # Uses @claude-flow/embeddings (ONNX)
-claude-flow memory search --semantic "query"   # Uses @claude-flow/memory (HNSW)
+claude-flow embeddings generate --local        # Uses @tiara/embeddings (ONNX)
+claude-flow memory search --semantic "query"   # Uses @tiara/memory (HNSW)
 ```
 
 ### ruvector Integration Roadmap

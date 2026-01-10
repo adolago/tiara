@@ -820,7 +820,7 @@ volumes:
 
 ## References
 
-- ADR-019: @claude-flow/headless Runtime Package
+- ADR-019: @tiara/headless Runtime Package
 - ADR-014: Workers System
 - V3 Worker Daemon: `src/services/worker-daemon.ts`
 - Claude Code Environment Variables

@@ -56,7 +56,7 @@ CREATE TABLE v3_progress (
   id INTEGER PRIMARY KEY,
   domains_completed INTEGER,    -- 0-5 bounded contexts
   ddd_progress INTEGER,         -- 0-100%
-  total_modules INTEGER,        -- @claude-flow modules
+  total_modules INTEGER,        -- @tiara modules
   total_files INTEGER,          -- TypeScript files
   total_lines INTEGER,          -- Lines of code
   last_updated TEXT
@@ -223,7 +223,7 @@ In `.claude/settings.json`:
 ### V3 Progress
 - Domains completed (0-5 bounded contexts)
 - DDD architecture progress (0-100%)
-- Module count (10 @claude-flow modules)
+- Module count (10 @tiara modules)
 - Files and lines of code
 
 ### Security

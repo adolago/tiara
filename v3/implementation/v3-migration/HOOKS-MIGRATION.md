@@ -33,10 +33,10 @@ v2/
 ### V3 Hooks Architecture
 ```
 v3/
-├── @claude-flow/shared/src/hooks/
+├── @tiara/shared/src/hooks/
 │   ├── registry.ts               # Hook registration
 │   └── executor.ts               # Hook execution
-├── @claude-flow/cli/src/commands/
+├── @tiara/cli/src/commands/
 │   └── hooks.ts                  # CLI commands
 └── mcp/tools/hooks-tools.ts      # MCP tools (9 hooks)
 ```
@@ -340,7 +340,7 @@ class AgenticHookManager {
 
 ### V3 Hook Registry
 ```typescript
-// V3: @claude-flow/shared/src/hooks/registry.ts
+// V3: @tiara/shared/src/hooks/registry.ts
 class HookRegistry {
   register(hook: HookDefinition): void;
   getHook(name: string): HookDefinition | undefined;
@@ -353,7 +353,7 @@ class HookRegistry {
 ### Migration Path
 ```typescript
 // Migration: Adapt V2 hook manager to V3 registry
-import { HookRegistry } from '@claude-flow/shared/hooks';
+import { HookRegistry } from '@tiara/shared/hooks';
 
 const registry = new HookRegistry();
 

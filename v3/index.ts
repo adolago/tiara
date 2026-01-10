@@ -1,17 +1,17 @@
 /**
  * Claude Flow V3 - Modular AI Agent Coordination System
  *
- * This is the main entry point that re-exports all @claude-flow modules.
+ * This is the main entry point that re-exports all @tiara modules.
  * Each module can also be imported directly for tree-shaking.
  *
  * @example
  * // Import everything
- * import * as claudeFlow from '@claude-flow/v3';
+ * import * as claudeFlow from '@tiara/v3';
  *
  * // Or import specific modules
- * import { UnifiedSwarmCoordinator } from '@claude-flow/swarm';
- * import { PasswordHasher } from '@claude-flow/security';
- * import { HNSWIndex } from '@claude-flow/memory';
+ * import { UnifiedSwarmCoordinator } from '@tiara/swarm';
+ * import { PasswordHasher } from '@tiara/security';
+ * import { HNSWIndex } from '@tiara/memory';
  *
  * Complete reimagining based on 10 ADRs:
  * - ADR-001: Adopt agentic-flow as core foundation
@@ -32,89 +32,89 @@
  * - Code Reduction: <5,000 lines (vs 15,000+)
  * - Startup Time: <500ms
  *
- * @module @claude-flow/v3
+ * @module @tiara/v3
  * @version 3.0.0-alpha.1
  */
 
 // =============================================================================
-// @claude-flow Module Exports (New Modular Architecture)
+// @tiara Module Exports (New Modular Architecture)
 // =============================================================================
 
 /**
  * Security module - CVE fixes, input validation, credential management
- * @see {@link @claude-flow/security}
+ * @see {@link @tiara/security}
  */
-export * as security from './@claude-flow/security/src/index.js';
+export * as security from './@tiara/security/src/index.js';
 
 /**
  * Memory module - AgentDB, HNSW indexing, vector search
- * @see {@link @claude-flow/memory}
+ * @see {@link @tiara/memory}
  */
-export * as memory from './@claude-flow/memory/src/index.js';
+export * as memory from './@tiara/memory/src/index.js';
 
 /**
  * Swarm module - 15-agent coordination, hierarchical mesh, consensus
- * @see {@link @claude-flow/swarm}
+ * @see {@link @tiara/swarm}
  */
-export * as swarm from './@claude-flow/swarm/src/index.js';
+export * as swarm from './@tiara/swarm/src/index.js';
 
 /**
  * Integration module - agentic-flow@alpha integration, ADR-001 compliance
- * @see {@link @claude-flow/integration}
+ * @see {@link @tiara/integration}
  */
-export * as integration from './@claude-flow/integration/src/index.js';
+export * as integration from './@tiara/integration/src/index.js';
 
 /**
  * Shared module - common types, events, utilities, core interfaces
- * @see {@link @claude-flow/shared}
+ * @see {@link @tiara/shared}
  */
-export * as shared from './@claude-flow/shared/src/index.js';
+export * as shared from './@tiara/shared/src/index.js';
 
 /**
  * CLI module - Command parsing, prompts, output formatting
- * @see {@link @claude-flow/cli}
+ * @see {@link @tiara/cli}
  */
-export * as cli from './@claude-flow/cli/src/index.js';
+export * as cli from './@tiara/cli/src/index.js';
 
 /**
  * Neural module - SONA learning, neural modes
- * @see {@link @claude-flow/neural}
+ * @see {@link @tiara/neural}
  */
-export * as neural from './@claude-flow/neural/src/index.js';
+export * as neural from './@tiara/neural/src/index.js';
 
 /**
  * Performance module - Benchmarking, Flash Attention validation
- * @see {@link @claude-flow/performance}
+ * @see {@link @tiara/performance}
  */
-export * as performance from './@claude-flow/performance/src/index.js';
+export * as performance from './@tiara/performance/src/index.js';
 
 /**
  * Testing module - TDD London School framework, test utilities
- * @see {@link @claude-flow/testing}
+ * @see {@link @tiara/testing}
  */
-export * as testing from './@claude-flow/testing/src/index.js';
+export * as testing from './@tiara/testing/src/index.js';
 
 /**
  * Deployment module - Release management, CI/CD
- * @see {@link @claude-flow/deployment}
+ * @see {@link @tiara/deployment}
  */
-export * as deployment from './@claude-flow/deployment/src/index.js';
+export * as deployment from './@tiara/deployment/src/index.js';
 
 // =============================================================================
 // Module List for Dynamic Loading
 // =============================================================================
 
 export const MODULES = [
-  '@claude-flow/shared',
-  '@claude-flow/security',
-  '@claude-flow/memory',
-  '@claude-flow/swarm',
-  '@claude-flow/integration',
-  '@claude-flow/cli',
-  '@claude-flow/neural',
-  '@claude-flow/performance',
-  '@claude-flow/testing',
-  '@claude-flow/deployment',
+  '@tiara/shared',
+  '@tiara/security',
+  '@tiara/memory',
+  '@tiara/swarm',
+  '@tiara/integration',
+  '@tiara/cli',
+  '@tiara/neural',
+  '@tiara/performance',
+  '@tiara/testing',
+  '@tiara/deployment',
 ] as const;
 
 export type ModuleName = (typeof MODULES)[number];
