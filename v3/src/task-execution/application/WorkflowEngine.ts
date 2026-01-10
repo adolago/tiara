@@ -38,6 +38,7 @@ interface WorkflowExecution {
   taskTimings: Record<string, { start: number; end: number; duration: number }>;
   eventLog: Array<{ timestamp: number; event: string; data: unknown }>;
   memorySnapshots: Array<{ timestamp: number; snapshot: Record<string, unknown> }>;
+  pauseRequested: boolean;
 }
 
 export class WorkflowEngine {
@@ -192,6 +193,8 @@ export class WorkflowEngine {
   async pauseWorkflow(workflowId: string): Promise<void> {
     const execution = this.workflows.get(workflowId);
     if (execution && execution.state.status === 'in-progress') {
+      // Set pause flag to ensure workflow pauses at next checkpoint
+      execution.pauseRequested = true;
       execution.state.status = 'paused';
       execution.eventLog.push({
         timestamp: Date.now(),
@@ -207,6 +210,8 @@ export class WorkflowEngine {
   async resumeWorkflow(workflowId: string): Promise<void> {
     const execution = this.workflows.get(workflowId);
     if (execution && execution.state.status === 'paused') {
+      // Clear pause flag and resume execution
+      execution.pauseRequested = false;
       execution.state.status = 'in-progress';
       execution.eventLog.push({
         timestamp: Date.now(),
@@ -360,7 +365,8 @@ export class WorkflowEngine {
       executionOrder: [],
       taskTimings: {},
       eventLog: [],
-      memorySnapshots: []
+      memorySnapshots: [],
+      pauseRequested: false
     };
   }
 
@@ -376,9 +382,18 @@ export class WorkflowEngine {
     const orderedTasks = Task.resolveExecutionOrder(tasks);
 
     for (const task of orderedTasks) {
-      // Check if paused
+      // Yield to event loop to allow pause requests to be processed
+      // Delay ensures external pause/cancel calls can interrupt between tasks
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Check if pause was requested - transition to paused and wait
+      if (execution.pauseRequested && execution.state.status !== 'paused') {
+        execution.state.status = 'paused';
+      }
+
+      // Wait while paused
       while (execution.state.status === 'paused') {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 50));
       }
 
       if (execution.state.status === 'cancelled') {
@@ -436,6 +451,9 @@ export class WorkflowEngine {
           event: 'task:completed',
           data: { taskId: task.id, duration: endTime - startTime }
         });
+
+        // Yield to allow pause requests to be processed between tasks
+        await new Promise(resolve => setImmediate(resolve));
       } catch (error) {
         errors.push(error instanceof Error ? error : new Error(String(error)));
 
@@ -445,12 +463,30 @@ export class WorkflowEngine {
       }
     }
 
-    execution.state.status = errors.length > 0 ? 'failed' : 'completed';
+    // Check for pause request before finalizing - if paused, wait for resume
+    while (execution.state.status === 'paused' || execution.pauseRequested) {
+      if (execution.pauseRequested && execution.state.status !== 'paused') {
+        execution.state.status = 'paused';
+      }
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+
+    // Determine final status
+    let finalStatus: WorkflowStatus;
+    if (execution.state.status === 'cancelled') {
+      finalStatus = 'cancelled';
+    } else if (errors.length > 0) {
+      finalStatus = 'failed';
+    } else {
+      finalStatus = 'completed';
+    }
+
+    execution.state.status = finalStatus;
     execution.state.completedAt = Date.now();
 
     return {
       id: workflow.id,
-      status: errors.length > 0 ? 'failed' : 'completed',
+      status: finalStatus,
       tasksCompleted: completedTasks.size,
       errors,
       executionOrder: execution.executionOrder,
