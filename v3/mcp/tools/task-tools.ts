@@ -274,12 +274,16 @@ async function handleCreateTask(
         metadata: input.metadata,
       });
 
-      return {
-        taskId: result.id || taskId,
-        status: result.status || 'queued',
-        createdAt,
-        queuePosition: result.queuePosition,
-      };
+      // Validate result before accessing properties
+      if (result && typeof result === 'object') {
+        return {
+          taskId: result.id || taskId,
+          status: result.status || 'queued',
+          createdAt,
+          queuePosition: result.queuePosition,
+        };
+      }
+      // If result is invalid, fall through to simple implementation
     } catch (error) {
       console.error('Failed to create task via orchestrator:', error);
       // Fall through to simple implementation
