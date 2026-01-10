@@ -1,5 +1,5 @@
 # Hive Mind Benchmark Testing Container
-FROM node:25.2.1-bullseye-slim
+FROM node:25.2.1-trixie-slim
 
 # Install Python and system dependencies
 RUN apt-get update && apt-get install -y \
