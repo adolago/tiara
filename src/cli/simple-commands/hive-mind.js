@@ -1653,11 +1653,268 @@ async function manageMemoryWizard() {
 }
 
 /**
+ * Load configuration from file
+ */
+async function loadConfig() {
+  const configPath = path.join(cwd(), '.hive-mind', 'config.json');
+
+  if (!existsSync(configPath)) {
+    // Return default config if file doesn't exist
+    return {
+      defaults: {
+        queenType: 'strategic',
+        maxWorkers: 8,
+        consensusAlgorithm: 'majority',
+        memorySize: 100,
+        autoScale: true,
+        encryption: false,
+      },
+      mcpTools: {
+        enabled: true,
+        parallel: true,
+        timeout: 60000,
+      }
+    };
+  }
+
+  try {
+    const configData = await readFile(configPath, 'utf8');
+    return JSON.parse(configData);
+  } catch (error) {
+    console.error(chalk.red('Error loading configuration:'), error.message);
+    return null;
+  }
+}
+
+/**
+ * Save configuration to file
+ */
+async function saveConfig(config) {
+  const configPath = path.join(cwd(), '.hive-mind', 'config.json');
+  const hiveMindDir = path.join(cwd(), '.hive-mind');
+
+  if (!existsSync(hiveMindDir)) {
+    mkdirSync(hiveMindDir, { recursive: true });
+  }
+
+  try {
+    // Update modified timestamp
+    const configToSave = {
+      ...config,
+      updated: new Date().toISOString()
+    };
+
+    await writeFile(configPath, JSON.stringify(configToSave, null, 2), 'utf8');
+    return true;
+  } catch (error) {
+    console.error(chalk.red('Error saving configuration:'), error.message);
+    return false;
+  }
+}
+
+/**
  * Configure hive mind wizard
  */
 async function configureWizard() {
-  // TODO: Implement configuration wizard
-  console.log(chalk.yellow('Configuration wizard coming soon...'));
+  console.log(chalk.blue('\n🔧 Hive Mind Configuration\n'));
+
+  // Load current config
+  let config = await loadConfig();
+
+  if (!config) {
+    console.log(chalk.yellow('No configuration found. Creating new configuration.'));
+    config = {
+      version: '2.0.0',
+      initialized: new Date().toISOString(),
+      defaults: {
+        queenType: 'strategic',
+        maxWorkers: 8,
+        consensusAlgorithm: 'majority',
+        memorySize: 100,
+        autoScale: true,
+        encryption: false,
+      },
+      mcpTools: {
+        enabled: true,
+        parallel: true,
+        timeout: 60000,
+      },
+    };
+  }
+
+  // Ensure structure exists
+  if (!config.defaults) config.defaults = {};
+  if (!config.mcpTools) config.mcpTools = {};
+
+  let exitWizard = false;
+
+  while (!exitWizard) {
+    // Display current settings
+    console.log(chalk.cyan('Current Settings:'));
+    console.log(chalk.gray('  Queen Type:'), config.defaults.queenType);
+    console.log(chalk.gray('  Max Workers:'), config.defaults.maxWorkers);
+    console.log(chalk.gray('  Consensus:'), config.defaults.consensusAlgorithm);
+    console.log(chalk.gray('  Memory Size:'), `${config.defaults.memorySize} MB`);
+    console.log(chalk.gray('  Auto Scale:'), config.defaults.autoScale ? 'Enabled' : 'Disabled');
+    console.log(chalk.gray('  Encryption:'), config.defaults.encryption ? 'Enabled' : 'Disabled');
+    console.log(chalk.gray('  MCP Tools:'), config.mcpTools.enabled ? 'Enabled' : 'Disabled');
+    console.log('');
+
+    const { action } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'action',
+        message: 'What would you like to configure?',
+        choices: [
+          { name: '👑 Queen Coordinator Type', value: 'queenType' },
+          { name: '🐝 Max Workers Limit', value: 'maxWorkers' },
+          { name: '🤝 Consensus Algorithm', value: 'consensusAlgorithm' },
+          { name: '🧠 Memory Size', value: 'memorySize' },
+          { name: '⚡ Auto-Scaling', value: 'autoScale' },
+          { name: '🔒 Encryption', value: 'encryption' },
+          { name: '🛠️ MCP Tools Settings', value: 'mcpTools' },
+          { name: '💾 Save & Exit', value: 'save' },
+          { name: '❌ Cancel & Exit', value: 'cancel' },
+        ],
+      },
+    ]);
+
+    switch (action) {
+      case 'queenType':
+        const { type } = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'type',
+            message: 'Select default Queen type:',
+            choices: [
+              { name: 'Strategic - High-level planning', value: 'strategic' },
+              { name: 'Tactical - Detailed management', value: 'tactical' },
+              { name: 'Adaptive - Learning based', value: 'adaptive' },
+            ],
+            default: config.defaults.queenType,
+          },
+        ]);
+        config.defaults.queenType = type;
+        break;
+
+      case 'maxWorkers':
+        const { workers } = await inquirer.prompt([
+          {
+            type: 'number',
+            name: 'workers',
+            message: 'Default maximum workers (1-20):',
+            default: config.defaults.maxWorkers,
+            validate: (input) => (input > 0 && input <= 20) || 'Please enter a number between 1 and 20',
+          },
+        ]);
+        config.defaults.maxWorkers = workers;
+        break;
+
+      case 'consensusAlgorithm':
+        const { algo } = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'algo',
+            message: 'Default consensus algorithm:',
+            choices: [
+              { name: 'Majority - >50% agreement', value: 'majority' },
+              { name: 'Weighted - Expertise weighted', value: 'weighted' },
+              { name: 'Byzantine - Fault tolerant (2/3)', value: 'byzantine' },
+            ],
+            default: config.defaults.consensusAlgorithm,
+          },
+        ]);
+        config.defaults.consensusAlgorithm = algo;
+        break;
+
+      case 'memorySize':
+        const { size } = await inquirer.prompt([
+          {
+            type: 'number',
+            name: 'size',
+            message: 'Default collective memory size (MB):',
+            default: config.defaults.memorySize,
+            validate: (input) => (input >= 10 && input <= 1000) || 'Please enter a number between 10 and 1000',
+          },
+        ]);
+        config.defaults.memorySize = size;
+        break;
+
+      case 'autoScale':
+        const { scale } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'scale',
+            message: 'Enable auto-scaling by default?',
+            default: config.defaults.autoScale,
+          },
+        ]);
+        config.defaults.autoScale = scale;
+        break;
+
+      case 'encryption':
+        const { encrypt } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'encrypt',
+            message: 'Enable encryption by default?',
+            default: config.defaults.encryption,
+          },
+        ]);
+        config.defaults.encryption = encrypt;
+        break;
+
+      case 'mcpTools':
+        const mcpAnswers = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'enabled',
+            message: 'Enable MCP Tools integration?',
+            default: config.mcpTools.enabled,
+          },
+          {
+            type: 'confirm',
+            name: 'parallel',
+            message: 'Allow parallel tool execution?',
+            default: config.mcpTools.parallel,
+            when: (answers) => answers.enabled,
+          },
+          {
+            type: 'number',
+            name: 'timeout',
+            message: 'Tool execution timeout (ms):',
+            default: config.mcpTools.timeout,
+            when: (answers) => answers.enabled,
+            validate: (input) => (input >= 1000) || 'Timeout must be at least 1000ms',
+          },
+        ]);
+
+        config.mcpTools = {
+          ...config.mcpTools,
+          ...mcpAnswers
+        };
+        break;
+
+      case 'save':
+        const success = await saveConfig(config);
+        if (success) {
+          console.log(chalk.green('\n✅ Configuration saved successfully!'));
+        }
+        exitWizard = true;
+        break;
+
+      case 'cancel':
+        console.log(chalk.yellow('\n❌ Changes discarded.'));
+        exitWizard = true;
+        break;
+    }
+
+    if (!exitWizard) {
+      console.log(chalk.gray('─'.repeat(50)));
+    }
+  }
+
+  // Return to main menu if called from there (handled by caller loop if exists)
 }
 
 /**
