@@ -362,7 +362,7 @@ export class SessionManager implements ISessionManager {
         return creds.token;
       }
       if (typeof creds.authorization === 'string') {
-        const match = creds.authorization.match(/^Bearer\s+(.+)$/);
+        const match = creds.authorization.match(/^Bearer\s+(.+)$/i);
         return match ? match[1] : null;
       }
     }
