@@ -181,8 +181,8 @@ export class SwarmCoordinator extends EventEmitter {
     // Stop background workers
     this.stopBackgroundWorkers();
 
-    // Stop subsystems
-    await this.scheduler.shutdown();
+    // Stop subsystems (null check - scheduler may not be initialized)
+    await this.scheduler?.shutdown();
 
     if (this.monitor) {
       this.monitor.stop();
