@@ -37,6 +37,10 @@ export class MemoryCache {
       return undefined;
     }
 
+    // Move to end (MRU)
+    this.cache.delete(id);
+    this.cache.set(id, entry);
+
     // Update access time
     entry.lastAccessed = Date.now();
     this.hits++;
@@ -50,6 +54,14 @@ export class MemoryCache {
   set(id: string, data: MemoryEntry, dirty = true): void {
     const size = this.calculateSize(data);
 
+    // Update size if replacing existing entry
+    const existing = this.cache.get(id);
+    if (existing) {
+      this.currentSize -= existing.size;
+      // Remove existing to re-insert at end (MRU)
+      this.cache.delete(id);
+    }
+
     // Check if we need to evict entries
     if (this.currentSize + size > this.maxSize) {
       this.evict(size);
@@ -61,12 +73,6 @@ export class MemoryCache {
       lastAccessed: Date.now(),
       dirty,
     };
-
-    // Update size if replacing existing entry
-    const existing = this.cache.get(id);
-    if (existing) {
-      this.currentSize -= existing.size;
-    }
 
     this.cache.set(id, entry);
     this.currentSize += size;
@@ -187,10 +193,10 @@ export class MemoryCache {
     // Tags
     size += entry.tags.reduce((sum, tag) => sum + tag.length * 2, 0);
 
-    // JSON objects (rough estimate)
-    size += JSON.stringify(entry.context).length * 2;
+    // Estimate object size without JSON.stringify
+    size += this.estimateObjectSize(entry.context);
     if (entry.metadata) {
-      size += JSON.stringify(entry.metadata).length * 2;
+      size += this.estimateObjectSize(entry.metadata);
     }
 
     // Fixed size fields
@@ -201,21 +207,50 @@ export class MemoryCache {
     return size;
   }
 
+  private estimateObjectSize(obj: any, depth = 0): number {
+    if (depth > 5) return 0; // Limit depth to avoid stack overflow
+    if (obj === null || obj === undefined) return 0;
+
+    let size = 0;
+
+    if (typeof obj === 'string') {
+      return obj.length * 2;
+    }
+    if (typeof obj === 'number') {
+      return 8;
+    }
+    if (typeof obj === 'boolean') {
+      return 4;
+    }
+
+    if (typeof obj === 'object') {
+      if (Array.isArray(obj)) {
+        for (const item of obj) {
+          size += this.estimateObjectSize(item, depth + 1);
+        }
+      } else {
+        for (const key in obj) {
+          size += key.length * 2;
+          size += this.estimateObjectSize(obj[key], depth + 1);
+        }
+      }
+    }
+
+    return size;
+  }
+
   private evict(requiredSpace: number): void {
     this.logger.debug('Cache eviction triggered', {
       requiredSpace,
       currentSize: this.currentSize,
     });
 
-    // Sort entries by last accessed time (oldest first)
-    const entries = Array.from(this.cache.entries()).sort(
-      (a, b) => a[1].lastAccessed - b[1].lastAccessed,
-    );
-
     let freedSpace = 0;
     const evicted: string[] = [];
 
-    for (const [id, entry] of entries) {
+    // Since we maintain insertion order as access order,
+    // the first entries in the iterator are the LRU ones
+    for (const [id, entry] of this.cache) {
       if (freedSpace >= requiredSpace) {
         break;
       }
