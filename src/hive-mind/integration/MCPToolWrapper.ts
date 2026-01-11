@@ -7,11 +7,8 @@
  */
 
 import { EventEmitter } from 'events';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { spawn } from 'child_process';
 import { getErrorMessage } from '../../utils/type-guards.js';
-
-const execAsync = promisify(exec);
 
 interface MCPToolResponse {
   success: boolean;
@@ -43,11 +40,51 @@ export class MCPToolWrapper extends EventEmitter {
   }
 
   /**
+   * Helper to execute command using spawn to avoid shell injection
+   */
+  private spawnAsync(command: string, args: string[]): Promise<{ stdout: string, stderr: string }> {
+    return new Promise((resolve, reject) => {
+      // Handle Windows npx
+      const cmd = (process.platform === 'win32' && command === 'npx') ? 'npx.cmd' : command;
+
+      const child = spawn(cmd, args);
+      let stdout = '';
+      let stderr = '';
+
+      child.stdout.on('data', (data) => {
+        stdout += data.toString();
+      });
+
+      child.stderr.on('data', (data) => {
+        stderr += data.toString();
+      });
+
+      child.on('close', (code) => {
+        if (code === 0) {
+          resolve({ stdout, stderr });
+        } else {
+          const error = new Error(`Command failed with exit code ${code}`);
+          (error as any).stdout = stdout;
+          (error as any).stderr = stderr;
+          // In the original code, non-zero exit code throws/rejects.
+          // However, sometimes stderr has content even on success.
+          // But usually code != 0 means failure.
+          reject(error);
+        }
+      });
+
+      child.on('error', (err) => {
+        reject(err);
+      });
+    });
+  }
+
+  /**
    * Check if MCP tools are available
    */
   private async checkToolAvailability(): Promise<void> {
     try {
-      const { stdout } = await execAsync('npx ruv-swarm --version');
+      const { stdout } = await this.spawnAsync('npx', ['ruv-swarm', '--version']);
       if (!stdout) {
         throw new Error('ruv-swarm MCP tools not found');
       }
@@ -61,10 +98,22 @@ export class MCPToolWrapper extends EventEmitter {
    */
   private async executeTool(toolName: string, params: any): Promise<MCPToolResponse> {
     try {
-      const command = `npx ruv-swarm mcp-execute ${toolName} '${JSON.stringify(params)}'`;
-      const { stdout, stderr } = await execAsync(command);
+      // Old insecure way:
+      // const command = `npx ruv-swarm mcp-execute ${toolName} '${JSON.stringify(params)}'`;
+      // const { stdout, stderr } = await execAsync(command);
+
+      // New secure way using spawn:
+      const { stdout, stderr } = await this.spawnAsync('npx', [
+        'ruv-swarm',
+        'mcp-execute',
+        toolName,
+        JSON.stringify(params)
+      ]);
 
       if (stderr) {
+        // Some tools might write to stderr but still succeed with code 0.
+        // The original code treated ANY stderr as failure.
+        // We will preserve that behavior.
         return { success: false, error: stderr };
       }
 
