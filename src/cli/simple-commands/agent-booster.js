@@ -1,5 +1,5 @@
 // agent-booster.js - Ultra-fast code editing via Agent Booster (352x faster than LLM APIs)
-import { printSuccess, printError, printWarning } from '../utils.js';
+import { printSuccess, printError, printWarning, runCommand } from '../utils.js';
 import { existsSync } from 'fs';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -369,7 +369,6 @@ function example() {
  * Call Agent Booster MCP tool
  */
 async function callAgentBooster(operation, params) {
-  // Import MCP client dynamically
   try {
     // Map operation to MCP tool name
     const toolMap = {
@@ -383,38 +382,24 @@ async function callAgentBooster(operation, params) {
       throw new Error(`Unknown operation: ${operation}`);
     }
 
-    // TODO: Call actual MCP tool here
-    // For now, simulate the call (will be wired up with MCP client)
+    // Call actual MCP tool via npx ruv-swarm mcp-execute
+    // We use single quotes for the JSON param, so we must escape single quotes in the JSON string
+    const jsonParams = JSON.stringify(params).replace(/'/g, "'\\''");
+    const command = `npx ruv-swarm mcp-execute ${toolName} '${jsonParams}'`;
 
-    // Simulate successful response
-    if (operation === 'edit') {
-      return {
-        success: true,
-        edited_code: params.code_edit + '\n// Edited with Agent Booster\n',
-        metadata: { operation, timestamp: Date.now() }
-      };
-    } else if (operation === 'batch') {
-      return {
-        success: true,
-        results: params.edits.map(edit => ({
-          success: true,
-          edited_code: edit.code_edit + '\n// Batch edited\n',
-          filepath: edit.target_filepath
-        }))
-      };
-    } else if (operation === 'parse') {
-      return {
-        success: true,
-        edits_count: 1,
-        edits: [{
-          success: true,
-          filepath: 'example.js',
-          edited_code: '// Parsed from markdown\n'
-        }]
-      };
+    // Execute command with shell: true to handle the command string
+    const result = await runCommand(command, [], { shell: true });
+
+    if (!result.success) {
+      throw new Error(result.stderr || result.stdout || `Command failed with code ${result.code}`);
     }
 
-    throw new Error('Invalid operation');
+    // Parse JSON output from MCP tool
+    try {
+      return JSON.parse(result.stdout);
+    } catch (e) {
+      throw new Error(`Failed to parse MCP response: ${result.stdout}`);
+    }
   } catch (error) {
     return {
       success: false,
