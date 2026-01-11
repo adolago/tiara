@@ -176,6 +176,7 @@ export class LoadBalancer implements ILoadBalancer {
   private requestTimes: number[] = [];
   private requestsInLastSecond = 0;
   private lastSecondTimestamp = 0;
+  private cleanupInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     private config: MCPLoadBalancerConfig,
@@ -200,9 +201,18 @@ export class LoadBalancer implements ILoadBalancer {
     };
 
     // Clean up old session rate limiters periodically
-    setInterval(() => {
+    this.cleanupInterval = setInterval(() => {
       this.cleanupSessionRateLimiters();
     }, 300000); // Every 5 minutes
+    this.cleanupInterval.unref(); // Don't prevent process exit
+  }
+
+  /** Stop the load balancer and clean up resources */
+  stop(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
   }
 
   async shouldAllowRequest(session: MCPSession, request: MCPRequest): Promise<boolean> {
@@ -414,6 +424,7 @@ export class RequestQueue {
   private processing = false;
   private maxQueueSize: number;
   private requestTimeout: number;
+  private cleanupInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     maxQueueSize = 1000,
@@ -424,9 +435,23 @@ export class RequestQueue {
     this.requestTimeout = requestTimeout;
 
     // Clean up expired requests periodically
-    setInterval(() => {
+    this.cleanupInterval = setInterval(() => {
       this.cleanupExpiredRequests();
     }, 10000); // Every 10 seconds
+    this.cleanupInterval.unref(); // Don't prevent process exit
+  }
+
+  /** Stop the queue and clean up resources */
+  stop(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    // Reject any pending requests
+    for (const item of this.queue) {
+      item.reject(new Error('Request queue stopped'));
+    }
+    this.queue = [];
   }
 
   async enqueue<T>(
