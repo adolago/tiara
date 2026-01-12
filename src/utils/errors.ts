@@ -28,6 +28,16 @@ export class ClaudeFlowError extends Error {
 }
 
 /**
+ * Authentication-related errors
+ */
+export class AuthenticationError extends ClaudeFlowError {
+  constructor(message: string, details?: unknown) {
+    super(message, 'AUTHENTICATION_ERROR', details);
+    this.name = 'AuthenticationError';
+  }
+}
+
+/**
  * Terminal-related errors
  */
 export class TerminalError extends ClaudeFlowError {

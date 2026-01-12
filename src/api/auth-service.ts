@@ -577,14 +577,20 @@ export class AuthService {
     return createHash('sha256').update(key).digest('hex');
   }
 
+  private getSalt(): string {
+    return process.env.PASSWORD_SALT || 'salt';
+  }
+
   private async hashPassword(password: string): Promise<string> {
     // In a real implementation, use bcrypt
-    return createHash('sha256').update(password + 'salt').digest('hex');
+    // Using a simple salt for demonstration, but it should be a random salt in production
+    // or passed via environment variable
+    return createHash('sha256').update(password + this.getSalt()).digest('hex');
   }
 
   private async verifyPassword(password: string, hash: string): Promise<boolean> {
     // In a real implementation, use bcrypt.compare
-    const passwordHash = createHash('sha256').update(password + 'salt').digest('hex');
+    const passwordHash = createHash('sha256').update(password + this.getSalt()).digest('hex');
     return this.constantTimeCompare(passwordHash, hash);
   }
 
@@ -600,45 +606,60 @@ export class AuthService {
   }
 
   private initializeDefaultUsers(): void {
-    // Create default admin user
-    const adminId = 'admin_default';
-    const adminUser: User = {
-      id: adminId,
-      email: 'admin@claude-flow.local',
-      passwordHash: createHash('sha256').update('admin123' + 'salt').digest('hex'),
-      role: 'admin',
-      permissions: ROLE_PERMISSIONS.admin,
-      apiKeys: [],
-      isActive: true,
-      loginAttempts: 0,
-      mfaEnabled: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
 
-    this.users.set(adminId, adminUser);
+    if (adminEmail && adminPassword) {
+      // Create default admin user
+      const adminId = 'admin_default';
+      const adminUser: User = {
+        id: adminId,
+        email: adminEmail,
+        passwordHash: createHash('sha256').update(adminPassword + this.getSalt()).digest('hex'),
+        role: 'admin',
+        permissions: ROLE_PERMISSIONS.admin,
+        apiKeys: [],
+        isActive: true,
+        loginAttempts: 0,
+        mfaEnabled: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
-    // Create default service user
-    const serviceId = 'service_default';
-    const serviceUser: User = {
-      id: serviceId,
-      email: 'service@claude-flow.local',
-      passwordHash: createHash('sha256').update('service123' + 'salt').digest('hex'),
-      role: 'service',
-      permissions: ROLE_PERMISSIONS.service,
-      apiKeys: [],
-      isActive: true,
-      loginAttempts: 0,
-      mfaEnabled: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+      this.users.set(adminId, adminUser);
+    } else {
+        this.logger.warn('ADMIN_EMAIL and ADMIN_PASSWORD not set. Default admin user not created.');
+    }
 
-    this.users.set(serviceId, serviceUser);
+    const serviceEmail = process.env.SERVICE_EMAIL;
+    const servicePassword = process.env.SERVICE_PASSWORD;
 
-    this.logger.info('Default users initialized', {
-      admin: adminUser.email,
-      service: serviceUser.email,
-    });
+    if (serviceEmail && servicePassword) {
+      // Create default service user
+      const serviceId = 'service_default';
+      const serviceUser: User = {
+        id: serviceId,
+        email: serviceEmail,
+        passwordHash: createHash('sha256').update(servicePassword + this.getSalt()).digest('hex'),
+        role: 'service',
+        permissions: ROLE_PERMISSIONS.service,
+        apiKeys: [],
+        isActive: true,
+        loginAttempts: 0,
+        mfaEnabled: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      this.users.set(serviceId, serviceUser);
+    } else {
+        this.logger.warn('SERVICE_EMAIL and SERVICE_PASSWORD not set. Default service user not created.');
+    }
+
+    if (this.users.size > 0) {
+        this.logger.info('Default users initialized', {
+            users: Array.from(this.users.values()).map(u => u.email)
+        });
+    }
   }
 }
