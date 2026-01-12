@@ -131,7 +131,7 @@
     "cors": "^2.8.5",
     "figlet": "^1.8.1",
     "flow-nexus": "^0.1.128",
-    "fs-extra": "^11.2.0",
+    "fs-extra": "^11.3.3",
     "glob": "^11.0.3",
     "gradient-string": "^3.0.0",
     "helmet": "^7.1.0",
