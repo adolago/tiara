@@ -1,7 +1,7 @@
 # Docker Regression Test Environment for AgentDB Integration
 # Tests all MCP tools, CLI commands, and memory capabilities
 
-FROM node:20-slim
+FROM node:20.19.6-trixie-slim
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
