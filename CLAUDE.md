@@ -1,46 +1,45 @@
-# Claude Code Configuration - SPARC Development Environment
+# Tiara Configuration - SPARC Development Environment
 
-## 📖 REQUIRED CONTEXT: Always Read These Repositories
+## REQUIRED CONTEXT: Always Read These Repositories
 
-**Before starting any work, always read the CLAUDE.md files from these locations:**
+**Before starting any work, always read the CLAUDE.md and README.md files from these locations:**
 
 1. **Agent-Core** (`/home/artur/Repositories/agent-core/`)
    - `CLAUDE.md` - Main project instructions, personas system, architecture overview
-   - Contains the triad personas: Zee, Stanley, Johny
    - Defines the engine that powers the agent system
 
 2. **Personas** (`/home/artur/Repositories/personas/`)
-   - `johny/` - Study assistant with knowledge graph and spaced repetition
-   - `stanley/` - Investing platform with NautilusTrader integration
-   - `zee/` - Personal assistant with memory, messaging, calendar
-   - Each persona has its own configuration and capabilities
+   - `johny/` - Study assistant focused on deliberate practice, with knowledge graph and spaced repetition
+   - `stanley/` - Investing assistant with acces to a full platform (NautilusTrader, OpenBB, own GUI in rust) of APIs integration
+   - `zee/` - Personal assistant with memory, messaging, calendar, and more
+   - Each persona has its own configuration and capabilities, all have access to Tiara's orchestration offers
 
 **Why this matters:** Tiara is a vendor submodule within agent-core. Understanding the full system context from agent-core and the persona implementations is essential for coherent development.
 
 ---
 
-## 🚨 CRITICAL: CONCURRENT EXECUTION & FILE MANAGEMENT
+## CRITICAL: CONCURRENT EXECUTION & FILE MANAGEMENT
 
 **ABSOLUTE RULES**:
 1. ALL operations MUST be concurrent/parallel in a single message
 2. **NEVER save working files, text/mds and tests to the root folder**
 3. ALWAYS organize files in appropriate subdirectories
-4. **USE CLAUDE CODE'S TASK TOOL** for spawning agents concurrently, not just MCP
+4. **USE AGENT-CORE'S TASK TOOL** for spawning agents concurrently, not just MCP
 
-### ⚡ GOLDEN RULE: "1 MESSAGE = ALL RELATED OPERATIONS"
+### GOLDEN RULE: "1 MESSAGE = ALL RELATED OPERATIONS"
 
 **MANDATORY PATTERNS:**
 - **TodoWrite**: ALWAYS batch ALL todos in ONE call (5-10+ todos minimum)
-- **Task tool (Claude Code)**: ALWAYS spawn ALL agents in ONE message with full instructions
+- **Task tool (Agent-Core)**: ALWAYS spawn ALL agents in ONE message with full instructions
 - **File operations**: ALWAYS batch ALL reads/writes/edits in ONE message
 - **Bash commands**: ALWAYS batch ALL terminal operations in ONE message
 - **Memory operations**: ALWAYS batch ALL memory store/retrieve in ONE message
 
-### 🎯 CRITICAL: Claude Code Task Tool for Agent Execution
+### CRITICAL: Agent-Core Task Tool for Agent Execution
 
-**Claude Code's Task tool is the PRIMARY way to spawn agents:**
+**Agent-Core's Task tool is the PRIMARY way to spawn agents:**
 ```javascript
-// ✅ CORRECT: Use Claude Code's Task tool for parallel agent execution
+// CORRECT: Use Agent-Core's Task tool for parallel agent execution
 [Single Message]:
   Task("Research agent", "Analyze requirements and patterns...", "researcher")
   Task("Coder agent", "Implement core features...", "coder")
@@ -54,7 +53,7 @@
 - `mcp__claude-flow__agent_spawn` - Define agent types for coordination
 - `mcp__claude-flow__task_orchestrate` - Orchestrate high-level workflows
 
-### 📁 File Organization Rules
+### File Organization Rules
 
 **NEVER save to root folder. Use these directories:**
 - `/src` - Source code files
@@ -66,20 +65,20 @@
 
 ## Project Overview
 
-This project uses SPARC (Specification, Pseudocode, Architecture, Refinement, Completion) methodology with Claude-Flow orchestration for systematic Test-Driven Development.
+This project uses SPARC (Specification, Pseudocode, Architecture, Refinement, Completion) methodology with Tiara orchestration for systematic Test-Driven Development.
 
 ## SPARC Commands
 
 ### Core Commands
-- `npx claude-flow sparc modes` - List available modes
-- `npx claude-flow sparc run <mode> "<task>"` - Execute specific mode
-- `npx claude-flow sparc tdd "<feature>"` - Run complete TDD workflow
-- `npx claude-flow sparc info <mode>` - Get mode details
+- `npx tiara sparc modes` - List available modes
+- `npx tiara sparc run <mode> "<task>"` - Execute specific mode
+- `npx tiara sparc tdd "<feature>"` - Run complete TDD workflow
+- `npx tiara sparc info <mode>` - Get mode details
 
 ### Batchtools Commands
-- `npx claude-flow sparc batch <modes> "<task>"` - Parallel execution
-- `npx claude-flow sparc pipeline "<task>"` - Full pipeline processing
-- `npx claude-flow sparc concurrent <mode> "<tasks-file>"` - Multi-task processing
+- `npx tiara sparc batch <modes> "<task>"` - Parallel execution
+- `npx tiara sparc pipeline "<task>"` - Full pipeline processing
+- `npx tiara sparc concurrent <mode> "<tasks-file>"` - Multi-task processing
 
 ### Build Commands
 - `npm run build` - Build project
@@ -103,7 +102,7 @@ This project uses SPARC (Specification, Pseudocode, Architecture, Refinement, Co
 - **Clean Architecture**: Separate concerns
 - **Documentation**: Keep updated
 
-## 🚀 Available Agents (54 Total)
+## Available Agents (54 Total)
 
 ### Core Development
 `coder`, `reviewer`, `tester`, `planner`, `researcher`
@@ -132,9 +131,9 @@ This project uses SPARC (Specification, Pseudocode, Architecture, Refinement, Co
 ### Migration & Planning
 `migration-planner`, `swarm-init`
 
-## 🎯 Claude Code vs MCP Tools
+## Claude Code vs MCP Tools
 
-### Claude Code Handles ALL EXECUTION:
+### Agent-Core Handles ALL EXECUTION:
 - **Task tool**: Spawn and run agents concurrently for actual work
 - File operations (Read, Write, Edit, MultiEdit, Glob, Grep)
 - Code generation and programming
@@ -155,15 +154,15 @@ This project uses SPARC (Specification, Pseudocode, Architecture, Refinement, Co
 - Performance tracking
 - GitHub integration
 
-**KEY**: MCP coordinates the strategy, Claude Code's Task tool executes with real agents.
+**KEY**: MCP coordinates the strategy, Agent-Core's Task tool executes with real agents.
 
-## 🚀 Quick Setup
+## Quick Setup
 
 ```bash
-# Add MCP servers (Claude Flow required, others optional)
-claude mcp add claude-flow npx claude-flow@alpha mcp start
-claude mcp add ruv-swarm npx ruv-swarm mcp start  # Optional: Enhanced coordination
-claude mcp add flow-nexus npx flow-nexus@latest mcp start  # Optional: Cloud features
+# Add MCP servers (Tiara required, others optional)
+agent-core mcp add tiara npx tiara@alpha mcp start
+agent-core mcp add ruv-swarm npx ruv-swarm mcp start  # Optional: Enhanced coordination
+agent-core mcp add flow-nexus npx flow-nexus@latest mcp start  # Optional: Cloud features
 ```
 
 ## MCP Tool Categories
@@ -200,19 +199,19 @@ Flow-Nexus extends MCP capabilities with 70+ cloud-based orchestration tools:
 - Login: `mcp__flow-nexus__user_login` or `npx flow-nexus@latest login`
 - Access 70+ specialized MCP tools for advanced orchestration
 
-## 🚀 Agent Execution Flow with Claude Code
+## Agent Execution Flow with Agent-Core
 
 ### The Correct Pattern:
 
 1. **Optional**: Use MCP tools to set up coordination topology
-2. **REQUIRED**: Use Claude Code's Task tool to spawn agents that do actual work
+2. **REQUIRED**: Use Agent-Core's Task tool to spawn agents that do actual work
 3. **REQUIRED**: Each agent runs hooks for coordination
 4. **REQUIRED**: Batch all operations in single messages
 
 ### Example Full-Stack Development:
 
 ```javascript
-// Single message with all agent spawning via Claude Code's Task tool
+// Single message with all agent spawning via Agent-Core's Task tool
 [Parallel Agent Execution]:
   Task("Backend Developer", "Build REST API with Express. Use hooks for coordination.", "backend-dev")
   Task("Frontend Developer", "Create React UI. Coordinate with backend via memory.", "coder")
@@ -230,43 +229,43 @@ Flow-Nexus extends MCP capabilities with 70+ cloud-based orchestration tools:
   Write "database/schema.sql"
 ```
 
-## 📋 Agent Coordination Protocol
+## Agent Coordination Protocol
 
 ### Every Agent Spawned via Task Tool MUST:
 
-**1️⃣ BEFORE Work:**
+**BEFORE Work:**
 ```bash
-npx claude-flow@alpha hooks pre-task --description "[task]"
-npx claude-flow@alpha hooks session-restore --session-id "swarm-[id]"
+npx tiara@alpha hooks pre-task --description "[task]"
+npx tiara@alpha hooks session-restore --session-id "swarm-[id]"
 ```
 
-**2️⃣ DURING Work:**
+**DURING Work:**
 ```bash
-npx claude-flow@alpha hooks post-edit --file "[file]" --memory-key "swarm/[agent]/[step]"
-npx claude-flow@alpha hooks notify --message "[what was done]"
+npx tiara@alpha hooks post-edit --file "[file]" --memory-key "swarm/[agent]/[step]"
+npx tiara@alpha hooks notify --message "[what was done]"
 ```
 
-**3️⃣ AFTER Work:**
+**AFTER Work:**
 ```bash
-npx claude-flow@alpha hooks post-task --task-id "[task]"
-npx claude-flow@alpha hooks session-end --export-metrics true
+npx tiara@alpha hooks post-task --task-id "[task]"
+npx tiara@alpha hooks session-end --export-metrics true
 ```
 
-## 🎯 Concurrent Execution Examples
+## Concurrent Execution Examples
 
-### ✅ CORRECT WORKFLOW: MCP Coordinates, Claude Code Executes
+### CORRECT WORKFLOW: MCP Coordinates, Claude Code Executes
 
 ```javascript
 // Step 1: MCP tools set up coordination (optional, for complex tasks)
 [Single Message - Coordination Setup]:
-  mcp__claude-flow__swarm_init { topology: "mesh", maxAgents: 6 }
-  mcp__claude-flow__agent_spawn { type: "researcher" }
-  mcp__claude-flow__agent_spawn { type: "coder" }
-  mcp__claude-flow__agent_spawn { type: "tester" }
+  mcp__tiara__swarm_init { topology: "mesh", maxAgents: 6 }
+  mcp__tiara__agent_spawn { type: "researcher" }
+  mcp__tiara__agent_spawn { type: "coder" }
+  mcp__tiara__agent_spawn { type: "tester" }
 
-// Step 2: Claude Code Task tool spawns ACTUAL agents that do the work
+// Step 2: Agent-Core's Task tool spawns ACTUAL agents that do the work
 [Single Message - Parallel Agent Execution]:
-  // Claude Code's Task tool spawns real agents concurrently
+  // Agent-Core's Task tool spawns real agents concurrently
   Task("Research agent", "Analyze API requirements and best practices. Check memory for prior decisions.", "researcher")
   Task("Coder agent", "Implement REST endpoints with authentication. Coordinate via hooks.", "coder")
   Task("Database agent", "Design and implement database schema. Store decisions in memory.", "code-analyzer")
@@ -293,21 +292,14 @@ npx claude-flow@alpha hooks session-end --export-metrics true
   Write "app/docs/API.md"
 ```
 
-### ❌ WRONG (Multiple Messages):
+### WRONG (Multiple Messages):
 ```javascript
-Message 1: mcp__claude-flow__swarm_init
+Message 1: mcp__tiara__swarm_init
 Message 2: Task("agent 1")
 Message 3: TodoWrite { todos: [single todo] }
 Message 4: Write "file.js"
 // This breaks parallel coordination!
 ```
-
-## Performance Benefits
-
-- **84.8% SWE-Bench solve rate**
-- **32.3% token reduction**
-- **2.8-4.4x speed improvement**
-- **27+ neural models**
 
 ## Hooks Integration
 
@@ -332,40 +324,9 @@ Message 4: Write "file.js"
 - Restore context
 - Export workflows
 
-## Advanced Features (v2.0.0)
-
-- 🚀 Automatic Topology Selection
-- ⚡ Parallel Execution (2.8-4.4x speed)
-- 🧠 Neural Training
-- 📊 Bottleneck Analysis
-- 🤖 Smart Auto-Spawning
-- 🛡️ Self-Healing Workflows
-- 💾 Cross-Session Memory
-- 🔗 GitHub Integration
-
-## Integration Tips
-
-1. Start with basic swarm init
-2. Scale agents gradually
-3. Use memory for context
-4. Monitor progress regularly
-5. Train patterns from success
-6. Enable hooks automation
-7. Use GitHub tools first
 
 ## Support
 
 - Documentation: https://github.com/ruvnet/claude-flow
 - Issues: https://github.com/ruvnet/claude-flow/issues
 - Flow-Nexus Platform: https://flow-nexus.ruv.io (registration required for cloud features)
-
----
-
-Remember: **Claude Flow coordinates, Claude Code creates!**
-
-# important-instruction-reminders
-Do what has been asked; nothing more, nothing less.
-NEVER create files unless they're absolutely necessary for achieving your goal.
-ALWAYS prefer editing an existing file to creating a new one.
-NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
-Never save working files, text/mds and tests to the root folder.
