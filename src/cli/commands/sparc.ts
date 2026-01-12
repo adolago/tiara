@@ -18,6 +18,74 @@ interface SparcConfig {
 
 let sparcConfig: SparcConfig | null = null;
 
+// Default SPARC modes when no .roomodes file exists
+const defaultSparcModes: SparcMode[] = [
+  {
+    slug: 'spec-pseudocode',
+    name: 'Specification & Pseudocode',
+    roleDefinition: 'Create detailed specifications and pseudocode for the task',
+    customInstructions: 'Focus on clear requirements, edge cases, and algorithmic thinking',
+    groups: ['read', 'edit'],
+    source: 'builtin',
+  },
+  {
+    slug: 'architect',
+    name: 'Architecture Design',
+    roleDefinition: 'Design system architecture and component structure',
+    customInstructions: 'Consider scalability, maintainability, and separation of concerns',
+    groups: ['read', 'edit', 'browser'],
+    source: 'builtin',
+  },
+  {
+    slug: 'code',
+    name: 'Code Implementation',
+    roleDefinition: 'Implement code solutions following best practices',
+    customInstructions: 'Write clean, tested, documented code. Keep files under 500 lines.',
+    groups: ['read', 'edit', 'command'],
+    source: 'builtin',
+  },
+  {
+    slug: 'tdd',
+    name: 'Test-Driven Development',
+    roleDefinition: 'Write tests first, then implement to pass them',
+    customInstructions: 'Follow red-green-refactor cycle. Aim for high test coverage.',
+    groups: ['read', 'edit', 'command'],
+    source: 'builtin',
+  },
+  {
+    slug: 'debug',
+    name: 'Debug & Troubleshoot',
+    roleDefinition: 'Identify and fix issues in code',
+    customInstructions: 'Use systematic debugging approaches. Document root causes.',
+    groups: ['read', 'edit', 'command'],
+    source: 'builtin',
+  },
+  {
+    slug: 'security-review',
+    name: 'Security Review',
+    roleDefinition: 'Analyze code for security vulnerabilities',
+    customInstructions: 'Check for OWASP top 10, input validation, auth issues.',
+    groups: ['read', 'browser'],
+    source: 'builtin',
+  },
+  {
+    slug: 'integration',
+    name: 'Integration',
+    roleDefinition: 'Integrate components and verify complete solution',
+    customInstructions: 'Ensure all parts work together. Run integration tests.',
+    groups: ['read', 'edit', 'command'],
+    source: 'builtin',
+  },
+  {
+    slug: 'refinement-optimization-mode',
+    name: 'Refinement & Optimization',
+    roleDefinition: 'Refactor and optimize existing code',
+    customInstructions: 'Improve performance, readability, and maintainability.',
+    groups: ['read', 'edit', 'command'],
+    source: 'builtin',
+  },
+];
+
 async function loadSparcConfig(): Promise<SparcConfig> {
   if (sparcConfig) {
     return sparcConfig;
@@ -29,9 +97,19 @@ async function loadSparcConfig(): Promise<SparcConfig> {
     const content = await readFile(configPath, 'utf-8');
     sparcConfig = JSON.parse(content);
     return sparcConfig!;
-  } catch (error) {
+  } catch (err) {
+    // If .roomodes doesn't exist, use default modes
+    const isNotFound =
+      err instanceof Error &&
+      (err as NodeJS.ErrnoException).code === 'ENOENT';
+    if (isNotFound) {
+      sparcConfig = { customModes: defaultSparcModes };
+      return sparcConfig;
+    }
+    // For parse errors or other issues, provide helpful message
     throw new Error(
-      `Failed to load SPARC configuration: ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to load SPARC configuration from .roomodes: ${err instanceof Error ? err.message : String(err)}. ` +
+      `Create a .roomodes file or use default modes.`,
     );
   }
 }

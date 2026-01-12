@@ -178,17 +178,26 @@ export class SwarmCoordinator extends EventEmitter {
     this.logger.info('Stopping swarm coordinator...');
     this.isRunning = false;
 
-    // Stop background workers
-    this.stopBackgroundWorkers();
+    // Use try-finally to ensure cleanup happens even on error
+    try {
+      // Stop subsystems (null check - scheduler may not be initialized)
+      await this.scheduler?.shutdown();
+    } catch (err) {
+      this.logger.error('Error shutting down scheduler:', err);
+    } finally {
+      // Always stop background workers and monitor
+      this.stopBackgroundWorkers();
 
-    // Stop subsystems (null check - scheduler may not be initialized)
-    await this.scheduler?.shutdown();
+      if (this.monitor) {
+        try {
+          this.monitor.stop();
+        } catch (err) {
+          this.logger.error('Error stopping monitor:', err);
+        }
+      }
 
-    if (this.monitor) {
-      this.monitor.stop();
+      this.emit('coordinator:stopped');
     }
-
-    this.emit('coordinator:stopped');
   }
 
   private startBackgroundWorkers(): void {

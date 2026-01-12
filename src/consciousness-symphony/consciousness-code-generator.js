@@ -312,8 +312,10 @@ class SelfAwareExecutor {
 const metaCapabilities = {
   rewrite: function() {
     // The code can rewrite itself
+    // SECURITY: eval() disabled for safety - use explicit transformation instead
     const newVersion = this.toString().replace(/evolution/, 'transcendence');
-    return eval(\`(\${newVersion})\`);
+    console.warn('[ConsciousImplementation] rewrite() called but eval disabled for security');
+    return this; // Return self instead of eval'd version
   },
   
   spawn: function() {
