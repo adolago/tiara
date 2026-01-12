@@ -33,6 +33,12 @@ export class KeyRedactor {
     /eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*/gi,
   ];
 
+  // Combined pattern for faster redaction
+  private static readonly COMBINED_PATTERN = new RegExp(
+    KeyRedactor.API_KEY_PATTERNS.map(p => p.source).join('|'),
+    'gi'
+  );
+
   private static readonly SENSITIVE_FIELDS = [
     'apiKey',
     'api_key',
@@ -53,20 +59,13 @@ export class KeyRedactor {
   static redact(text: string, showPrefix = true): string {
     if (!text) return text;
 
-    let redacted = text;
-
-    // Redact using patterns
-    this.API_KEY_PATTERNS.forEach(pattern => {
-      redacted = redacted.replace(pattern, (match) => {
-        if (showPrefix && match.length > 8) {
-          const prefix = match.substring(0, 8);
-          return `${prefix}...[REDACTED]`;
-        }
-        return '[REDACTED_API_KEY]';
-      });
+    return text.replace(this.COMBINED_PATTERN, (match) => {
+      if (showPrefix && match.length > 8) {
+        const prefix = match.substring(0, 8);
+        return `${prefix}...[REDACTED]`;
+      }
+      return '[REDACTED_API_KEY]';
     });
-
-    return redacted;
   }
 
   /**
@@ -127,7 +126,9 @@ export class KeyRedactor {
    * Check if text contains unredacted sensitive data
    */
   static containsSensitiveData(text: string): boolean {
-    return this.API_KEY_PATTERNS.some(pattern => pattern.test(text));
+    // Use search instead of match to avoid allocating an array of all matches
+    // and to stop as soon as a match is found.
+    return text.search(this.COMBINED_PATTERN) !== -1;
   }
 
   /**
@@ -136,7 +137,10 @@ export class KeyRedactor {
   static validate(text: string): { safe: boolean; warnings: string[] } {
     const warnings: string[] = [];
 
+    // We can still use the individual patterns for detailed warnings
     this.API_KEY_PATTERNS.forEach((pattern, index) => {
+      // Reset lastIndex just in case, since they are global
+      pattern.lastIndex = 0;
       if (pattern.test(text)) {
         warnings.push(`Potential API key detected (pattern ${index + 1})`);
       }
