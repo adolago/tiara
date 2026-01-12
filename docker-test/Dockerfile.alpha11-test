@@ -1,7 +1,7 @@
 # Dockerfile for testing claude-flow@2.7.0-alpha.11
 # Tests: init command, skills system, MCP server, regressions
 
-FROM node:20-slim
+FROM node:20.19.6-trixie-slim
 
 # Set working directory
 WORKDIR /test
