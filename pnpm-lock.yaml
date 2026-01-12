@@ -15,11 +15,11 @@ importers:
         specifier: ^0.65.0
         version: 0.65.0(zod@3.25.76)
       '@modelcontextprotocol/sdk':
-        specifier: ^1.0.4
-        version: 1.17.0
+        specifier: ^1.25.2
+        version: 1.25.2(hono@4.11.3)(zod@3.25.76)
       agentic-flow:
         specifier: ^1.9.4
-        version: 1.10.2(@modelcontextprotocol/sdk@1.17.0)(hono@4.11.3)
+        version: 1.10.2(@modelcontextprotocol/sdk@1.25.2(hono@4.11.3)(zod@3.25.76))(hono@4.11.3)
       ajv:
         specifier: ^8.17.1
         version: 8.17.1
@@ -1233,10 +1233,6 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.29':
     resolution: {integrity: sha512-uw6guiW/gcAGPDhLmd77/6lW8QLeiV5RUTsAX46Db6oLhGaVj4lhnPwb184s1bkc8kdVg/+h988dro8GRDpmYQ==}
-
-  '@modelcontextprotocol/sdk@1.17.0':
-    resolution: {integrity: sha512-qFfbWFA7r1Sd8D697L7GkTd36yqDuTkvz0KfOGkgXR8EUhQn3/EDNIR/qUdQNMT8IjmasBvHWuXeisxtXTQT2g==}
-    engines: {node: '>=18'}
 
   '@modelcontextprotocol/sdk@1.25.2':
     resolution: {integrity: sha512-LZFeo4F9M5qOhC/Uc1aQSrBHxMrvxett+9KLHt7OhcExtoiRN9DKgbZffMP/nxjutWDQpfMDfP3nkHI4X9ijww==}
@@ -5093,11 +5089,6 @@ packages:
     resolution: {integrity: sha512-CzhO+pFNo8ajLM2d2IW/R93ipy99LWjtwblvC1RsoSUMZgyLbYFr221TnSNT7GjGdYui6P459mw9JH/g/zW2ug==}
     engines: {node: '>=18'}
 
-  zod-to-json-schema@3.24.6:
-    resolution: {integrity: sha512-h/z3PKvcTcTetyjl1fkj79MHNEjm+HpD6NXheWjzOekY7kV+lwDYnHw+ivHkijnCSMz1yJaWBD9vu/Fcmk+vEg==}
-    peerDependencies:
-      zod: ^3.24.1
-
   zod-to-json-schema@3.25.1:
     resolution: {integrity: sha512-pM/SU9d3YAggzi6MtR4h7ruuQlqKtad8e9S0fmxcMi+ueAK5Korys/aWcV9LIIHTVbj01NdzxcnXSN+O74ZIVA==}
     peerDependencies:
@@ -6006,12 +5997,12 @@ snapshots:
 
   '@eslint/js@8.57.1': {}
 
-  '@google/genai@1.35.0(@modelcontextprotocol/sdk@1.17.0)':
+  '@google/genai@1.35.0(@modelcontextprotocol/sdk@1.25.2(hono@4.11.3)(zod@3.25.76))':
     dependencies:
       google-auth-library: 10.5.0
       ws: 8.18.3
     optionalDependencies:
-      '@modelcontextprotocol/sdk': 1.17.0
+      '@modelcontextprotocol/sdk': 1.25.2(hono@4.11.3)(zod@3.25.76)
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -6296,23 +6287,6 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.4
-
-  '@modelcontextprotocol/sdk@1.17.0':
-    dependencies:
-      ajv: 6.12.6
-      content-type: 1.0.5
-      cors: 2.8.5
-      cross-spawn: 7.0.6
-      eventsource: 3.0.7
-      eventsource-parser: 3.0.3
-      express: 5.1.0
-      express-rate-limit: 7.5.1(express@5.1.0)
-      pkce-challenge: 5.0.0
-      raw-body: 3.0.0
-      zod: 3.25.76
-      zod-to-json-schema: 3.24.6(zod@3.25.76)
-    transitivePeerDependencies:
-      - supports-color
 
   '@modelcontextprotocol/sdk@1.25.2(hono@4.11.3)(zod@3.25.76)':
     dependencies:
@@ -7103,11 +7077,11 @@ snapshots:
       - hono
       - supports-color
 
-  agentic-flow@1.10.2(@modelcontextprotocol/sdk@1.17.0)(hono@4.11.3):
+  agentic-flow@1.10.2(@modelcontextprotocol/sdk@1.25.2(hono@4.11.3)(zod@3.25.76))(hono@4.11.3):
     dependencies:
       '@anthropic-ai/claude-agent-sdk': 0.1.77(zod@3.25.76)
       '@anthropic-ai/sdk': 0.65.0(zod@3.25.76)
-      '@google/genai': 1.35.0(@modelcontextprotocol/sdk@1.17.0)
+      '@google/genai': 1.35.0(@modelcontextprotocol/sdk@1.25.2(hono@4.11.3)(zod@3.25.76))
       '@supabase/supabase-js': 2.90.1
       '@xenova/transformers': 2.17.2
       agentdb: 1.6.1(hono@4.11.3)
@@ -10972,10 +10946,6 @@ snapshots:
   yoctocolors-cjs@2.1.3: {}
 
   yoctocolors@2.1.2: {}
-
-  zod-to-json-schema@3.24.6(zod@3.25.76):
-    dependencies:
-      zod: 3.25.76
 
   zod-to-json-schema@3.25.1(zod@3.25.76):
     dependencies:
