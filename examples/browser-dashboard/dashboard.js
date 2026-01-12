@@ -147,11 +147,19 @@ class ClaudeFlowDashboard {
         const text = document.getElementById('consensusText');
         const margin = document.getElementById('securityMargin');
         const consensusPercentage = document.getElementById('consensusPercentage');
+        const consensusBar = document.querySelector('.consensus-bar');
 
         fill.style.width = `${percentage}%`;
         text.textContent = `${this.consensus.votesFor}/${this.consensus.total}`;
         margin.textContent = `+${Math.max(0, this.consensus.votesFor - this.consensus.threshold)}`;
         consensusPercentage.textContent = `${percentage.toFixed(1)}%`;
+
+        // Update ARIA attributes
+        if (consensusBar) {
+            consensusBar.setAttribute('aria-valuenow', this.consensus.votesFor);
+            consensusBar.setAttribute('aria-valuemax', this.consensus.total);
+            consensusBar.setAttribute('aria-valuetext', `${this.consensus.votesFor} out of ${this.consensus.total} votes (${percentage.toFixed(1)}%)`);
+        }
 
         // Color coding
         if (this.consensus.votesFor >= this.consensus.threshold) {

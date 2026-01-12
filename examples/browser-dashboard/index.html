@@ -248,6 +248,12 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
+        .btn:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3);
+        }
+
         .btn:active {
             transform: translateY(0);
         }
@@ -277,12 +283,13 @@
 </head>
 <body>
     <div class="dashboard">
-        <div class="header">
+        <header class="header">
             <h1>🌐 Claude Flow Swarm Dashboard</h1>
             <p>Browser-Based Multi-Agent Orchestration Monitor</p>
-        </div>
+        </header>
 
-        <div class="status-bar">
+        <main>
+        <section class="status-bar" aria-label="System Status">
             <div class="stat">
                 <span class="stat-value" id="agentCount">0</span>
                 <span class="stat-label">Active Agents</span>
@@ -296,23 +303,23 @@
                 <span class="stat-label">Consensus</span>
             </div>
             <div class="stat">
-                <span class="connection-status" id="connectionStatus"></span>
+                <span class="connection-status" id="connectionStatus" role="status" aria-label="Connection Status"></span>
                 <span class="stat-label" id="connectionLabel">Disconnected</span>
             </div>
-        </div>
+        </section>
 
         <div class="grid">
-            <div class="card">
-                <h2>🤖 Active Agents</h2>
-                <ul class="agent-list" id="agentList">
+            <section class="card" aria-labelledby="active-agents-title">
+                <h2 id="active-agents-title">🤖 Active Agents</h2>
+                <ul class="agent-list" id="agentList" aria-live="polite">
                     <!-- Agents will be populated here -->
                 </ul>
-            </div>
+            </section>
 
-            <div class="card">
-                <h2>🎯 Byzantine Consensus</h2>
+            <section class="card" aria-labelledby="consensus-title">
+                <h2 id="consensus-title">🎯 Byzantine Consensus</h2>
                 <div class="consensus-tracker">
-                    <div class="consensus-bar">
+                    <div class="consensus-bar" role="progressbar" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0">
                         <div class="consensus-fill" id="consensusFill" style="width: 0%">
                             <span id="consensusText">0/0</span>
                         </div>
@@ -334,23 +341,23 @@
         </div>
 
         <div class="grid">
-            <div class="card">
-                <h2>📊 Swarm Visualization</h2>
+            <section class="card" aria-labelledby="viz-title">
+                <h2 id="viz-title">📊 Swarm Visualization</h2>
                 <div class="visualization">
-                    <canvas id="swarmCanvas"></canvas>
+                    <canvas id="swarmCanvas" role="img" aria-label="Real-time swarm network visualization showing agent nodes and connections"></canvas>
                 </div>
-            </div>
+            </section>
 
-            <div class="card">
-                <h2>📝 Activity Log</h2>
-                <div class="log-container" id="activityLog">
+            <section class="card" aria-labelledby="log-title">
+                <h2 id="log-title">📝 Activity Log</h2>
+                <div class="log-container" id="activityLog" aria-live="polite" role="log">
                     <!-- Log entries will appear here -->
                 </div>
-            </div>
+            </section>
         </div>
 
-        <div class="card">
-            <h2>⚡ Quick Actions</h2>
+        <section class="card" aria-labelledby="actions-title">
+            <h2 id="actions-title">⚡ Quick Actions</h2>
             <div class="controls">
                 <button class="btn" onclick="spawnAgents()">
                     Spawn 5 Agents
@@ -365,7 +372,8 @@
                     Connect to Server
                 </button>
             </div>
-        </div>
+        </section>
+        </main>
     </div>
 
     <script src="dashboard.js"></script>
