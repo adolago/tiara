@@ -1,7 +1,7 @@
 {
   "name": "tiara",
-  "version": "3.0.0",
-  "description": "Enterprise-grade AI agent orchestration with WASM-powered ReasoningBank memory and AgentDB vector database",
+  "version": "0.1.20260112",
+  "description": "AI orchestration layer for agent-core - SPARC methodology, swarm coordination, and memory systems",
   "mcpName": "io.github.adolago/tiara",
   "main": "cli.mjs",
   "bin": {
