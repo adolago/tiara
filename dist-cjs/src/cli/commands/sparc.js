@@ -1,7 +1,104 @@
 import { success, error, warning, info } from '../cli-core.js';
 import chalk from 'chalk';
+import { getAgentCoreClient, SPARC_PERSONA_MAP } from '../../agent-core/index.js';
 const { blue, yellow, green, magenta, cyan } = chalk;
 let sparcConfig = null;
+const defaultSparcModes = [
+    {
+        slug: 'spec-pseudocode',
+        name: 'Specification & Pseudocode',
+        roleDefinition: 'Create detailed specifications and pseudocode for the task',
+        customInstructions: 'Focus on clear requirements, edge cases, and algorithmic thinking',
+        groups: [
+            'read',
+            'edit'
+        ],
+        source: 'builtin'
+    },
+    {
+        slug: 'architect',
+        name: 'Architecture Design',
+        roleDefinition: 'Design system architecture and component structure',
+        customInstructions: 'Consider scalability, maintainability, and separation of concerns',
+        groups: [
+            'read',
+            'edit',
+            'browser'
+        ],
+        source: 'builtin'
+    },
+    {
+        slug: 'code',
+        name: 'Code Implementation',
+        roleDefinition: 'Implement code solutions following best practices',
+        customInstructions: 'Write clean, tested, documented code. Keep files under 500 lines.',
+        groups: [
+            'read',
+            'edit',
+            'command'
+        ],
+        source: 'builtin'
+    },
+    {
+        slug: 'tdd',
+        name: 'Test-Driven Development',
+        roleDefinition: 'Write tests first, then implement to pass them',
+        customInstructions: 'Follow red-green-refactor cycle. Aim for high test coverage.',
+        groups: [
+            'read',
+            'edit',
+            'command'
+        ],
+        source: 'builtin'
+    },
+    {
+        slug: 'debug',
+        name: 'Debug & Troubleshoot',
+        roleDefinition: 'Identify and fix issues in code',
+        customInstructions: 'Use systematic debugging approaches. Document root causes.',
+        groups: [
+            'read',
+            'edit',
+            'command'
+        ],
+        source: 'builtin'
+    },
+    {
+        slug: 'security-review',
+        name: 'Security Review',
+        roleDefinition: 'Analyze code for security vulnerabilities',
+        customInstructions: 'Check for OWASP top 10, input validation, auth issues.',
+        groups: [
+            'read',
+            'browser'
+        ],
+        source: 'builtin'
+    },
+    {
+        slug: 'integration',
+        name: 'Integration',
+        roleDefinition: 'Integrate components and verify complete solution',
+        customInstructions: 'Ensure all parts work together. Run integration tests.',
+        groups: [
+            'read',
+            'edit',
+            'command'
+        ],
+        source: 'builtin'
+    },
+    {
+        slug: 'refinement-optimization-mode',
+        name: 'Refinement & Optimization',
+        roleDefinition: 'Refactor and optimize existing code',
+        customInstructions: 'Improve performance, readability, and maintainability.',
+        groups: [
+            'read',
+            'edit',
+            'command'
+        ],
+        source: 'builtin'
+    }
+];
 async function loadSparcConfig() {
     if (sparcConfig) {
         return sparcConfig;
@@ -12,8 +109,15 @@ async function loadSparcConfig() {
         const content = await readFile(configPath, 'utf-8');
         sparcConfig = JSON.parse(content);
         return sparcConfig;
-    } catch (error) {
-        throw new Error(`Failed to load SPARC configuration: ${error instanceof Error ? error.message : String(error)}`);
+    } catch (err) {
+        const isNotFound = err instanceof Error && err.code === 'ENOENT';
+        if (isNotFound) {
+            sparcConfig = {
+                customModes: defaultSparcModes
+            };
+            return sparcConfig;
+        }
+        throw new Error(`Failed to load SPARC configuration from .roomodes: ${err instanceof Error ? err.message : String(err)}. ` + `Create a .roomodes file or use default modes.`);
     }
 }
 export async function sparcAction(ctx) {
@@ -129,7 +233,7 @@ async function runSparcMode(ctx) {
         console.log(`🔧 Tools: ${tools}`);
         console.log(`📋 Task: ${taskDescription}`);
         console.log();
-        await executeClaudeWithSparc(enhancedTask, tools, instanceId, ctx.flags);
+        await executeClaudeWithSparc(enhancedTask, tools, instanceId, ctx.flags, mode.slug);
     } catch (err) {
         error(`Failed to run SPARC mode: ${err.message}`);
     }
@@ -197,7 +301,7 @@ async function runTddFlow(ctx) {
             });
             const tools = buildToolsFromGroups(mode.groups);
             const instanceId = `sparc-tdd-${step.phase.toLowerCase()}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
-            await executeClaudeWithSparc(enhancedTask, tools, instanceId, ctx.flags);
+            await executeClaudeWithSparc(enhancedTask, tools, instanceId, ctx.flags, step.mode);
             if (ctx.flags.sequential !== false) {
                 console.log('Phase completed. Press Enter to continue to next phase, or Ctrl+C to stop...');
                 await new Promise(async (resolve)=>{
@@ -263,7 +367,7 @@ async function runSparcWorkflow(ctx) {
             });
             const tools = buildToolsFromGroups(mode.groups);
             const instanceId = `sparc-workflow-${i + 1}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
-            await executeClaudeWithSparc(enhancedTask, tools, instanceId, ctx.flags);
+            await executeClaudeWithSparc(enhancedTask, tools, instanceId, ctx.flags, step.mode);
             if (workflow.sequential !== false && i < workflow.steps.length - 1) {
                 console.log('Step completed. Press Enter to continue, or Ctrl+C to stop...');
                 await new Promise((resolve)=>{
@@ -387,47 +491,65 @@ function buildToolsFromGroups(groups) {
     }
     return Array.from(tools).join(',');
 }
-async function executeClaudeWithSparc(enhancedTask, tools, instanceId, flags) {
-    const claudeArgs = [
-        enhancedTask
-    ];
-    claudeArgs.push('--allowedTools', tools);
-    if (flags.noPermissions || flags['no-permissions']) {
-        claudeArgs.push('--dangerously-skip-permissions');
-    }
-    if (flags.config) {
-        claudeArgs.push('--mcp-config', flags.config);
-    }
-    if (flags.verbose) {
-        claudeArgs.push('--verbose');
-    }
+async function executeClaudeWithSparc(enhancedTask, _tools, instanceId, flags, modeSlug) {
+    const persona = modeSlug ? SPARC_PERSONA_MAP[modeSlug] ?? SPARC_PERSONA_MAP['default'] : SPARC_PERSONA_MAP['default'];
     try {
-        const { spawn } = await import('child_process');
-        const child = spawn('claude', claudeArgs, {
-            env: {
-                ...process.env,
-                CLAUDE_INSTANCE_ID: instanceId,
-                CLAUDE_SPARC_MODE: 'true',
-                CLAUDE_FLOW_MEMORY_ENABLED: 'true',
-                CLAUDE_FLOW_MEMORY_NAMESPACE: flags.namespace || 'sparc'
+        const client = getAgentCoreClient();
+        await client.ensureConnected();
+        const session = await client.createSession({
+            title: instanceId
+        });
+        info(`Routing to persona: ${persona}`);
+        if (flags.verbose) {
+            console.log(`Session ID: ${session.id}`);
+            console.log(`Mode: ${modeSlug ?? 'default'}`);
+        }
+        const callbacks = {
+            onText: (text)=>process.stdout.write(text),
+            onReasoning: (text)=>{
+                if (flags.verbose) {
+                    console.log(chalk.dim(`[reasoning] ${text}`));
+                }
             },
-            stdio: 'inherit'
-        });
-        const status = await new Promise((resolve)=>{
-            child.on('close', (code)=>{
-                resolve({
-                    success: code === 0,
-                    code
-                });
-            });
-        });
-        if (status.success) {
+            onToolStart: (tool)=>{
+                if (flags.verbose) {
+                    console.log(chalk.cyan(`[tool] ${tool}...`));
+                }
+            },
+            onToolEnd: (tool, result)=>{
+                if (flags.verbose) {
+                    console.log(chalk.green(`[tool] ${tool} completed`));
+                }
+            },
+            onError: (err)=>{
+                error(`Error: ${err.message}`);
+            }
+        };
+        const result = await client.prompt({
+            sessionId: session.id,
+            prompt: enhancedTask,
+            persona
+        }, callbacks);
+        try {
+            await client.deleteSession(session.id);
+        } catch  {}
+        if (result.success) {
+            console.log();
             success(`SPARC instance ${instanceId} completed successfully`);
+            if (flags.verbose && result.tokenCount > 0) {
+                info(`Tokens used: ${result.tokenCount}`);
+            }
         } else {
-            error(`SPARC instance ${instanceId} exited with code ${status.code}`);
+            error(`SPARC instance ${instanceId} failed: ${result.error ?? 'Unknown error'}`);
         }
     } catch (err) {
-        error(`Failed to execute Claude: ${err.message}`);
+        const message = err instanceof Error ? err.message : String(err);
+        if (message.includes('daemon not running')) {
+            error(`agent-core daemon not running. Start it with:`);
+            console.log(chalk.yellow('  agent-core daemon --external-gateway'));
+        } else {
+            error(`Failed to execute SPARC mode: ${message}`);
+        }
     }
 }
 async function showSparcHelp() {

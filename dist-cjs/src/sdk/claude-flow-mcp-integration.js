@@ -1,8 +1,8 @@
 import { query } from '@anthropic-ai/claude-code';
-import { RealSessionForking } from './session-forking';
-import { RealQueryController } from './query-control';
-import { RealCheckpointManager } from './checkpoint-manager';
-import { createMathMcpServer, createSessionMcpServer, createCheckpointMcpServer, createQueryControlMcpServer } from './in-process-mcp';
+import { RealSessionForking } from './session-forking.js';
+import { RealQueryController } from './query-control.js';
+import { RealCheckpointManager } from './checkpoint-manager.js';
+import { createMathMcpServer, createSessionMcpServer, createCheckpointMcpServer, createQueryControlMcpServer } from './in-process-mcp.js';
 export class IntegratedClaudeFlowSession {
     forking;
     controller;

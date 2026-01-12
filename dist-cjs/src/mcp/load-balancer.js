@@ -110,6 +110,7 @@ export class LoadBalancer {
     requestTimes = [];
     requestsInLastSecond = 0;
     lastSecondTimestamp = 0;
+    cleanupInterval = null;
     constructor(config, logger){
         this.config = config;
         this.logger = logger;
@@ -125,9 +126,16 @@ export class LoadBalancer {
             circuitBreakerTrips: 0,
             lastReset: new Date()
         };
-        setInterval(()=>{
+        this.cleanupInterval = setInterval(()=>{
             this.cleanupSessionRateLimiters();
         }, 300000);
+        this.cleanupInterval.unref();
+    }
+    stop() {
+        if (this.cleanupInterval) {
+            clearInterval(this.cleanupInterval);
+            this.cleanupInterval = null;
+        }
     }
     async shouldAllowRequest(session, request) {
         if (!this.config.enabled) {
@@ -290,13 +298,25 @@ export class RequestQueue {
     processing = false;
     maxQueueSize;
     requestTimeout;
+    cleanupInterval = null;
     constructor(maxQueueSize = 1000, requestTimeout = 30000, logger){
         this.logger = logger;
         this.maxQueueSize = maxQueueSize;
         this.requestTimeout = requestTimeout;
-        setInterval(()=>{
+        this.cleanupInterval = setInterval(()=>{
             this.cleanupExpiredRequests();
         }, 10000);
+        this.cleanupInterval.unref();
+    }
+    stop() {
+        if (this.cleanupInterval) {
+            clearInterval(this.cleanupInterval);
+            this.cleanupInterval = null;
+        }
+        for (const item of this.queue){
+            item.reject(new Error('Request queue stopped'));
+        }
+        this.queue = [];
     }
     async enqueue(session, request, processor) {
         if (this.queue.length >= this.maxQueueSize) {

@@ -2183,90 +2183,15 @@ Now, please proceed with the task: ${task}`;
     console.log('For detailed help on enhanced commands: claude-flow help <command>');
     cli.command({
         name: 'hive-mind',
-        description: 'Collective intelligence swarm management',
+        description: '[Removed] Use agent-core daemon instead',
         aliases: [
-            'hive',
-            'swarm'
+            'hive'
         ],
-        options: [
-            {
-                name: 'command',
-                description: 'Hive Mind command (init, spawn, status, task, wizard)',
-                type: 'string'
-            },
-            {
-                name: 'swarm-id',
-                short: 's',
-                description: 'Swarm ID to operate on',
-                type: 'string'
-            },
-            {
-                name: 'topology',
-                short: 't',
-                description: 'Swarm topology (mesh, hierarchical, ring, star)',
-                type: 'string',
-                default: 'hierarchical'
-            },
-            {
-                name: 'max-agents',
-                short: 'm',
-                description: 'Maximum number of agents',
-                type: 'number',
-                default: 8
-            },
-            {
-                name: 'interactive',
-                short: 'i',
-                description: 'Run in interactive mode',
-                type: 'boolean'
-            }
-        ],
-        action: async (ctx)=>{
-            try {
-                const subcommand = ctx.args[0] || 'wizard';
-                const { hiveMindCommand } = await import('./hive-mind/index.js');
-                switch(subcommand){
-                    case 'init':
-                        const { initCommand } = await import('./hive-mind/init.js');
-                        await initCommand.parseAsync(process.argv.slice(3));
-                        break;
-                    case 'spawn':
-                        const { spawnCommand } = await import('./hive-mind/spawn.js');
-                        await spawnCommand.parseAsync(process.argv.slice(3));
-                        break;
-                    case 'status':
-                        const { statusCommand } = await import('./hive-mind/status.js');
-                        await statusCommand.parseAsync(process.argv.slice(3));
-                        break;
-                    case 'task':
-                        const { taskCommand } = await import('./hive-mind/task.js');
-                        await taskCommand.parseAsync(process.argv.slice(3));
-                        break;
-                    case 'stop':
-                        const { stopCommand } = await import('./hive-mind/stop.js');
-                        await stopCommand.parseAsync(process.argv.slice(3));
-                        break;
-                    case 'pause':
-                        const { pauseCommand } = await import('./hive-mind/pause.js');
-                        await pauseCommand.parseAsync(process.argv.slice(3));
-                        break;
-                    case 'resume':
-                        const { resumeCommand } = await import('./hive-mind/resume.js');
-                        await resumeCommand.parseAsync(process.argv.slice(3));
-                        break;
-                    case 'ps':
-                        const { psCommand } = await import('./hive-mind/ps.js');
-                        await psCommand.parseAsync(process.argv.slice(3));
-                        break;
-                    case 'wizard':
-                    default:
-                        const { wizardCommand } = await import('./hive-mind/wizard.js');
-                        await wizardCommand.parseAsync(process.argv.slice(3));
-                        break;
-                }
-            } catch (err) {
-                error(`Hive Mind error: ${getErrorMessage(err)}`);
-            }
+        options: [],
+        action: async (_ctx)=>{
+            error('The hive-mind command has been removed.');
+            info('Use agent-core daemon for swarm orchestration:');
+            console.log('  agent-core daemon --external-gateway');
         }
     });
     cli.command({

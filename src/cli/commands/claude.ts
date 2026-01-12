@@ -1,12 +1,18 @@
 /**
  * Claude instance management commands
+ *
+ * Uses agent-core daemon API for execution instead of spawning Claude CLI directly.
  */
 import { promises as fs } from 'node:fs';
 
 import { Command } from '../commander-fix.js';
 import chalk from 'chalk';
-import { spawn } from 'node:child_process';
 import { generateId } from '../../utils/helpers.js';
+import {
+  getAgentCoreClient,
+  type PersonaId,
+  type PromptCallbacks,
+} from '../../agent-core/index.js';
 
 export const claudeCommand = new Command()
   .name('claude')
@@ -42,7 +48,7 @@ claudeCommand
     try {
       const instanceId = generateId('claude');
 
-      // Build allowed tools list
+      // Build tools list (for display only, daemon handles tool access)
       let tools = options.tools;
       if (options.parallel && !tools.includes('BatchTool')) {
         tools += ',BatchTool,dispatch_agent';
@@ -51,25 +57,8 @@ claudeCommand
         tools += ',WebFetchTool';
       }
 
-      // Build Claude command
-      const claudeArgs = [task];
-      claudeArgs.push('--allowedTools', tools);
-
-      if (options.noPermissions) {
-        claudeArgs.push('--dangerously-skip-permissions');
-      }
-
-      if (options.config) {
-        claudeArgs.push('--mcp-config', options.config);
-      }
-
-      if (options.verbose) {
-        claudeArgs.push('--verbose');
-      }
-
       if (options.dryRun) {
-        console.log(chalk.yellow('DRY RUN - Would execute:'));
-        console.log(chalk.gray(`claude ${claudeArgs.join(' ')}`));
+        console.log(chalk.yellow('DRY RUN - Would execute via daemon:'));
         console.log('\nConfiguration:');
         console.log(`  Instance ID: ${instanceId}`);
         console.log(`  Task: ${task}`);
@@ -77,38 +66,75 @@ claudeCommand
         console.log(`  Mode: ${options.mode}`);
         console.log(`  Coverage: ${parseInt(options.coverage)}%`);
         console.log(`  Commit: ${options.commit}`);
+        console.log(`  Persona: zee (default)`);
         return;
       }
 
       console.log(chalk.green(`Spawning Claude instance: ${instanceId}`));
       console.log(chalk.gray(`Task: ${task}`));
       console.log(chalk.gray(`Tools: ${tools}`));
+      console.log(chalk.gray(`Routing to persona: zee`));
 
-      // Spawn Claude process
-      const claude = spawn('claude', claudeArgs, {
-        stdio: 'inherit',
-        env: {
-          ...process.env,
-          CLAUDE_INSTANCE_ID: instanceId,
-          CLAUDE_FLOW_MODE: options.mode,
-          CLAUDE_FLOW_COVERAGE: parseInt(options.coverage).toString(),
-          CLAUDE_FLOW_COMMIT: options.commit,
+      // Execute via agent-core daemon API
+      const client = getAgentCoreClient();
+      await client.ensureConnected();
+
+      const session = await client.createSession({
+        title: instanceId,
+      });
+
+      const callbacks: PromptCallbacks = {
+        onText: (text) => process.stdout.write(text),
+        onReasoning: (text) => {
+          if (options.verbose) {
+            console.log(chalk.dim(`[reasoning] ${text}`));
+          }
         },
-      });
+        onToolStart: (tool) => {
+          if (options.verbose) {
+            console.log(chalk.cyan(`[tool] ${tool}...`));
+          }
+        },
+        onToolEnd: (tool, _result) => {
+          if (options.verbose) {
+            console.log(chalk.green(`[tool] ${tool} completed`));
+          }
+        },
+        onError: (err) => {
+          console.error(chalk.red(`Error: ${err.message}`));
+        },
+      };
 
-      claude.on('error', (err) => {
-        console.error(chalk.red('Failed to spawn Claude:'), err.message);
-      });
+      const result = await client.prompt(
+        {
+          sessionId: session.id,
+          prompt: task,
+          persona: 'zee' as PersonaId,
+        },
+        callbacks
+      );
 
-      claude.on('exit', (code) => {
-        if (code === 0) {
-          console.log(chalk.green(`Claude instance ${instanceId} completed successfully`));
-        } else {
-          console.log(chalk.red(`Claude instance ${instanceId} exited with code ${code}`));
-        }
-      });
+      // Cleanup session
+      try {
+        await client.deleteSession(session.id);
+      } catch {
+        // Ignore cleanup errors
+      }
+
+      if (result.success) {
+        console.log(); // Newline after streamed output
+        console.log(chalk.green(`Claude instance ${instanceId} completed successfully`));
+      } else {
+        console.log(chalk.red(`Claude instance ${instanceId} failed: ${result.error ?? 'Unknown error'}`));
+      }
     } catch (error) {
-      console.error(chalk.red('Failed to spawn Claude:'), (error as Error).message);
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes('daemon not running')) {
+        console.error(chalk.red('agent-core daemon not running. Start it with:'));
+        console.log(chalk.yellow('  agent-core daemon --external-gateway'));
+      } else {
+        console.error(chalk.red('Failed to spawn Claude:'), message);
+      }
     }
   });
 
@@ -131,54 +157,66 @@ claudeCommand
         return;
       }
 
+      // Get client and ensure daemon is running
+      const client = getAgentCoreClient();
+      await client.ensureConnected();
+
       for (const task of workflow.tasks) {
-        const claudeArgs = [task.description || task.name];
-
-        // Add tools
-        if (task.tools) {
-          claudeArgs.push(
-            '--allowedTools',
-            Array.isArray(task.tools) ? task.tools.join(',') : task.tools,
-          );
-        }
-
-        // Add flags
-        if (task.skipPermissions) {
-          claudeArgs.push('--dangerously-skip-permissions');
-        }
-
-        if (task.config) {
-          claudeArgs.push('--mcp-config', task.config);
-        }
+        const taskPrompt = task.description || task.name;
+        const taskId = task.id || generateId('task');
 
         if (options.dryRun) {
           console.log(chalk.yellow(`\nDRY RUN - Task: ${task.name || task.id}`));
-          console.log(chalk.gray(`claude ${claudeArgs.join(' ')}`));
+          console.log(chalk.gray(`  Prompt: ${taskPrompt}`));
+          console.log(chalk.gray(`  Persona: ${task.persona || 'zee'}`));
         } else {
-          console.log(chalk.blue(`\nSpawning Claude for task: ${task.name || task.id}`));
+          console.log(chalk.blue(`\nExecuting task: ${task.name || task.id}`));
 
-          const claude = spawn('claude', claudeArgs, {
-            stdio: 'inherit',
-            env: {
-              ...process.env,
-              CLAUDE_TASK_ID: task.id || generateId('task'),
-              CLAUDE_TASK_TYPE: task.type || 'general',
-            },
+          const session = await client.createSession({
+            title: `batch-${taskId}`,
           });
 
-          // Wait for completion if sequential
-          if (!workflow.parallel) {
-            await new Promise((resolve) => {
-              claude.on('exit', resolve);
-            });
+          const callbacks: PromptCallbacks = {
+            onText: (text) => process.stdout.write(text),
+            onError: (err) => console.error(chalk.red(`Error: ${err.message}`)),
+          };
+
+          const result = await client.prompt(
+            {
+              sessionId: session.id,
+              prompt: taskPrompt,
+              persona: (task.persona || 'zee') as PersonaId,
+            },
+            callbacks
+          );
+
+          // Cleanup session
+          try {
+            await client.deleteSession(session.id);
+          } catch {
+            // Ignore cleanup errors
           }
+
+          if (result.success) {
+            console.log(chalk.green(`\nTask ${taskId} completed successfully`));
+          } else {
+            console.log(chalk.red(`\nTask ${taskId} failed: ${result.error ?? 'Unknown error'}`));
+          }
+
+          // Sequential execution (default) - already sequential via await
         }
       }
 
-      if (!options.dryRun && workflow.parallel) {
-        console.log(chalk.green('\nAll Claude instances spawned in parallel mode'));
+      if (!options.dryRun) {
+        console.log(chalk.green('\nWorkflow completed'));
       }
     } catch (error) {
-      console.error(chalk.red('Failed to process workflow:'), (error as Error).message);
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes('daemon not running')) {
+        console.error(chalk.red('agent-core daemon not running. Start it with:'));
+        console.log(chalk.yellow('  agent-core daemon --external-gateway'));
+      } else {
+        console.error(chalk.red('Failed to process workflow:'), message);
+      }
     }
   });
