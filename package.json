@@ -132,7 +132,7 @@
     "figlet": "^1.8.1",
     "flow-nexus": "^0.1.128",
     "fs-extra": "^11.2.0",
-    "glob": "^11.0.3",
+    "glob": "^11.1.0",
     "gradient-string": "^3.0.0",
     "helmet": "^7.1.0",
     "inquirer": "^9.2.12",
