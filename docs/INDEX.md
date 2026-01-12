@@ -1,8 +1,13 @@
-# 🚀 Claude Flow Documentation Hub
+# 🚀 Tiara (Claude Flow) Documentation Hub
 
-## Welcome to Claude Flow v2.0.0-alpha.88
+## Welcome to Tiara Orchestration Layer
 
-The ultimate AI agent orchestration platform with **54+ specialized agents**, **112 MCP tools**, and **swarm intelligence**. Build, deploy, and scale AI-powered applications with unprecedented speed and reliability.
+> **Note:** Tiara is the orchestration layer for agent-core. In production, use:
+> ```bash
+> agent-core daemon --external-gateway
+> ```
+
+The ultimate AI agent orchestration platform with **64+ specialized agents**, **112 MCP tools**, and **swarm intelligence**. Build, deploy, and scale AI-powered applications with unprecedented speed and reliability.
 
 ---
 

@@ -5,7 +5,7 @@
  * Replaces custom retry logic with SDK-based execution
  */
 
-import { spawn, ChildProcess } from 'node:child_process';
+import { ChildProcess } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
@@ -266,54 +266,38 @@ export class TaskExecutorSDK extends EventEmitter {
   }
 
   /**
-   * Execute interactive CLI (legacy support)
+   * Execute interactive CLI (DEPRECATED - use agent-core daemon instead)
+   *
+   * Legacy CLI spawn is deprecated. Interactive execution should go through:
+   * - agent-core daemon --external-gateway (for production)
+   * - AgentCoreClient from src/agent-core/client.ts
    */
   private async executeInteractiveCLI(
     task: TaskDefinition,
-    agent: AgentState
+    _agent: AgentState
   ): Promise<ExecutionResult> {
     const startTime = Date.now();
 
-    return new Promise((resolve) => {
-      const args = ['--no-visual', task.description];
-      const claudeProcess = spawn('claude', args, {
-        stdio: 'pipe',
-        env: { ...process.env }
-      });
+    // DEPRECATED: Direct CLI spawn is no longer supported
+    // Use agent-core daemon with AgentCoreClient instead
+    console.warn(
+      '[DEPRECATED] executeInteractiveCLI is deprecated. ' +
+      'Use agent-core daemon with AgentCoreClient for task execution. ' +
+      'Start daemon: agent-core daemon --external-gateway'
+    );
 
-      let output = '';
-      let errorOutput = '';
-
-      claudeProcess.stdout?.on('data', (data) => {
-        output += data.toString();
-      });
-
-      claudeProcess.stderr?.on('data', (data) => {
-        errorOutput += data.toString();
-      });
-
-      claudeProcess.on('close', (code) => {
-        const executionTime = Date.now() - startTime;
-        resolve({
-          success: code === 0,
-          output: output || errorOutput,
-          errors: code !== 0 ? [errorOutput] : [],
-          executionTime,
-          tokensUsed: 0
-        });
-      });
-
-      claudeProcess.on('error', (error) => {
-        const executionTime = Date.now() - startTime;
-        resolve({
-          success: false,
-          output: null,
-          errors: [error.message],
-          executionTime,
-          tokensUsed: 0
-        });
-      });
-    });
+    const executionTime = Date.now() - startTime;
+    return {
+      success: false,
+      output: null,
+      errors: [
+        'Interactive CLI mode is deprecated. ' +
+        'Please use agent-core daemon for task execution. ' +
+        `Task: ${task.description}`
+      ],
+      executionTime,
+      tokensUsed: 0
+    };
   }
 
   /**
