@@ -53,6 +53,12 @@ export class KeyRedactor {
     'refresh_token',
   ];
 
+  // Combined pattern for faster key checking
+  private static readonly SENSITIVE_KEY_PATTERN = new RegExp(
+    KeyRedactor.SENSITIVE_FIELDS.join('|'),
+    'i'
+  );
+
   /**
    * Redact API keys and sensitive data from text
    */
@@ -74,32 +80,59 @@ export class KeyRedactor {
   static redactObject<T extends Record<string, any>>(obj: T, deep = true): T {
     if (!obj || typeof obj !== 'object') return obj;
 
-    const redacted = { ...obj };
-
-    Object.keys(redacted).forEach(key => {
-      const lowerKey = key.toLowerCase();
-
-      // Check if field name is sensitive
-      const isSensitive = this.SENSITIVE_FIELDS.some(field =>
-        lowerKey.includes(field)
-      );
-
-      if (isSensitive && typeof redacted[key] === 'string') {
-        const value = redacted[key] as string;
-        if (value && value.length > 8) {
-          redacted[key] = `${value.substring(0, 4)}...[REDACTED]` as any;
+    // Handle array specifically to preserve type and mapping
+    if (Array.isArray(obj)) {
+      let changed = false;
+      const newArray = obj.map(item => {
+        let newItem = item;
+        if (typeof item === 'string') {
+          newItem = this.redact(item);
         } else {
-          redacted[key] = '[REDACTED]' as any;
+          newItem = this.redactObject(item, deep);
         }
-      } else if (deep && typeof redacted[key] === 'object' && redacted[key] !== null) {
-        redacted[key] = this.redactObject(redacted[key], deep);
-      } else if (typeof redacted[key] === 'string') {
-        // Redact any API keys in string values
-        redacted[key] = this.redact(redacted[key]) as any;
-      }
-    });
 
-    return redacted;
+        if (newItem !== item) changed = true;
+        return newItem;
+      });
+      return (changed ? newArray : obj) as unknown as T;
+    }
+
+    let redacted: T | null = null;
+    const keys = Object.keys(obj);
+
+    for (const key of keys) {
+      const val = (obj as any)[key];
+      let newVal = val;
+
+      // 1. Check if key is sensitive
+      const isSensitive = typeof val === 'string' && this.SENSITIVE_KEY_PATTERN.test(key);
+
+      if (isSensitive) {
+        if (val && val.length > 8) {
+          newVal = `${val.substring(0, 4)}...[REDACTED]`;
+        } else {
+          newVal = '[REDACTED]';
+        }
+      }
+      // 2. Deep redaction
+      else if (deep && typeof val === 'object' && val !== null) {
+        newVal = this.redactObject(val, deep);
+      }
+      // 3. String content redaction
+      else if (typeof val === 'string') {
+        newVal = this.redact(val);
+      }
+
+      // If changed, ensure we have a clone
+      if (newVal !== val) {
+        if (!redacted) {
+          redacted = { ...obj };
+        }
+        (redacted as any)[key] = newVal;
+      }
+    }
+
+    return redacted || obj;
   }
 
   /**
