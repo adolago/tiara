@@ -3,6 +3,7 @@
  */
 
 import { args, mkdirAsync, writeTextFile, exit, cwd } from '../node-compat.js';
+import ora from 'ora';
 import { spawn, execSync } from 'child_process';
 import { existsSync, chmodSync, statSync, readFileSync } from 'fs';
 import { open } from 'fs/promises';
@@ -1608,10 +1609,11 @@ async function createSwarmFiles(objective, flags) {
     const apiDir = path.join(targetDir, 'rest-api');
     await fs.promises.mkdir(apiDir, { recursive: true });
 
-    console.log(`\n🏗️  Creating REST API...`);
-    console.log(`  🤖 Agent developer-1: Creating server implementation`);
+    const spinner = ora('Creating REST API...').start();
+    try {
+      spinner.text = 'Agent developer-1: Creating server implementation';
 
-    // Create server.js
+      // Create server.js
     const serverCode = `const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
@@ -1669,7 +1671,8 @@ module.exports = app;
 `;
 
     await fs.promises.writeFile(path.join(apiDir, 'server.js'), serverCode);
-    console.log(`  ✅ Created: server.js`);
+    spinner.stopAndPersist({ symbol: '✅', text: 'Created: server.js' });
+    spinner.start('Creating package.json...');
 
     // Create package.json
     const packageJson = {
@@ -1704,7 +1707,8 @@ module.exports = app;
       path.join(apiDir, 'package.json'),
       JSON.stringify(packageJson, null, 2),
     );
-    console.log(`  ✅ Created: package.json`);
+    spinner.stopAndPersist({ symbol: '✅', text: 'Created: package.json' });
+    spinner.start('Creating README.md...');
 
     // Create README
     const readme = `# REST API
@@ -1741,16 +1745,21 @@ Created by Claude Flow Swarm
 `;
 
     await fs.promises.writeFile(path.join(apiDir, 'README.md'), readme);
-    console.log(`  ✅ Created: README.md`);
+    spinner.stopAndPersist({ symbol: '✅', text: 'Created: README.md' });
 
-    console.log(`\n✅ Swarm completed successfully!`);
-    console.log(`📁 Files created in: ${apiDir}`);
-    console.log(`🆔 Swarm ID: ${swarmId}`);
+      console.log(`\n✅ Swarm completed successfully!`);
+      console.log(`📁 Files created in: ${apiDir}`);
+      console.log(`🆔 Swarm ID: ${swarmId}`);
+    } catch (error) {
+      spinner.fail('Failed to create REST API');
+      throw error;
+    }
   } else {
     // Create generic application
-    console.log(`\n🏗️  Creating application...`);
+    const spinner = ora('Creating application...').start();
+    try {
 
-    const appCode = `// Application created by Claude Flow Swarm
+      const appCode = `// Application created by Claude Flow Swarm
 // Objective: ${objective}
 // Swarm ID: ${swarmId}
 
@@ -1763,7 +1772,8 @@ main();
 `;
 
     await fs.promises.writeFile(path.join(targetDir, 'app.js'), appCode);
-    console.log(`  ✅ Created: app.js`);
+    spinner.stopAndPersist({ symbol: '✅', text: 'Created: app.js' });
+    spinner.start('Creating package.json...');
 
     const packageJson = {
       name: 'swarm-app',
@@ -1784,11 +1794,15 @@ main();
       path.join(targetDir, 'package.json'),
       JSON.stringify(packageJson, null, 2),
     );
-    console.log(`  ✅ Created: package.json`);
+    spinner.stopAndPersist({ symbol: '✅', text: 'Created: package.json' });
 
-    console.log(`\n✅ Swarm completed successfully!`);
-    console.log(`📁 Files created in: ${targetDir}`);
-    console.log(`🆔 Swarm ID: ${swarmId}`);
+      console.log(`\n✅ Swarm completed successfully!`);
+      console.log(`📁 Files created in: ${targetDir}`);
+      console.log(`🆔 Swarm ID: ${swarmId}`);
+    } catch (error) {
+      spinner.fail('Failed to create application');
+      throw error;
+    }
   }
 }
 
