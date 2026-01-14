@@ -120,28 +120,44 @@ class CryptographicCore {
   }
 
   // Encrypt sensitive data
-  encrypt(data: string, key: string): { encrypted: string; iv: string; tag: string } {
-    const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipher(this.algorithm, key);
+  encrypt(data: string, key: string): { encrypted: string; iv: string; tag: string; salt: string } {
+    const salt = crypto.randomBytes(16);
+    // Derive a 32-byte key from the password and salt
+    const derivedKey = crypto.pbkdf2Sync(key, salt, 100000, 32, 'sha256');
+    // Generate a 12-byte IV (recommended for GCM)
+    const iv = crypto.randomBytes(12);
+
+    const cipher = crypto.createCipheriv(this.algorithm, derivedKey, iv);
     cipher.setAAD(Buffer.from('claude-flow-verification'));
     
     let encrypted = cipher.update(data, 'utf8', 'hex');
     encrypted += cipher.final('hex');
     
-    const tag = (cipher as any).getAuthTag();
+    const tag = cipher.getAuthTag();
     
     return {
       encrypted,
       iv: iv.toString('hex'),
-      tag: tag.toString('hex')
+      tag: tag.toString('hex'),
+      salt: salt.toString('hex')
     };
   }
 
   // Decrypt sensitive data
-  decrypt(encryptedData: { encrypted: string; iv: string; tag: string }, key: string): string {
-    const decipher = crypto.createDecipher(this.algorithm, key);
+  decrypt(encryptedData: { encrypted: string; iv: string; tag: string; salt?: string }, key: string): string {
+    if (!encryptedData.salt) {
+      throw new Error('Missing salt for decryption (required for secure key derivation)');
+    }
+
+    const salt = Buffer.from(encryptedData.salt, 'hex');
+    const iv = Buffer.from(encryptedData.iv, 'hex');
+    const tag = Buffer.from(encryptedData.tag, 'hex');
+
+    const derivedKey = crypto.pbkdf2Sync(key, salt, 100000, 32, 'sha256');
+
+    const decipher = crypto.createDecipheriv(this.algorithm, derivedKey, iv);
     decipher.setAAD(Buffer.from('claude-flow-verification'));
-    decipher.setAuthTag(Buffer.from(encryptedData.tag, 'hex'));
+    decipher.setAuthTag(tag);
     
     let decrypted = decipher.update(encryptedData.encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
