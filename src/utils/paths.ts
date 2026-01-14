@@ -5,7 +5,14 @@ import { existsSync, readFileSync } from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Cache for getClaudeFlowRoot to avoid repeated sync I/O
+let cachedRoot: string | undefined;
+
 export function getClaudeFlowRoot(): string {
+  if (cachedRoot) {
+    return cachedRoot;
+  }
+
   // Try multiple strategies to find the root
   const strategies = [
     // Strategy 1: From current file location
@@ -25,6 +32,7 @@ export function getClaudeFlowRoot(): string {
         const pkgContent = readFileSync(pkgPath, 'utf-8');
         const pkg = JSON.parse(pkgContent);
         if (pkg.name === 'claude-flow') {
+          cachedRoot = path;
           return path;
         }
       } catch {
@@ -34,7 +42,8 @@ export function getClaudeFlowRoot(): string {
   }
 
   // Fallback to current working directory
-  return process.cwd();
+  cachedRoot = process.cwd();
+  return cachedRoot;
 }
 
 export function getClaudeFlowBin(): string {
