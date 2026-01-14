@@ -623,7 +623,7 @@ async function executeClaudeWithSparc(
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes('daemon not running')) {
       error(`agent-core daemon not running. Start it with:`);
-      console.log(chalk.yellow('  agent-core daemon --external-gateway'));
+      console.log(chalk.yellow('  agent-core daemon'));
     } else {
       error(`Failed to execute SPARC mode: ${message}`);
     }

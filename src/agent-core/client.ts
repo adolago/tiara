@@ -99,7 +99,7 @@ export class AgentCoreClient {
     if (!running) {
       throw new Error(
         `agent-core daemon not running at ${this.config.baseUrl}. ` +
-          `Start it with: agent-core daemon --external-gateway`
+          `Start it with: agent-core daemon`
       );
     }
   }

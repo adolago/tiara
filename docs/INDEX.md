@@ -4,7 +4,7 @@
 
 > **Note:** Tiara is the orchestration layer for agent-core. In production, use:
 > ```bash
-> agent-core daemon --external-gateway
+> agent-core daemon
 > ```
 
 The ultimate AI agent orchestration platform with **64+ specialized agents**, **112 MCP tools**, and **swarm intelligence**. Build, deploy, and scale AI-powered applications with unprecedented speed and reliability.

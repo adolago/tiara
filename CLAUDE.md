@@ -4,11 +4,11 @@
 
 **Before starting any work, always read the CLAUDE.md and README.md files from these locations:**
 
-1. **Agent-Core** (`/home/artur/Repositories/agent-core/`)
+1. **Agent-Core** (`/home/artur/.local/src/agent-core/`)
    - `CLAUDE.md` - Main project instructions, personas system, architecture overview
    - Defines the engine that powers the agent system
 
-2. **Personas** (`/home/artur/Repositories/personas/`)
+2. **Personas** (`/home/artur/Repositories/`)
    - `johny/` - Study assistant focused on deliberate practice, with knowledge graph and spaced repetition
    - `stanley/` - Investing assistant with acces to a full platform (NautilusTrader, OpenBB, own GUI in rust) of APIs integration
    - `zee/` - Personal assistant with memory, messaging, calendar, and more

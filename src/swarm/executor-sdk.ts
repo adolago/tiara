@@ -269,7 +269,7 @@ export class TaskExecutorSDK extends EventEmitter {
    * Execute interactive CLI (DEPRECATED - use agent-core daemon instead)
    *
    * Legacy CLI spawn is deprecated. Interactive execution should go through:
-   * - agent-core daemon --external-gateway (for production)
+   * - agent-core daemon (for production)
    * - AgentCoreClient from src/agent-core/client.ts
    */
   private async executeInteractiveCLI(
@@ -283,7 +283,7 @@ export class TaskExecutorSDK extends EventEmitter {
     console.warn(
       '[DEPRECATED] executeInteractiveCLI is deprecated. ' +
       'Use agent-core daemon with AgentCoreClient for task execution. ' +
-      'Start daemon: agent-core daemon --external-gateway'
+      'Start daemon: agent-core daemon'
     );
 
     const executionTime = Date.now() - startTime;

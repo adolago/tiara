@@ -2412,7 +2412,7 @@ Now, please proceed with the task: ${task}`;
     action: async (_ctx: CommandContext) => {
       error('The hive-mind command has been removed.');
       info('Use agent-core daemon for swarm orchestration:');
-      console.log('  agent-core daemon --external-gateway');
+      console.log('  agent-core daemon');
     },
   });
 
@@ -2787,4 +2787,3 @@ memory/sessions/
 ${new Date().toISOString()}
 `;
 }
-
