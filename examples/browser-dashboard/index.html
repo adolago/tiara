@@ -240,6 +240,28 @@
             cursor: pointer;
             transition: all 0.3s ease;
             flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+            transition: transform 0.3s ease;
+        }
+
+        .btn:hover svg {
+            transform: scale(1.1);
+        }
+
+        .btn[aria-busy="true"] {
+            cursor: wait;
+            opacity: 0.7;
         }
 
         .btn:hover {
@@ -330,10 +352,12 @@
                     </div>
                 </div>
                 <div class="controls">
-                    <button class="btn btn-primary" onclick="testConsensus()">
+                    <button class="btn btn-primary" onclick="testConsensus(this)">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                         Test Consensus
                     </button>
-                    <button class="btn" onclick="resetConsensus()">
+                    <button class="btn" onclick="resetConsensus(this)">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
                         Reset
                     </button>
                 </div>
@@ -359,16 +383,20 @@
         <section class="card" aria-labelledby="actions-title">
             <h2 id="actions-title">⚡ Quick Actions</h2>
             <div class="controls">
-                <button class="btn" onclick="spawnAgents()">
+                <button class="btn" onclick="spawnAgents(this)">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                     Spawn 5 Agents
                 </button>
-                <button class="btn" onclick="simulatePayment()">
+                <button class="btn" onclick="simulatePayment(this)">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
                     Simulate $50K Payment
                 </button>
-                <button class="btn" onclick="pauseQuery()">
+                <button class="btn" onclick="pauseQuery(this)">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                     Pause Query
                 </button>
-                <button class="btn btn-primary" onclick="connectWebSocket()">
+                <button class="btn btn-primary" onclick="connectWebSocket(this)">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
                     Connect to Server
                 </button>
             </div>
