@@ -5,3 +5,7 @@
 ## 2025-02-14 - Lazy Cloning Wins
 **Learning:** Implementing Copy-On-Write (lazy cloning) for recursive object traversal provided a 3x speedup for clean objects.
 **Action:** For recursive transformers that often return the input unchanged, always use the "return original if no change" pattern to save allocations.
+
+## 2025-02-14 - Memoize Project Root
+**Learning:** `getClaudeFlowRoot` was performing synchronous file I/O (`existsSync`, `readFileSync`, `JSON.parse`) on every call. In a long-running process, this is wasteful.
+**Action:** Memoize static configuration values that require I/O resolution, especially if they are accessed frequently.
