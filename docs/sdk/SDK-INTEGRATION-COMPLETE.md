@@ -45,7 +45,6 @@ Successfully integrated **100% real, SDK-powered features** into Claude Flow wit
 ### 4. Documentation
 
 - ✅ `docs/sdk/SDK-VALIDATION-RESULTS.md` - Proof features are real
-- ✅ `docs/sdk/INTEGRATION-ROADMAP.md` - Future integration plan
 - ✅ `docs/SDK-LEVERAGE-REAL-FEATURES.md` - SDK usage guide
 
 ### 5. Examples & Tests

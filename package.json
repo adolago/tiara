@@ -1,6 +1,6 @@
 {
   "name": "tiara",
-  "version": "0.1.20260112",
+  "version": "0.1.0-20260114",
   "description": "AI orchestration layer for agent-core - SPARC methodology, swarm coordination, and memory systems",
   "mcpName": "io.github.adolago/tiara",
   "main": "cli.mjs",

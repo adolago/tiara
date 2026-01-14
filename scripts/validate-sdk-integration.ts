@@ -107,7 +107,7 @@ async function main() {
     const { access } = await import('fs/promises');
     try {
       await access('docs/sdk/SDK-VALIDATION-RESULTS.md');
-      await access('docs/sdk/INTEGRATION-ROADMAP.md');
+      await access('docs/sdk/SDK-LEVERAGE-REAL-FEATURES.md');
       return true;
     } catch {
       return false;

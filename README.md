@@ -5,7 +5,7 @@
 <div align="center">
 
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.1.20260112-blue?style=for-the-badge)](https://github.com/adolago/tiara)
+[![Version](https://img.shields.io/badge/version-0.1.0-20260114-blue?style=for-the-badge)](https://github.com/adolago/tiara)
 
 </div>
 
@@ -91,6 +91,6 @@ MIT License - see [LICENSE](./LICENSE) for details
 
 **Forked from [claude-flow](https://github.com/ruvnet/claude-flow) by [rUv](https://github.com/ruvnet) | Adapted for agent-core**
 
-*v0.1.20260112 - Agent-Core Integration*
+*v0.1.0-20260114 - Agent-Core Integration*
 
 </div>
