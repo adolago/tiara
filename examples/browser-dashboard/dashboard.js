@@ -331,9 +331,22 @@ class ClaudeFlowDashboard {
 }
 
 /**
+ * Helper to manage button state
+ */
+function setLoading(button, isLoading) {
+    if (!button || !button.classList.contains('btn')) return;
+
+    button.disabled = isLoading;
+    button.setAttribute('aria-busy', isLoading);
+
+    // Add visual feedback class if needed, but CSS handles disabled/aria-busy
+}
+
+/**
  * Quick Action Functions
  */
-function spawnAgents() {
+function spawnAgents(btn) {
+    setLoading(btn, true);
     dashboard.addLog('Spawning 5 new agents...', 'info');
     dashboard.sendCommand('agents_spawn_parallel', {
         agents: [
@@ -359,9 +372,13 @@ function spawnAgents() {
             });
         }, i * 100);
     });
+
+    // Reset button state
+    setTimeout(() => setLoading(btn, false), agentTypes.length * 100 + 200);
 }
 
-function simulatePayment() {
+function simulatePayment(btn) {
+    setLoading(btn, true);
     dashboard.addLog('Initiating $50K vendor payment with Byzantine consensus...', 'info');
 
     // Simulate consensus votes coming in
@@ -380,16 +397,18 @@ function simulatePayment() {
         if (votesFor >= 20) {
             clearInterval(interval);
             dashboard.addLog('Payment approved! 20/20 agents reached consensus in 1ms', 'success');
+            setLoading(btn, false);
         }
     }, 200);
 }
 
-function testConsensus() {
+function testConsensus(btn) {
     dashboard.addLog('Testing Byzantine consensus with 20 agents...', 'info');
-    simulatePayment();
+    simulatePayment(btn);
 }
 
-function resetConsensus() {
+function resetConsensus(btn) {
+    setLoading(btn, true);
     dashboard.consensus = {
         votesFor: 0,
         votesAgainst: 0,
@@ -398,20 +417,26 @@ function resetConsensus() {
     };
     dashboard.renderConsensus();
     dashboard.addLog('Consensus reset', 'info');
+    setTimeout(() => setLoading(btn, false), 300);
 }
 
-function pauseQuery() {
+function pauseQuery(btn) {
+    setLoading(btn, true);
     dashboard.addLog('Pausing active query...', 'info');
     dashboard.sendCommand('query_control', {
         action: 'pause',
         queryId: 'query_123'
     });
+    setTimeout(() => setLoading(btn, false), 500);
 }
 
-function connectWebSocket() {
+function connectWebSocket(btn) {
     const url = prompt('Enter WebSocket URL:', 'ws://localhost:8080');
     if (url) {
+        setLoading(btn, true);
         dashboard.connectWebSocket(url);
+        // Reset after a timeout as we don't have async connect feedback wired here
+        setTimeout(() => setLoading(btn, false), 2000);
     }
 }
 
