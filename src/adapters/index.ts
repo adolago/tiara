@@ -7,10 +7,10 @@
  * - StorageBackend: Unified interface for all storage backends
  * - getStorage(): Factory function to get configured storage
  *
- * Configuration via environment variables:
- *   TIARA_STORAGE_TYPE=qdrant|sqlite|hybrid
- *   TIARA_QDRANT_URL=http://localhost:6333
- *   TIARA_QDRANT_API_KEY=optional-api-key
+ * Configuration is resolved from agent-core.json(c):
+ *   memory.qdrant + tiara.qdrant entries
+ * Optional env:
+ *   TIARA_SQLITE_PATH=./path/to/memory.db
  *
  * Migration:
  *   npx ts-node scripts/migrate-to-qdrant.ts --help

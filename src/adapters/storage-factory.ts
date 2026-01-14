@@ -434,15 +434,12 @@ function getConfigFromEnv(): StorageConfig {
   const tiaraQdrant = agentCoreConfig?.tiara?.qdrant ?? {};
   const configHasQdrant = Boolean(tiaraQdrant.url || memoryQdrant.url);
 
-  const type = (process.env.TIARA_STORAGE_TYPE ?? (configHasQdrant ? 'qdrant' : 'sqlite')) as StorageType;
+  const type = (configHasQdrant ? 'qdrant' : 'sqlite') as StorageType;
   const embeddingDimension =
     tiaraQdrant.embeddingDimension ??
     (typeof memoryEmbeddingDimension === 'number' ? memoryEmbeddingDimension : undefined) ??
     DEFAULT_QDRANT_CONFIG.embeddingDimension;
-  const resolvedEmbeddingDimension = Number.parseInt(
-    process.env.TIARA_EMBEDDING_DIMENSION ?? `${embeddingDimension}`,
-    10,
-  );
+  const resolvedEmbeddingDimension = embeddingDimension;
 
   return {
     type,
@@ -450,24 +447,20 @@ function getConfigFromEnv(): StorageConfig {
       path: process.env.TIARA_SQLITE_PATH ?? '.swarm/memory.db',
     },
     qdrant: {
-      url: process.env.TIARA_QDRANT_URL ?? tiaraQdrant.url ?? memoryQdrant.url ?? DEFAULT_QDRANT_CONFIG.url,
-      apiKey: process.env.TIARA_QDRANT_API_KEY ?? tiaraQdrant.apiKey ?? memoryQdrant.apiKey,
+      url: tiaraQdrant.url ?? memoryQdrant.url ?? DEFAULT_QDRANT_CONFIG.url,
+      apiKey: tiaraQdrant.apiKey ?? memoryQdrant.apiKey,
       collections: {
         coordination:
-          process.env.TIARA_QDRANT_COORDINATION_COLLECTION ??
           tiaraQdrant.coordinationCollection ??
           tiaraQdrant.stateCollection ??
           DEFAULT_QDRANT_CONFIG.collections.coordination,
         events:
-          process.env.TIARA_QDRANT_EVENTS_COLLECTION ??
           tiaraQdrant.eventsCollection ??
           DEFAULT_QDRANT_CONFIG.collections.events,
         patterns:
-          process.env.TIARA_QDRANT_PATTERNS_COLLECTION ??
           tiaraQdrant.patternsCollection ??
           DEFAULT_QDRANT_CONFIG.collections.patterns,
         memory:
-          process.env.TIARA_QDRANT_MEMORY_COLLECTION ??
           tiaraQdrant.memoryCollection ??
           memoryQdrant.collection ??
           DEFAULT_QDRANT_CONFIG.collections.memory,

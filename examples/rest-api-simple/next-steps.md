@@ -43,7 +43,6 @@ npx claude-flow swarm "Complete REST API implementation: refactor to tasks resou
 
 ## Key Files to Review
 - `architecture-completion-plan.md` - Detailed technical architecture
-- `sparc-implementation-roadmap.md` - Step-by-step SPARC commands
 - `api-specification.md` - Target API specification
 
 ## Expected Outcome
