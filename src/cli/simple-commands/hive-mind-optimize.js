@@ -6,6 +6,7 @@
 
 import { cwd, exit } from '../node-compat.js';
 import path from 'path';
+import os from 'os';
 import { existsSync } from 'fs';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
@@ -14,6 +15,16 @@ import {
   performMaintenance,
   generateOptimizationReport,
 } from './hive-mind/db-optimizer.js';
+
+function resolveHiveMindDir() {
+  const localDir = path.join(cwd(), '.hive-mind');
+  if (existsSync(localDir)) {
+    return localDir;
+  }
+
+  const dataHome = process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share');
+  return path.join(dataHome, 'agent-core', 'tiara', 'hive-mind');
+}
 
 /**
  * Show help for hive-mind-optimize command
@@ -76,7 +87,7 @@ export async function hiveMindOptimizeCommand(args, flags) {
   }
 
   // Check if hive mind is initialized
-  const hiveMindDir = path.join(cwd(), '.hive-mind');
+  const hiveMindDir = resolveHiveMindDir();
   const dbPath = path.join(hiveMindDir, 'hive.db');
 
   if (!existsSync(dbPath)) {

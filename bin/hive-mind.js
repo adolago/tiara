@@ -7,6 +7,7 @@ import { spawn } from 'child_process';
 import { existsSync, mkdirSync } from 'fs';
 import { writeFile, readFile } from 'fs/promises';
 import path from 'path';
+import os from 'os';
 import readline from 'readline';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
@@ -43,6 +44,17 @@ async function loadSqlite() {
     Database = null;
   }
   return sqliteAvailable;
+}
+
+
+function resolveHiveMindDir() {
+  const localDir = path.join(cwd(), '.hive-mind');
+  if (existsSync(localDir)) {
+    return localDir;
+  }
+
+  const dataHome = process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share');
+  return path.join(dataHome, 'agent-core', 'tiara', 'hive-mind');
 }
 
 // Import help formatter
@@ -141,7 +153,7 @@ async function initHiveMind(flags) {
 
   try {
     // Create hive mind directory structure
-    const hiveMindDir = path.join(cwd(), '.hive-mind');
+    const hiveMindDir = resolveHiveMindDir();
     if (!existsSync(hiveMindDir)) {
       mkdirSync(hiveMindDir, { recursive: true });
     }
@@ -548,7 +560,7 @@ async function spawnSwarm(args, flags) {
 
     spinner.text = 'Setting up database connection...';
     // Initialize database connection
-    const dbDir = path.join(cwd(), '.hive-mind');
+    const dbDir = resolveHiveMindDir();
     const dbPath = path.join(dbDir, 'hive.db');
 
     // Ensure .hive-mind directory exists
@@ -967,7 +979,7 @@ function getAgentCapabilities(type) {
  */
 async function showStatus(flags) {
   try {
-    const hiveMindDir = path.join(cwd(), '.hive-mind');
+    const hiveMindDir = resolveHiveMindDir();
     const dbPath = path.join(hiveMindDir, 'hive.db');
     const fallbackPath = path.join(hiveMindDir, 'memory.json');
 
@@ -1155,7 +1167,7 @@ async function showStatus(flags) {
  */
 async function showConsensus(flags) {
   try {
-    const dbPath = path.join(cwd(), '.hive-mind', 'hive.db');
+    const dbPath = path.join(resolveHiveMindDir(), 'hive.db');
     const db = new Database(dbPath);
 
     const decisions = db
@@ -1249,7 +1261,7 @@ async function showConsensus(flags) {
  */
 async function showMetrics(flags) {
   try {
-    const dbPath = path.join(cwd(), '.hive-mind', 'hive.db');
+    const dbPath = path.join(resolveHiveMindDir(), 'hive.db');
     const db = new Database(dbPath);
 
     // Get overall metrics
@@ -1713,7 +1725,7 @@ async function listMemories() {
     console.log(chalk.blue('\n📋 Collective Memory Store\n'));
 
     // Read directly from hive.db collective_memory table
-    const dbPath = path.join(cwd(), '.hive-mind', 'hive.db');
+    const dbPath = path.join(resolveHiveMindDir(), 'hive.db');
     const db = new Database(dbPath);
 
     const memories = db
@@ -1791,7 +1803,7 @@ async function searchMemories() {
     console.log(chalk.blue(`\n🔍 Searching for: "${searchTerm}"\n`));
 
     // Search directly in hive.db collective_memory table
-    const dbPath = path.join(cwd(), '.hive-mind', 'hive.db');
+    const dbPath = path.join(resolveHiveMindDir(), 'hive.db');
     const db = new Database(dbPath);
 
     const searchPattern = `%${searchTerm}%`;
@@ -2129,7 +2141,7 @@ async function spawnClaudeCodeInstances(swarmId, swarmName, objective, workers, 
     try {
       // ALWAYS save the prompt file first (fix for issue #330)
       // Ensure sessions directory exists
-      const sessionsDir = path.join('.hive-mind', 'sessions');
+      const sessionsDir = path.join(resolveHiveMindDir(), 'sessions');
       await mkdirAsync(sessionsDir, { recursive: true });
 
       const promptFile = path.join(sessionsDir, `hive-mind-prompt-${swarmId}.txt`);
@@ -3069,7 +3081,7 @@ async function launchClaudeWithContext(prompt, flags, sessionId) {
   try {
     // ALWAYS save the prompt file first (fix for issue #330)
     // Ensure sessions directory exists
-    const sessionsDir = path.join('.hive-mind', 'sessions');
+    const sessionsDir = path.join(resolveHiveMindDir(), 'sessions');
     await mkdirAsync(sessionsDir, { recursive: true });
     const promptFile = path.join(sessionsDir, `hive-mind-resume-${sessionId}-${Date.now()}.txt`);
     await writeFile(promptFile, prompt);

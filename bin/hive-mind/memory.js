@@ -6,8 +6,20 @@
 import EventEmitter from 'events';
 import Database from 'better-sqlite3';
 import path from 'path';
+import os from 'os';
+import { existsSync } from 'fs';
 import { performance } from 'perf_hooks';
 import { Worker } from 'worker_threads';
+
+function resolveHiveMindDir() {
+  const localDir = path.join(process.cwd(), '.hive-mind');
+  if (existsSync(localDir)) {
+    return localDir;
+  }
+
+  const dataHome = process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share');
+  return path.join(dataHome, 'agent-core', 'tiara', 'hive-mind');
+}
 
 /**
  * Memory types and their characteristics
@@ -171,7 +183,7 @@ export class CollectiveMemory extends EventEmitter {
     this.config = {
       swarmId: config.swarmId,
       maxSize: config.maxSize || 100, // MB
-      dbPath: config.dbPath || path.join(process.cwd(), '.hive-mind', 'hive.db'),
+      dbPath: config.dbPath || path.join(resolveHiveMindDir(), 'hive.db'),
       compressionThreshold: config.compressionThreshold || 1024, // bytes
       gcInterval: config.gcInterval || 300000, // 5 minutes
       cacheSize: config.cacheSize || 1000,

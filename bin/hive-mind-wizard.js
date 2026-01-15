@@ -1,7 +1,18 @@
 const chalk = require('chalk');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const Database = require('better-sqlite3');
+
+function resolveHiveMindDir() {
+  const localDir = path.join(process.cwd(), '.hive-mind');
+  if (fs.existsSync(localDir)) {
+    return localDir;
+  }
+
+  const dataHome = process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share');
+  return path.join(dataHome, 'agent-core', 'tiara', 'hive-mind');
+}
 
 // Interactive Wizard Implementation
 async function runInteractiveWizard() {
@@ -10,7 +21,7 @@ async function runInteractiveWizard() {
 
   try {
     // Check if system is initialized
-    const configPath = path.join(process.cwd(), '.hive-mind', 'config.json');
+    const configPath = path.join(resolveHiveMindDir(), 'config.json');
     let config = { initialized: false };
 
     if (fs.existsSync(configPath)) {
@@ -89,7 +100,7 @@ async function runInteractiveWizard() {
 
 // Initialize Hive Mind system
 async function initializeHiveMind() {
-  const hiveMindDir = path.join(process.cwd(), '.hive-mind');
+  const hiveMindDir = resolveHiveMindDir();
 
   // Create directory if it doesn't exist
   if (!fs.existsSync(hiveMindDir)) {
@@ -206,7 +217,7 @@ async function createSwarm(objective, config) {
     const queenId = `queen-${Date.now()}`;
 
     // Open database
-    const dbPath = path.join(process.cwd(), '.hive-mind', 'hive.db');
+    const dbPath = path.join(resolveHiveMindDir(), 'hive.db');
     const db = new sqlite3.Database(dbPath);
 
     await new Promise((resolve, reject) => {

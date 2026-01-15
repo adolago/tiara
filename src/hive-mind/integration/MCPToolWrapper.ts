@@ -1,329 +1,491 @@
 /**
  * MCPToolWrapper Class
  *
- * Wraps all MCP tools for use within the Hive Mind system,
- * providing a unified interface for swarm coordination, neural processing,
- * and memory management.
+ * Wraps agent-core backed tools for Hive Mind usage.
  */
 
 import { EventEmitter } from 'events';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { getAgentCoreClient } from '../../agent-core/index.js';
 import { getErrorMessage } from '../../utils/type-guards.js';
 
-const execAsync = promisify(exec);
-
-interface MCPToolResponse {
+interface MCPToolResponse<T = unknown> {
   success: boolean;
-  data?: any;
+  data?: T;
   error?: string;
 }
 
+type AnalyzePatternParams = {
+  action: string;
+  operation: string;
+  metadata?: Record<string, unknown>;
+};
+
+type StoreMemoryParams = {
+  action: 'store';
+  key: string;
+  value: unknown;
+  namespace?: string;
+  type?: string;
+  ttl?: number;
+};
+
+type RetrieveMemoryParams = {
+  action: 'retrieve';
+  key: string;
+  namespace?: string;
+};
+
+type DeleteMemoryParams = {
+  action: 'delete';
+  key: string;
+  namespace?: string;
+};
+
+type TrainNeuralParams = {
+  pattern_type: string;
+  training_data: string;
+  epochs?: number;
+};
+
+type PredictParams = {
+  modelId?: string;
+  input: string;
+};
+
+type OrchestrateTaskParams = {
+  task: string;
+  priority?: string | number;
+  strategy?: string;
+  dependencies?: string[];
+};
+
+type LoadBalanceParams = {
+  tasks?: unknown[];
+};
+
+type MemoryCategory =
+  | 'conversation'
+  | 'fact'
+  | 'preference'
+  | 'task'
+  | 'decision'
+  | 'relationship'
+  | 'note'
+  | 'pattern';
+
+const DEFAULT_MEMORY_SERVER = process.env.AGENT_CORE_MEMORY_MCP ?? 'personas-memory';
+const DEFAULT_PERSONA = (process.env.AGENT_CORE_HIVE_MIND_PERSONA as
+  | 'zee'
+  | 'stanley'
+  | 'johny') ?? 'zee';
+
+const MEMORY_CATEGORY_MAP: Record<string, MemoryCategory> = {
+  task: 'task',
+  decision: 'decision',
+  pattern: 'pattern',
+  preference: 'preference',
+  fact: 'fact',
+  relationship: 'relationship',
+};
+
+function extractJson(text: string): any | null {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    const startObj = trimmed.indexOf('{');
+    const endObj = trimmed.lastIndexOf('}');
+    if (startObj >= 0 && endObj > startObj) {
+      try {
+        return JSON.parse(trimmed.slice(startObj, endObj + 1));
+      } catch {
+        // fall through
+      }
+    }
+
+    const startArr = trimmed.indexOf('[');
+    const endArr = trimmed.lastIndexOf(']');
+    if (startArr >= 0 && endArr > startArr) {
+      try {
+        return JSON.parse(trimmed.slice(startArr, endArr + 1));
+      } catch {
+        // fall through
+      }
+    }
+  }
+
+  return null;
+}
+
+function extractMcpText(result: any): string {
+  if (!result || typeof result !== 'object') return '';
+  const content = Array.isArray(result.content) ? result.content : [];
+  return content
+    .map((item) =>
+      item && item.type === 'text' && typeof item.text === 'string' ? item.text : '',
+    )
+    .filter(Boolean)
+    .join('\n')
+    .trim();
+}
+
+function parseMcpResult(result: any): any {
+  if (!result) return null;
+  if (typeof result === 'string') {
+    return extractJson(result) ?? result;
+  }
+
+  if (typeof result === 'object' && Array.isArray(result.content)) {
+    const text = extractMcpText(result);
+    return extractJson(text) ?? (text ? { text } : result);
+  }
+
+  return result;
+}
+
+function mapMemoryCategory(type?: string): MemoryCategory {
+  if (!type) return 'note';
+  const normalized = type.toLowerCase();
+  return MEMORY_CATEGORY_MAP[normalized] ?? 'note';
+}
+
+function isLikelyJson(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) return false;
+  try {
+    JSON.parse(trimmed);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export class MCPToolWrapper extends EventEmitter {
-  private toolPrefix = 'mcp__ruv-swarm__';
-  private isInitialized = false;
+  private readonly client = getAgentCoreClient();
+  private readonly memoryServer: string;
+  private readonly persona: 'zee' | 'stanley' | 'johny';
+  private initialized = false;
+  private sessionId?: string;
 
-  constructor() {
+  constructor(options: { memoryServer?: string; persona?: 'zee' | 'stanley' | 'johny' } = {}) {
     super();
+    this.memoryServer = options.memoryServer ?? DEFAULT_MEMORY_SERVER;
+    this.persona = options.persona ?? DEFAULT_PERSONA;
   }
 
-  /**
-   * Initialize MCP tools
-   */
   async initialize(): Promise<void> {
+    if (this.initialized) return;
+    await this.client.ensureConnected();
+    this.initialized = true;
+  }
+
+  private async ensureSession(): Promise<string> {
+    if (this.sessionId) return this.sessionId;
+    const session = await this.client.createSession({ title: 'tiara-hive-mind' });
+    this.sessionId = session.id;
+    return session.id;
+  }
+
+  private async promptJson(
+    operation: string,
+    payload: unknown,
+    schema: string,
+    fallback: any,
+  ): Promise<any> {
     try {
-      // Check if MCP tools are available
-      await this.checkToolAvailability();
-      this.isInitialized = true;
-      this.emit('initialized');
-    } catch (error) {
-      this.emit('error', error);
-      throw error;
+      await this.initialize();
+      const sessionId = await this.ensureSession();
+      const system =
+        `You are a Hive Mind coordinator. Return JSON only.\n` +
+        `Operation: ${operation}\n` +
+        `Schema: ${schema}`;
+      const prompt = `Payload:\n${JSON.stringify(payload, null, 2)}\n\nReturn JSON only.`;
+      const result = await this.client.prompt({
+        sessionId,
+        prompt,
+        persona: this.persona,
+        system,
+      });
+      if (!result.success) {
+        throw new Error(result.error ?? 'Prompt failed');
+      }
+      return extractJson(result.text) ?? fallback;
+    } catch {
+      return fallback;
     }
   }
 
-  /**
-   * Check if MCP tools are available
-   */
-  private async checkToolAvailability(): Promise<void> {
-    try {
-      const { stdout } = await execAsync('npx ruv-swarm --version');
-      if (!stdout) {
-        throw new Error('ruv-swarm MCP tools not found');
-      }
-    } catch (error) {
-      throw new Error('MCP tools not available. Please ensure ruv-swarm is installed.');
+  private async callMemoryTool(tool: string, args: Record<string, unknown>): Promise<any> {
+    await this.initialize();
+    const raw = await this.client.callMcpTool(this.memoryServer, tool, args);
+    const parsed = parseMcpResult(raw);
+    if (raw && typeof raw === 'object' && raw.isError) {
+      const message = parsed?.error ?? 'MCP tool error';
+      throw new Error(message);
     }
+    if (parsed?.success === false) {
+      throw new Error(parsed.error ?? 'MCP tool error');
+    }
+    return parsed;
   }
 
-  /**
-   * Execute MCP tool via CLI
-   */
-  private async executeTool(toolName: string, params: any): Promise<MCPToolResponse> {
+  private buildAnalysisFallback(params: AnalyzePatternParams) {
+    const metadata = params.metadata ?? {};
+    const description = String(metadata.description ?? metadata.task ?? '');
+    const priority = String(metadata.priority ?? 'medium');
+    const dependencies = Number(metadata.dependencies ?? 0);
+    const requiresConsensus = Boolean(
+      metadata.requiresConsensus ?? metadata.requireConsensus ?? false,
+    );
+    const requestedCapabilities = Array.isArray(metadata.requiredCapabilities)
+      ? (metadata.requiredCapabilities as string[])
+      : [];
+
+    let complexity: 'low' | 'medium' | 'high' = 'medium';
+    if (priority === 'critical' || dependencies > 3 || requiresConsensus) {
+      complexity = 'high';
+    } else if (priority === 'low' && dependencies === 0 && description.length < 80) {
+      complexity = 'low';
+    }
+
+    const estimatedDuration =
+      complexity === 'high'
+        ? 4 * 60 * 60 * 1000
+        : complexity === 'low'
+          ? 30 * 60 * 1000
+          : 2 * 60 * 60 * 1000;
+
+    const maxAgents =
+      typeof metadata.maxAgents === 'number' ? metadata.maxAgents : Math.max(2, requestedCapabilities.length);
+
+    const recommendations = [
+      complexity === 'high' ? 'Increase parallelization for throughput.' : 'Keep scope tight.',
+      requiresConsensus ? 'Run consensus checkpoints.' : 'Skip consensus for speed.',
+    ];
+
+    const suggestedCapabilities = requestedCapabilities.length
+      ? requestedCapabilities
+      : ['pattern_recognition', 'problem_solving'];
+
+    const data = {
+      complexity,
+      estimatedDuration,
+      resourceRequirements: {
+        minAgents: complexity === 'high' ? 2 : 1,
+        maxAgents: maxAgents || 4,
+        capabilities: requestedCapabilities,
+      },
+      recommendations,
+      suggestedCapabilities,
+      recommendation: priority !== 'low',
+      strongRecommendation: priority === 'critical',
+      expertiseAlignment: requestedCapabilities.length ? 0.7 : 0.5,
+    };
+
+    return {
+      success: true,
+      data,
+      complexity: data.complexity,
+      estimatedTime: data.estimatedDuration,
+      requirements: requestedCapabilities,
+      recommendations: data.recommendations,
+      suggestedCapabilities: data.suggestedCapabilities,
+      confidence: complexity === 'high' ? 0.7 : 0.6,
+      rationale: `Heuristic analysis based on ${priority} priority.`,
+    };
+  }
+
+  private normalizeAnalysis(result: any, fallback: ReturnType<MCPToolWrapper['buildAnalysisFallback']>) {
+    const data = {
+      ...fallback.data,
+      ...(result?.data ?? {}),
+    };
+
+    const complexity = result?.complexity ?? data.complexity ?? fallback.complexity;
+    const estimatedDuration =
+      result?.estimatedDuration ?? data.estimatedDuration ?? fallback.data.estimatedDuration;
+    const recommendations =
+      result?.recommendations ?? data.recommendations ?? fallback.data.recommendations;
+    const suggestedCapabilities =
+      result?.suggestedCapabilities ?? data.suggestedCapabilities ?? fallback.data.suggestedCapabilities;
+
+    return {
+      success: result?.success ?? true,
+      data: {
+        ...data,
+        complexity,
+        estimatedDuration,
+        recommendations,
+        suggestedCapabilities,
+      },
+      complexity,
+      estimatedTime: result?.estimatedTime ?? estimatedDuration,
+      requirements: result?.requirements ?? fallback.requirements,
+      recommendations,
+      suggestedCapabilities,
+      confidence: result?.confidence ?? fallback.confidence,
+      rationale: result?.rationale ?? fallback.rationale,
+    };
+  }
+
+  async analyzePattern(params: AnalyzePatternParams): Promise<MCPToolResponse> {
+    const fallback = this.buildAnalysisFallback(params);
+    const schema =
+      '{ "complexity": "low|medium|high", "estimatedDuration": number, ' +
+      '"resourceRequirements": { "minAgents": number, "maxAgents": number, "capabilities": string[] }, ' +
+      '"recommendations": string[], "suggestedCapabilities": string[], "recommendation": boolean, ' +
+      '"strongRecommendation": boolean, "expertiseAlignment": number, "rationale": string }';
+    const result = await this.promptJson('analyze_pattern', { params }, schema, fallback);
+    return this.normalizeAnalysis(result, fallback);
+  }
+
+  async orchestrateTask(params: OrchestrateTaskParams): Promise<MCPToolResponse> {
+    const fallback = {
+      success: true,
+      data: {
+        plan: {
+          steps: ['analyze', 'plan', 'execute', 'validate'],
+          strategy: params.strategy ?? 'adaptive',
+        },
+      },
+    };
+    const schema = '{ "plan": { "steps": string[], "strategy": string }, "notes": string[] }';
+    const result = await this.promptJson('task_orchestrate', params, schema, fallback);
+    return {
+      success: true,
+      data: {
+        plan: result?.plan ?? fallback.data.plan,
+        notes: result?.notes ?? [],
+      },
+    };
+  }
+
+  async loadBalance(params: LoadBalanceParams): Promise<MCPToolResponse> {
+    const fallback = { success: true, data: { reassignments: [] } };
+    const schema = '{ "reassignments": Array<{ "taskId": string, "from": string, "to": string }> }';
+    const result = await this.promptJson('load_balance', params, schema, fallback);
+    return {
+      success: true,
+      data: {
+        reassignments: Array.isArray(result?.reassignments) ? result.reassignments : [],
+      },
+    };
+  }
+
+  async trainNeural(params: TrainNeuralParams): Promise<MCPToolResponse> {
     try {
-      const command = `npx ruv-swarm mcp-execute ${toolName} '${JSON.stringify(params)}'`;
-      const { stdout, stderr } = await execAsync(command);
-
-      if (stderr) {
-        return { success: false, error: stderr };
-      }
-
-      const result = JSON.parse(stdout);
-      return { success: true, data: result };
+      await this.storeMemory({
+        action: 'store',
+        key: `train/${params.pattern_type}/${Date.now()}`,
+        value: params.training_data,
+        namespace: 'hive-mind-learning',
+        type: 'pattern',
+      });
+      return { success: true };
     } catch (error) {
       return { success: false, error: getErrorMessage(error) };
     }
   }
 
-  // Swarm coordination tools
-
-  async initSwarm(params: {
-    topology: string;
-    maxAgents?: number;
-    strategy?: string;
-  }): Promise<any> {
-    return this.executeTool('swarm_init', params);
+  async predict(params: PredictParams): Promise<{ success: boolean; predictions?: string[]; error?: string }> {
+    const fallback = { predictions: [] as string[] };
+    const schema = '{ "predictions": string[] }';
+    const result = await this.promptJson('neural_predict', params, schema, fallback);
+    return {
+      success: true,
+      predictions: Array.isArray(result?.predictions) ? result.predictions : fallback.predictions,
+    };
   }
 
-  async spawnAgent(params: {
-    type: string;
-    name?: string;
-    swarmId?: string;
-    capabilities?: string[];
-  }): Promise<any> {
-    return this.executeTool('agent_spawn', params);
+  async storeMemory(params: StoreMemoryParams): Promise<MCPToolResponse> {
+    const namespace = params.namespace ?? 'hive-mind';
+    const key = params.key;
+    const type = params.type ?? 'knowledge';
+    const valueString =
+      typeof params.value === 'string' ? params.value : JSON.stringify(params.value ?? null);
+    const payload = {
+      key,
+      namespace,
+      value: valueString,
+      type,
+      storedAt: new Date().toISOString(),
+    };
+    const entryTag = `hive-mind:entry:${namespace}:${key}`;
+    const tags = [
+      'hive-mind',
+      entryTag,
+      `hive-mind:namespace:${namespace}`,
+      `hive-mind:key:${key}`,
+      `hive-mind:type:${type}`,
+    ];
+
+    try {
+      const result = await this.callMemoryTool('memory_store', {
+        content: JSON.stringify(payload),
+        category: mapMemoryCategory(type),
+        importance: 0.4,
+        tags,
+        summary: `hive-mind ${namespace} ${key}`,
+      });
+      return { success: true, data: { id: result?.id } };
+    } catch (error) {
+      return { success: false, error: getErrorMessage(error) };
+    }
   }
 
-  async orchestrateTask(params: {
-    task: string;
-    priority?: string;
-    strategy?: string;
-    dependencies?: string[];
-  }): Promise<any> {
-    return this.executeTool('task_orchestrate', params);
+  async retrieveMemory(params: RetrieveMemoryParams): Promise<string | null> {
+    const namespace = params.namespace ?? 'hive-mind';
+    const keyTag = `hive-mind:entry:${namespace}:${params.key}`;
+
+    try {
+      const result = await this.callMemoryTool('memory_search', {
+        query: params.key,
+        tags: [keyTag],
+        limit: 5,
+        threshold: 0,
+      });
+
+      const entries = Array.isArray(result?.results) ? result.results : [];
+      const entry = entries.find((item: any) => typeof item?.content === 'string');
+      if (!entry) return null;
+
+      const parsed = extractJson(entry.content);
+      if (parsed && typeof parsed === 'object' && 'value' in parsed) {
+        const storedValue = (parsed as { value?: unknown }).value;
+        if (typeof storedValue === 'string') {
+          return isLikelyJson(storedValue) ? storedValue : JSON.stringify(storedValue);
+        }
+        return JSON.stringify(storedValue ?? null);
+      }
+
+      return isLikelyJson(entry.content) ? entry.content : JSON.stringify(entry.content);
+    } catch {
+      return null;
+    }
   }
 
-  async getSwarmStatus(swarmId?: string): Promise<any> {
-    return this.executeTool('swarm_status', { swarmId });
-  }
+  async deleteMemory(params: DeleteMemoryParams): Promise<MCPToolResponse> {
+    const namespace = params.namespace ?? 'hive-mind';
+    const keyTag = `hive-mind:entry:${namespace}:${params.key}`;
 
-  async monitorSwarm(params: { swarmId?: string; interval?: number }): Promise<any> {
-    return this.executeTool('swarm_monitor', params);
-  }
+    try {
+      const result = await this.callMemoryTool('memory_search', {
+        query: params.key,
+        tags: [keyTag],
+        limit: 1,
+        threshold: 0,
+      });
+      const entry = Array.isArray(result?.results) ? result.results[0] : null;
+      if (!entry?.id) {
+        return { success: false, error: 'Memory entry not found' };
+      }
 
-  // Neural and pattern tools
-
-  async analyzePattern(params: {
-    action: string;
-    operation?: string;
-    metadata?: any;
-  }): Promise<any> {
-    return this.executeTool('neural_patterns', params);
-  }
-
-  async trainNeural(params: {
-    pattern_type: string;
-    training_data: string;
-    epochs?: number;
-  }): Promise<any> {
-    return this.executeTool('neural_train', params);
-  }
-
-  async predict(params: { modelId: string; input: string }): Promise<any> {
-    return this.executeTool('neural_predict', params);
-  }
-
-  async getNeuralStatus(modelId?: string): Promise<any> {
-    return this.executeTool('neural_status', { modelId });
-  }
-
-  // Memory management tools
-
-  async storeMemory(params: {
-    action: 'store';
-    key: string;
-    value: string;
-    namespace?: string;
-    ttl?: number;
-  }): Promise<any> {
-    return this.executeTool('memory_usage', params);
-  }
-
-  async retrieveMemory(params: {
-    action: 'retrieve';
-    key: string;
-    namespace?: string;
-  }): Promise<any> {
-    const result = await this.executeTool('memory_usage', params);
-    return result.success ? result.data : null;
-  }
-
-  async searchMemory(params: {
-    pattern: string;
-    namespace?: string;
-    limit?: number;
-  }): Promise<any> {
-    return this.executeTool('memory_search', params);
-  }
-
-  async deleteMemory(params: { action: 'delete'; key: string; namespace?: string }): Promise<any> {
-    return this.executeTool('memory_usage', params);
-  }
-
-  async listMemory(params: { action: 'list'; namespace?: string }): Promise<any> {
-    return this.executeTool('memory_usage', params);
-  }
-
-  // Performance and monitoring tools
-
-  async getPerformanceReport(params?: { format?: string; timeframe?: string }): Promise<any> {
-    return this.executeTool('performance_report', params || {});
-  }
-
-  async analyzeBottlenecks(params?: { component?: string; metrics?: string[] }): Promise<any> {
-    return this.executeTool('bottleneck_analyze', params || {});
-  }
-
-  async getTokenUsage(params?: { operation?: string; timeframe?: string }): Promise<any> {
-    return this.executeTool('token_usage', params || {});
-  }
-
-  // Agent management tools
-
-  async listAgents(swarmId?: string): Promise<any> {
-    return this.executeTool('agent_list', { swarmId });
-  }
-
-  async getAgentMetrics(agentId: string): Promise<any> {
-    return this.executeTool('agent_metrics', { agentId });
-  }
-
-  // Task management tools
-
-  async getTaskStatus(taskId: string): Promise<any> {
-    return this.executeTool('task_status', { taskId });
-  }
-
-  async getTaskResults(taskId: string): Promise<any> {
-    return this.executeTool('task_results', { taskId });
-  }
-
-  // Advanced coordination tools
-
-  async optimizeTopology(swarmId?: string): Promise<any> {
-    return this.executeTool('topology_optimize', { swarmId });
-  }
-
-  async loadBalance(params: { swarmId?: string; tasks: any[] }): Promise<any> {
-    return this.executeTool('load_balance', params);
-  }
-
-  async syncCoordination(swarmId?: string): Promise<any> {
-    return this.executeTool('coordination_sync', { swarmId });
-  }
-
-  async scaleSwarm(params: { swarmId?: string; targetSize: number }): Promise<any> {
-    return this.executeTool('swarm_scale', params);
-  }
-
-  // SPARC mode integration
-
-  async runSparcMode(params: {
-    mode: string;
-    task_description: string;
-    options?: any;
-  }): Promise<any> {
-    return this.executeTool('sparc_mode', params);
-  }
-
-  // Workflow tools
-
-  async createWorkflow(params: { name: string; steps: any[]; triggers?: any[] }): Promise<any> {
-    return this.executeTool('workflow_create', params);
-  }
-
-  async executeWorkflow(params: { workflowId: string; params?: any }): Promise<any> {
-    return this.executeTool('workflow_execute', params);
-  }
-
-  // GitHub integration tools
-
-  async analyzeRepository(params: { repo: string; analysis_type?: string }): Promise<any> {
-    return this.executeTool('github_repo_analyze', params);
-  }
-
-  async manageGitHubPR(params: { repo: string; action: string; pr_number?: number }): Promise<any> {
-    return this.executeTool('github_pr_manage', params);
-  }
-
-  // Dynamic Agent Architecture tools
-
-  async createDynamicAgent(params: {
-    agent_type: string;
-    capabilities?: string[];
-    resources?: any;
-  }): Promise<any> {
-    return this.executeTool('daa_agent_create', params);
-  }
-
-  async matchCapabilities(params: {
-    task_requirements: string[];
-    available_agents?: any[];
-  }): Promise<any> {
-    return this.executeTool('daa_capability_match', params);
-  }
-
-  // System tools
-
-  async runBenchmark(suite?: string): Promise<any> {
-    return this.executeTool('benchmark_run', { suite });
-  }
-
-  async collectMetrics(components?: string[]): Promise<any> {
-    return this.executeTool('metrics_collect', { components });
-  }
-
-  async analyzeTrends(params: { metric: string; period?: string }): Promise<any> {
-    return this.executeTool('trend_analysis', params);
-  }
-
-  async analyzeCost(timeframe?: string): Promise<any> {
-    return this.executeTool('cost_analysis', { timeframe });
-  }
-
-  async assessQuality(params: { target: string; criteria?: string[] }): Promise<any> {
-    return this.executeTool('quality_assess', params);
-  }
-
-  async healthCheck(components?: string[]): Promise<any> {
-    return this.executeTool('health_check', { components });
-  }
-
-  // Batch operations
-
-  async batchProcess(params: { items: any[]; operation: string }): Promise<any> {
-    return this.executeTool('batch_process', params);
-  }
-
-  async parallelExecute(tasks: any[]): Promise<any> {
-    return this.executeTool('parallel_execute', { tasks });
-  }
-
-  /**
-   * Generic tool execution for custom tools
-   */
-  async executeMCPTool(toolName: string, params: any): Promise<any> {
-    return this.executeTool(toolName, params);
-  }
-
-  /**
-   * Helper to format tool responses
-   */
-  private formatResponse(response: MCPToolResponse): any {
-    if (response.success) {
-      return response.data;
-    } else {
-      throw new Error(`MCP Tool Error: ${response.error}`);
+      await this.callMemoryTool('memory_delete', { id: entry.id });
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: getErrorMessage(error) };
     }
   }
 }

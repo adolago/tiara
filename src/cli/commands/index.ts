@@ -2403,16 +2403,81 @@ Now, please proceed with the task: ${task}`;
   console.log();
   console.log('For detailed help on enhanced commands: claude-flow help <command>');
 
-  // Hive Mind command - removed (pruned in favor of agent-core daemon)
+  // Hive Mind command
   cli.command({
     name: 'hive-mind',
-    description: '[Removed] Use agent-core daemon instead',
+    description: 'Collective intelligence swarm management',
     aliases: ['hive'],
-    options: [],
-    action: async (_ctx: CommandContext) => {
-      error('The hive-mind command has been removed.');
-      info('Use agent-core daemon for swarm orchestration:');
-      console.log('  agent-core daemon');
+    options: [
+      {
+        name: 'command',
+        description: 'Hive Mind command (init, spawn, status, task, wizard)',
+        type: 'string',
+      },
+      {
+        name: 'swarm-id',
+        short: 's',
+        description: 'Swarm ID to operate on',
+        type: 'string',
+      },
+      {
+        name: 'topology',
+        short: 't',
+        description: 'Swarm topology (mesh, hierarchical, ring, star)',
+        type: 'string',
+        default: 'hierarchical',
+      },
+      {
+        name: 'max-agents',
+        short: 'm',
+        description: 'Maximum number of agents',
+        type: 'number',
+        default: 8,
+      },
+      {
+        name: 'interactive',
+        short: 'i',
+        description: 'Run in interactive mode',
+        type: 'boolean',
+        default: true,
+      },
+      {
+        name: 'help',
+        short: 'h',
+        description: 'Show help',
+        type: 'boolean',
+      },
+    ],
+    action: async (ctx: CommandContext) => {
+      try {
+        const { hiveMindCommand } = await import('./hive-mind/index.js');
+
+        // Parse subcommand
+        const command = ctx.args[0] || ctx.flags.command || 'help';
+        const args = ctx.args.slice(command ? 1 : 0);
+
+        // Build args for hive-mind command
+        const hiveMindArgs = [command, ...args];
+
+        if (ctx.flags['swarm-id']) {
+          hiveMindArgs.push('--swarm-id', ctx.flags['swarm-id']);
+        }
+        if (ctx.flags.topology) {
+          hiveMindArgs.push('--topology', ctx.flags.topology);
+        }
+        if (ctx.flags['max-agents']) {
+          hiveMindArgs.push('--max-agents', ctx.flags['max-agents']);
+        }
+        if (ctx.flags.help) {
+          hiveMindArgs.push('--help');
+        }
+
+        await hiveMindCommand.parseAsync(['node', 'hive-mind', ...hiveMindArgs], {
+          from: 'user',
+        });
+      } catch (err) {
+        error(`Hive Mind command error: ${getErrorMessage(err)}`);
+      }
     },
   });
 

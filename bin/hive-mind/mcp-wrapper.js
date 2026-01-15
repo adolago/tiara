@@ -3,7 +3,6 @@
  * Wraps all 87 MCP tools for coordinated swarm usage
  */
 
-import { spawn } from 'child_process';
 
 /**
  * MCP Tool categories and their methods
@@ -113,6 +112,114 @@ const MCP_TOOLS = {
   task: ['task_status', 'task_results'],
 };
 
+const DEFAULT_AGENT_CORE_URL = process.env.AGENT_CORE_URL || 'http://127.0.0.1:3210';
+const DEFAULT_MEMORY_MCP = process.env.AGENT_CORE_MEMORY_MCP || 'personas-memory';
+
+const MEMORY_CATEGORY_MAP = {
+  task: 'task',
+  decision: 'decision',
+  pattern: 'pattern',
+  preference: 'preference',
+  fact: 'fact',
+  relationship: 'relationship',
+};
+
+function extractJson(text) {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    const startObj = trimmed.indexOf('{');
+    const endObj = trimmed.lastIndexOf('}');
+    if (startObj >= 0 && endObj > startObj) {
+      try {
+        return JSON.parse(trimmed.slice(startObj, endObj + 1));
+      } catch {
+        // fall through
+      }
+    }
+    const startArr = trimmed.indexOf('[');
+    const endArr = trimmed.lastIndexOf(']');
+    if (startArr >= 0 && endArr > startArr) {
+      try {
+        return JSON.parse(trimmed.slice(startArr, endArr + 1));
+      } catch {
+        // fall through
+      }
+    }
+  }
+  return null;
+}
+
+function extractMcpText(result) {
+  if (!result || typeof result !== 'object') return '';
+  const content = Array.isArray(result.content) ? result.content : [];
+  return content
+    .map((item) =>
+      item && item.type === 'text' && typeof item.text === 'string' ? item.text : '',
+    )
+    .filter(Boolean)
+    .join('\n')
+    .trim();
+}
+
+function parseMcpResult(result) {
+  if (!result) return null;
+  if (typeof result === 'string') {
+    return extractJson(result) || result;
+  }
+  if (typeof result === 'object' && Array.isArray(result.content)) {
+    const text = extractMcpText(result);
+    return extractJson(text) || (text ? { text } : result);
+  }
+  return result;
+}
+
+function mapMemoryCategory(type) {
+  if (!type) return 'note';
+  const normalized = String(type).toLowerCase();
+  return MEMORY_CATEGORY_MAP[normalized] || 'note';
+}
+
+function isLikelyJson(text) {
+  const trimmed = String(text).trim();
+  if (!trimmed) return false;
+  try {
+    JSON.parse(trimmed);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function callMemoryTool(tool, args) {
+  const response = await fetch(
+    `${DEFAULT_AGENT_CORE_URL}/mcp/${encodeURIComponent(DEFAULT_MEMORY_MCP)}/tool`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tool, arguments: args }),
+    },
+  );
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(`MCP tool call failed: ${response.status} ${message}`);
+  }
+
+  const result = await response.json();
+  const parsed = parseMcpResult(result);
+  if (result && typeof result === 'object' && result.isError) {
+    const errorMessage = parsed?.error || 'MCP tool error';
+    throw new Error(errorMessage);
+  }
+  if (parsed?.success === false) {
+    throw new Error(parsed.error || 'MCP tool error');
+  }
+  return parsed;
+}
+
 /**
  * MCPToolWrapper class for unified MCP tool access
  */
@@ -129,72 +236,19 @@ export class MCPToolWrapper {
     this.parallelQueue = [];
     this.executing = false;
 
-    /** @type {import('better-sqlite3').Database | null} */
-    this.memoryDb = null;
-    
-    // Initialize memory store for fallback
-    this.memoryStore = new Map();
+    this.memoryReady = false;
 
-    // Initialize real memory storage
+    // Initialize agent-core backed memory access
     this.initializeMemoryStorage();
   }
 
   /**
-   * Initialize real memory storage using SQLite
+   * Initialize memory storage via agent-core MCP
    */
   async initializeMemoryStorage() {
-    try {
-      const { createDatabase, isSQLiteAvailable } = await import('../../../memory/sqlite-wrapper.js');
-      const path = await import('path');
-      const fs = await import('fs');
-
-      // Check if SQLite is available
-      const sqliteAvailable = await isSQLiteAvailable();
-      if (!sqliteAvailable) {
-        throw new Error('SQLite not available');
-      }
-
-      // Create .hive-mind directory if it doesn't exist
-      const hiveMindDir = path.join(process.cwd(), '.hive-mind');
-      if (!fs.existsSync(hiveMindDir)) {
-        fs.mkdirSync(hiveMindDir, { recursive: true });
-      }
-
-      // Initialize SQLite database
-      const dbPath = path.join(hiveMindDir, 'memory.db');
-      this.memoryDb = await createDatabase(dbPath);
-
-      // Create memories table
-      this.memoryDb.exec(`
-        CREATE TABLE IF NOT EXISTS memories (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          namespace TEXT NOT NULL,
-          key TEXT NOT NULL,
-          value TEXT NOT NULL,
-          type TEXT DEFAULT 'knowledge',
-          timestamp INTEGER NOT NULL,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          UNIQUE(namespace, key)
-        )
-      `);
-
-      // Real memory storage initialized with SQLite
-    } catch (error) {
-      console.warn(
-        'Failed to initialize SQLite storage, falling back to in-memory:',
-        error.message,
-      );
-      this.memoryDb = null;
-      this.memoryStore = new Map(); // Fallback to in-memory storage
-      
-      // Log Windows-specific help if applicable
-      if (process.platform === 'win32') {
-        console.info(`
-Windows users: For persistent storage, please see installation guide:
-https://github.com/ruvnet/claude-code-flow/docs/windows-installation.md
-`);
-      }
-    }
+    if (this.memoryReady) return;
+    await callMemoryTool('memory_list', { limit: 1 });
+    this.memoryReady = true;
   }
 
   /**
@@ -783,52 +837,45 @@ https://github.com/ruvnet/claude-code-flow/docs/windows-installation.md
    */
   async storeMemory(swarmId, key, value, type = 'knowledge') {
     try {
-      // Don't reinitialize if we already have storage
-      if (!this.memoryDb && !this.memoryStore) {
+      if (!this.memoryReady) {
         await this.initializeMemoryStorage();
       }
 
       const timestamp = Date.now();
-      const valueStr = typeof value === 'string' ? value : JSON.stringify(value);
+      const valueStr = typeof value === 'string' ? value : JSON.stringify(value ?? null);
+      const payload = {
+        key,
+        namespace: swarmId,
+        value: valueStr,
+        type,
+        storedAt: new Date(timestamp).toISOString(),
+      };
+      const entryTag = `hive-mind:entry:${swarmId}:${key}`;
+      const tags = [
+        'hive-mind',
+        entryTag,
+        `hive-mind:namespace:${swarmId}`,
+        `hive-mind:key:${key}`,
+        `hive-mind:type:${type}`,
+      ];
 
-      if (this.memoryDb) {
-        // SQLite storage
-        const stmt = this.memoryDb.prepare(`
-          INSERT OR REPLACE INTO memories (namespace, key, value, type, timestamp)
-          VALUES (?, ?, ?, ?, ?)
-        `);
+      const result = await callMemoryTool('memory_store', {
+        content: JSON.stringify(payload),
+        category: mapMemoryCategory(type),
+        importance: 0.4,
+        tags,
+        summary: `hive-mind ${swarmId} ${key}`,
+      });
 
-        const result = stmt.run(swarmId, key, valueStr, type, timestamp);
-
-        return {
-          success: true,
-          action: 'store',
-          namespace: swarmId,
-          key,
-          type,
-          timestamp,
-          id: result.lastInsertRowid,
-        };
-      } else {
-        // Fallback in-memory storage
-        const memoryKey = `${swarmId}:${key}`;
-        this.memoryStore.set(memoryKey, {
-          namespace: swarmId,
-          key,
-          value: valueStr,
-          type,
-          timestamp,
-        });
-
-        return {
-          success: true,
-          action: 'store',
-          namespace: swarmId,
-          key,
-          type,
-          timestamp,
-        };
-      }
+      return {
+        success: true,
+        action: 'store',
+        namespace: swarmId,
+        key,
+        type,
+        timestamp,
+        id: result?.id,
+      };
     } catch (error) {
       console.error('Error storing memory:', error);
       throw error;
@@ -840,45 +887,55 @@ https://github.com/ruvnet/claude-code-flow/docs/windows-installation.md
    */
   async retrieveMemory(swarmId, key) {
     try {
-      // Don't reinitialize if we already have storage
-      if (!this.memoryDb && !this.memoryStore) {
+      if (!this.memoryReady) {
         await this.initializeMemoryStorage();
       }
 
-      if (this.memoryDb) {
-        // SQLite retrieval
-        const stmt = this.memoryDb.prepare(`
-          SELECT * FROM memories WHERE namespace = ? AND key = ?
-        `);
+      const result = await callMemoryTool('memory_search', {
+        query: key,
+        tags: [`hive-mind:entry:${swarmId}:${key}`],
+        limit: 5,
+        threshold: 0,
+      });
+      const entries = Array.isArray(result?.results) ? result.results : [];
+      const entry = entries.find((item) => typeof item?.content === 'string');
+      if (!entry) return null;
 
-        const row = stmt.get(swarmId, key);
-        if (row) {
-          try {
-            return {
-              ...row,
-              value: JSON.parse(row.value),
-            };
-          } catch {
-            return row;
-          }
+      const parsed = extractJson(entry.content);
+      let value = entry.content;
+      let type = 'knowledge';
+      let storedAt = null;
+
+      if (parsed && typeof parsed === 'object') {
+        if ('value' in parsed) {
+          value = parsed.value;
         }
-      } else {
-        // Fallback in-memory retrieval
-        const memoryKey = `${swarmId}:${key}`;
-        const memory = this.memoryStore.get(memoryKey);
-        if (memory) {
+        if ('type' in parsed) {
+          type = parsed.type || type;
+        }
+        if ('storedAt' in parsed) {
+          storedAt = parsed.storedAt;
+        }
+      }
+
+      let decodedValue = value;
+      if (typeof value === 'string') {
+        if (isLikelyJson(value)) {
           try {
-            return {
-              ...memory,
-              value: JSON.parse(memory.value),
-            };
+            decodedValue = JSON.parse(value);
           } catch {
-            return memory;
+            decodedValue = value;
           }
         }
       }
 
-      return null;
+      return {
+        namespace: swarmId,
+        key,
+        value: decodedValue,
+        type,
+        timestamp: storedAt ? new Date(storedAt).getTime() : Date.now(),
+      };
     } catch (error) {
       console.error('Error retrieving memory:', error);
       throw error;
@@ -890,85 +947,46 @@ https://github.com/ruvnet/claude-code-flow/docs/windows-installation.md
    */
   async searchMemory(swarmId, pattern) {
     try {
-      // Don't reinitialize if we already have storage
-      if (!this.memoryDb && !this.memoryStore) {
+      if (!this.memoryReady) {
         await this.initializeMemoryStorage();
       }
 
-      let results = [];
+      const query = pattern && pattern.trim() ? pattern.trim() : '';
+      const result = await callMemoryTool('memory_search', {
+        query,
+        tags: [`hive-mind:namespace:${swarmId}`],
+        limit: 50,
+        threshold: 0,
+      });
 
-      if (this.memoryDb) {
-        // SQLite search
-        let query, params;
-
-        if (pattern && pattern.trim()) {
-          // Search with pattern
-          query = `
-            SELECT * FROM memories 
-            WHERE namespace = ? AND (key LIKE ? OR value LIKE ? OR type LIKE ?)
-            ORDER BY timestamp DESC
-            LIMIT 50
-          `;
-          const searchPattern = `%${pattern}%`;
-          params = [swarmId, searchPattern, searchPattern, searchPattern];
-        } else {
-          // Get all memories for namespace
-          query = `
-            SELECT * FROM memories 
-            WHERE namespace = ?
-            ORDER BY timestamp DESC
-            LIMIT 50
-          `;
-          params = [swarmId];
-        }
-
-        const stmt = this.memoryDb.prepare(query);
-        results = stmt.all(...params);
-
-        // Parse JSON values where possible
-        results = results.map((row) => {
+      const entries = Array.isArray(result?.results) ? result.results : [];
+      const results = entries.map((entry) => {
+        const parsed = typeof entry?.content === 'string' ? extractJson(entry.content) : null;
+        const payload = parsed && typeof parsed === 'object' ? parsed : {};
+        let decodedValue = payload.value ?? entry?.content;
+        if (typeof decodedValue === 'string' && isLikelyJson(decodedValue)) {
           try {
-            return {
-              ...row,
-              value: JSON.parse(row.value),
-            };
+            decodedValue = JSON.parse(decodedValue);
           } catch {
-            return row;
-          }
-        });
-      } else {
-        // Fallback in-memory search
-        for (const [memKey, memory] of this.memoryStore) {
-          if (memory.namespace === swarmId) {
-            if (
-              !pattern ||
-              memory.key.includes(pattern) ||
-              memory.value.includes(pattern) ||
-              memory.type.includes(pattern)
-            ) {
-              try {
-                results.push({
-                  ...memory,
-                  value: JSON.parse(memory.value),
-                });
-              } catch {
-                results.push(memory);
-              }
-            }
+            // ignore parse errors
           }
         }
 
-        // Sort by timestamp descending
-        results.sort((a, b) => b.timestamp - a.timestamp);
-        results = results.slice(0, 50);
-      }
+        return {
+          namespace: payload.namespace || swarmId,
+          key: payload.key || entry.id,
+          value: decodedValue,
+          type: payload.type || 'knowledge',
+          timestamp: payload.storedAt ? new Date(payload.storedAt).getTime() : Date.now(),
+        };
+      });
 
       return {
         success: true,
         namespace: swarmId,
-        pattern: pattern || '',
+        pattern: query,
         total: results.length,
-        results: results,
+        results,
       };
     } catch (error) {
       console.error('Error searching memory:', error);
@@ -1140,204 +1158,112 @@ https://github.com/ruvnet/claude-code-flow/docs/windows-installation.md
    */
   async getSwarmStatus(params = {}) {
     try {
-      // Don't reinitialize if we already have storage
-      if (!this.memoryDb && !this.memoryStore) {
+      if (!this.memoryReady) {
         await this.initializeMemoryStorage();
       }
 
-      const swarms = [];
+      const result = await callMemoryTool('memory_search', {
+        query: 'swarm-',
+        tags: ['hive-mind'],
+        limit: 100,
+        threshold: 0,
+      });
+
+      const entries = Array.isArray(result?.results) ? result.results : [];
+      const swarmMap = new Map();
       let activeAgents = 0;
       let totalTasks = 0;
       let completedTasks = 0;
 
-      if (this.memoryDb) {
-        // Get all unique swarm namespaces
-        const namespacesQuery = this.memoryDb.prepare(`
-          SELECT DISTINCT namespace FROM memories 
-          WHERE namespace LIKE 'swarm-%' OR namespace LIKE 'hive-%'
-          ORDER BY timestamp DESC
-        `);
-        const namespaces = namespacesQuery.all();
+      for (const entry of entries) {
+        const parsed = typeof entry?.content === 'string' ? extractJson(entry.content) : null;
+        const payload = parsed && typeof parsed === 'object' ? parsed : {};
+        const namespace = payload.namespace;
+        if (!namespace || (!namespace.startsWith('swarm-') && !namespace.startsWith('hive-'))) {
+          continue;
+        }
 
-        // For each swarm, gather its information
-        for (const { namespace } of namespaces) {
-          const swarmId = namespace;
-          
-          // Get swarm metadata
-          const metadataQuery = this.memoryDb.prepare(`
-            SELECT key, value, type, timestamp FROM memories 
-            WHERE namespace = ? AND (
-              key IN ('init_performance', 'config', 'status', 'agents', 'tasks', 'topology')
-              OR key LIKE 'agent-%'
-              OR key LIKE 'task-%'
-            )
-          `);
-          const swarmData = metadataQuery.all(swarmId);
-
-          // Parse swarm information
-          let swarmInfo = {
-            id: swarmId,
-            name: swarmId,
+        if (!swarmMap.has(namespace)) {
+          swarmMap.set(namespace, {
+            id: namespace,
+            name: namespace,
             status: 'unknown',
             agents: 0,
             tasks: { total: 0, completed: 0, pending: 0, failed: 0 },
-            topology: 'hierarchical',
-            createdAt: null,
-            lastActivity: null,
-            memoryUsage: swarmData.length
-          };
+            topology: payload.topology || 'hierarchical',
+            createdAt: payload.storedAt || null,
+            lastActivity: payload.storedAt ? new Date(payload.storedAt).getTime() : null,
+            memoryUsage: 0,
+          });
+        }
 
-          // Process swarm data
-          for (const record of swarmData) {
+        const swarmInfo = swarmMap.get(namespace);
+        swarmInfo.memoryUsage++;
+
+        const key = payload.key || '';
+        const storedAt = payload.storedAt ? new Date(payload.storedAt).getTime() : null;
+        if (storedAt && storedAt > (swarmInfo.lastActivity || 0)) {
+          swarmInfo.lastActivity = storedAt;
+        }
+
+        if (typeof key === 'string' && key.startsWith('agent-')) {
+          swarmInfo.agents++;
+          activeAgents++;
+        }
+
+        if (typeof key === 'string' && key.startsWith('task-')) {
+          swarmInfo.tasks.total++;
+          totalTasks++;
+          let taskValue = payload.value;
+          if (typeof taskValue === 'string' && isLikelyJson(taskValue)) {
             try {
-              const value = typeof record.value === 'string' ? JSON.parse(record.value) : record.value;
-              
-              switch (record.key) {
-                case 'init_performance':
-                  swarmInfo.createdAt = value.timestamp;
-                  swarmInfo.topology = value.topology || 'hierarchical';
-                  break;
-                case 'status':
-                  swarmInfo.status = value;
-                  break;
-                case 'config':
-                  swarmInfo.topology = value.topology || swarmInfo.topology;
-                  break;
-              }
-
-              // Count agents
-              if (record.key.startsWith('agent-')) {
-                swarmInfo.agents++;
-                activeAgents++;
-              }
-
-              // Count tasks
-              if (record.key.startsWith('task-')) {
-                swarmInfo.tasks.total++;
-                totalTasks++;
-                if (value.status === 'completed') {
-                  swarmInfo.tasks.completed++;
-                  completedTasks++;
-                } else if (value.status === 'failed') {
-                  swarmInfo.tasks.failed++;
-                } else if (value.status === 'pending' || value.status === 'in_progress') {
-                  swarmInfo.tasks.pending++;
-                }
-              }
-
-              // Track last activity
-              if (record.timestamp > (swarmInfo.lastActivity || 0)) {
-                swarmInfo.lastActivity = record.timestamp;
-              }
-            } catch (e) {
-              // Skip invalid JSON values
+              taskValue = JSON.parse(taskValue);
+            } catch {
+              // ignore parse errors
             }
           }
-
-          // Determine swarm status based on activity
-          if (swarmInfo.status === 'unknown') {
-            const now = Date.now();
-            const lastActivityAge = now - (swarmInfo.lastActivity || 0);
-            
-            if (lastActivityAge < 60000) { // Active within last minute
-              swarmInfo.status = 'active';
-            } else if (lastActivityAge < 300000) { // Active within last 5 minutes
-              swarmInfo.status = 'idle';
-            } else {
-              swarmInfo.status = 'inactive';
-            }
-          }
-
-          swarms.push(swarmInfo);
-        }
-
-        // Get recent activity logs
-        const activityQuery = this.memoryDb.prepare(`
-          SELECT namespace, key, type, timestamp FROM memories 
-          WHERE (namespace LIKE 'swarm-%' OR namespace LIKE 'hive-%')
-          AND timestamp > ?
-          ORDER BY timestamp DESC
-          LIMIT 10
-        `);
-        const recentActivity = activityQuery.all(Date.now() - 300000); // Last 5 minutes
-
-        return {
-          swarms,
-          activeAgents,
-          totalTasks,
-          completedTasks,
-          pendingTasks: totalTasks - completedTasks,
-          recentActivity: recentActivity.map(r => ({
-            swarmId: r.namespace,
-            action: r.key,
-            type: r.type,
-            timestamp: r.timestamp
-          })),
-          summary: {
-            totalSwarms: swarms.length,
-            activeSwarms: swarms.filter(s => s.status === 'active').length,
-            idleSwarms: swarms.filter(s => s.status === 'idle').length,
-            inactiveSwarms: swarms.filter(s => s.status === 'inactive').length
-          }
-        };
-      } else {
-        // Fallback to in-memory storage
-        const swarmMap = new Map();
-        
-        for (const [key, memory] of this.memoryStore) {
-          const namespace = memory.namespace;
-          if (namespace && (namespace.startsWith('swarm-') || namespace.startsWith('hive-'))) {
-            if (!swarmMap.has(namespace)) {
-              swarmMap.set(namespace, {
-                id: namespace,
-                name: namespace,
-                status: 'active',
-                agents: 0,
-                tasks: { total: 0, completed: 0, pending: 0, failed: 0 },
-                memoryUsage: 0
-              });
-            }
-            
-            const swarm = swarmMap.get(namespace);
-            swarm.memoryUsage++;
-            
-            if (memory.key.startsWith('agent-')) {
-              swarm.agents++;
-              activeAgents++;
-            }
-            
-            if (memory.key.startsWith('task-')) {
-              swarm.tasks.total++;
-              totalTasks++;
-              try {
-                const taskData = JSON.parse(memory.value);
-                if (taskData.status === 'completed') {
-                  swarm.tasks.completed++;
-                  completedTasks++;
-                } else if (taskData.status === 'failed') {
-                  swarm.tasks.failed++;
-                } else if (taskData.status === 'pending' || taskData.status === 'in_progress') {
-                  swarm.tasks.pending++;
-                }
-              } catch (e) {
-                // Skip invalid JSON
-              }
-            }
+          if (taskValue?.status === 'completed') {
+            swarmInfo.tasks.completed++;
+            completedTasks++;
+          } else if (taskValue?.status === 'failed') {
+            swarmInfo.tasks.failed++;
+          } else if (taskValue?.status === 'pending' || taskValue?.status === 'in_progress') {
+            swarmInfo.tasks.pending++;
           }
         }
-        
-        return {
-          swarms: Array.from(swarmMap.values()),
-          activeAgents,
-          totalTasks,
-          completedTasks,
-          pendingTasks: totalTasks - completedTasks,
-          summary: {
-            totalSwarms: swarmMap.size,
-            activeSwarms: swarmMap.size
-          }
-        };
       }
+
+      const now = Date.now();
+      const swarms = Array.from(swarmMap.values()).map((swarm) => {
+        const lastActivity = swarm.lastActivity || 0;
+        const age = lastActivity ? now - lastActivity : Infinity;
+        let status = swarm.status;
+        if (status === 'unknown') {
+          if (age < 60000) {
+            status = 'active';
+          } else if (age < 300000) {
+            status = 'idle';
+          } else if (age !== Infinity) {
+            status = 'inactive';
+          }
+        }
+        return { ...swarm, status };
+      });
+
+      return {
+        swarms,
+        activeAgents,
+        totalTasks,
+        completedTasks,
+        pendingTasks: totalTasks - completedTasks,
+        recentActivity: [],
+        summary: {
+          totalSwarms: swarms.length,
+          activeSwarms: swarms.filter((s) => s.status === 'active').length,
+          idleSwarms: swarms.filter((s) => s.status === 'idle').length,
+          inactiveSwarms: swarms.filter((s) => s.status === 'inactive').length,
+        },
+      };
     } catch (error) {
       console.error('Error getting swarm status:', error);
       // Return empty status on error

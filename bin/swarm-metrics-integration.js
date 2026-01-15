@@ -5,9 +5,20 @@
 
 import { existsSync } from 'fs';
 import path from 'path';
+import os from 'os';
 import Database from 'better-sqlite3';
 import chalk from 'chalk';
 import { cwd } from '../node-compat.js';
+
+function resolveHiveMindDir() {
+  const localDir = path.join(cwd(), '.hive-mind');
+  if (existsSync(localDir)) {
+    return localDir;
+  }
+
+  const dataHome = process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share');
+  return path.join(dataHome, 'agent-core', 'tiara', 'hive-mind');
+}
 
 /**
  * Get metrics from both swarm systems and provide unified view
@@ -29,7 +40,7 @@ export async function getUnifiedSwarmMetrics() {
  * Get hive-mind metrics
  */
 async function getHiveMindMetrics() {
-  const dbPath = path.join(cwd(), '.hive-mind', 'hive.db');
+  const dbPath = path.join(resolveHiveMindDir(), 'hive.db');
 
   if (!existsSync(dbPath)) {
     return { available: false, reason: 'Hive-mind database not found' };

@@ -20,7 +20,7 @@ import type {
 
 // Default configuration
 const DEFAULT_CONFIG: Required<AgentCoreClientConfig> = {
-  baseUrl: "http://127.0.0.1:3210",
+  baseUrl: process.env.AGENT_CORE_URL || "http://127.0.0.1:3210",
   timeoutMs: 120000,
   maxRetries: 3,
   initialRetryDelayMs: 1000,
@@ -138,6 +138,33 @@ export class AgentCoreClient {
     }
 
     this.sessions.delete(sessionId);
+  }
+
+  /**
+   * Call an MCP tool via the agent-core daemon
+   */
+  async callMcpTool(
+    serverName: string,
+    toolName: string,
+    args: Record<string, unknown> = {},
+  ): Promise<unknown> {
+    await this.ensureConnected();
+
+    const response = await fetch(
+      `${this.config.baseUrl}/mcp/${encodeURIComponent(serverName)}/tool`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tool: toolName, arguments: args }),
+      },
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`MCP tool call failed: ${response.statusText} - ${errorText}`);
+    }
+
+    return response.json();
   }
 
   /**

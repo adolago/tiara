@@ -6,11 +6,22 @@
 import Database from 'better-sqlite3';
 import { existsSync } from 'fs';
 import path from 'path';
+import os from 'os';
 import { cwd } from '../../node-compat.js';
+
+function resolveHiveMindDir() {
+  const localDir = path.join(cwd(), '.hive-mind');
+  if (existsSync(localDir)) {
+    return localDir;
+  }
+
+  const dataHome = process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share');
+  return path.join(dataHome, 'agent-core', 'tiara', 'hive-mind');
+}
 
 export class HiveMindMetricsReader {
   constructor(dbPath = null) {
-    this.dbPath = dbPath || path.join(cwd(), '.hive-mind', 'hive.db');
+    this.dbPath = dbPath || path.join(resolveHiveMindDir(), 'hive.db');
     this.db = null;
   }
 

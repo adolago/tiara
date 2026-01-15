@@ -6,7 +6,9 @@
  */
 
 import path from 'path';
+import os from 'os';
 import fs from 'fs/promises';
+import fsSync from 'fs';
 import { EventEmitter } from 'events';
 import { fileURLToPath } from 'url';
 
@@ -18,6 +20,16 @@ const __dirname = path.dirname(__filename);
 let createDatabase: any;
 let isSQLiteAvailable: any;
 let isWindows: any;
+
+function resolveHiveMindDataDir(): string {
+  const localDir = path.join(process.cwd(), '.hive-mind');
+  if (fsSync.existsSync(localDir)) {
+    return localDir;
+  }
+
+  const dataHome = process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share');
+  return path.join(dataHome, 'agent-core', 'tiara', 'hive-mind');
+}
 
 async function loadSQLiteWrapper() {
   const module = await import('../../memory/sqlite-wrapper.js');
@@ -68,7 +80,7 @@ export class DatabaseManager extends EventEmitter {
 
     try {
       // Ensure data directory exists
-      const dataDir = path.join(process.cwd(), 'data');
+      const dataDir = resolveHiveMindDataDir();
       await fs.mkdir(dataDir, { recursive: true });
 
       // Set database path

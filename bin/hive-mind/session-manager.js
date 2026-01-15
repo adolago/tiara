@@ -4,6 +4,7 @@
  */
 
 import path from 'path';
+import os from 'os';
 import { existsSync, mkdirSync } from 'fs';
 import { readFile, writeFile } from 'fs/promises';
 import chalk from 'chalk';
@@ -12,9 +13,19 @@ import { createDatabase, isSQLiteAvailable, isWindows } from '../../../memory/sq
 import { sessionSerializer } from '../../../memory/enhanced-session-serializer.js';
 import { SerializationError, DeserializationError } from '../../../memory/advanced-serializer.js';
 
+function resolveHiveMindDir() {
+  const localDir = path.join(cwd(), '.hive-mind');
+  if (existsSync(localDir)) {
+    return localDir;
+  }
+
+  const dataHome = process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share');
+  return path.join(dataHome, 'agent-core', 'tiara', 'hive-mind');
+}
+
 export class HiveMindSessionManager {
   constructor(hiveMindDir = null) {
-    this.hiveMindDir = hiveMindDir || path.join(cwd(), '.hive-mind');
+    this.hiveMindDir = hiveMindDir || resolveHiveMindDir();
     this.sessionsDir = path.join(this.hiveMindDir, 'sessions');
     this.dbPath = path.join(this.hiveMindDir, 'hive.db');
     this.db = null;
