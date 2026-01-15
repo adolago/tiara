@@ -2,9 +2,12 @@
  * Error Recovery Tests
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import * as fs from 'fs-extra';
 import { errorRecovery } from '../../../src/utils/error-recovery';
+
+// Set test mode
+process.env.TIARA_TEST_MODE = 'true';
 
 describe('Error Recovery', () => {
   describe('isNpmCacheError', () => {
@@ -13,8 +16,13 @@ describe('Error Recovery', () => {
       expect(errorRecovery.isNpmCacheError(error)).toBe(true);
     });
 
-    it('should detect npm cache errors', () => {
-      const error = new Error('npm ERR! cache clean failed');
+    it('should detect better-sqlite3 errors', () => {
+      const error = new Error('Cannot find module better-sqlite3');
+      expect(errorRecovery.isNpmCacheError(error)).toBe(true);
+    });
+
+    it('should detect npx cache errors', () => {
+      const error = new Error('ENOTEMPTY: directory not empty, rmdir \'/home/user/.npx/_npx/cache\'');
       expect(errorRecovery.isNpmCacheError(error)).toBe(true);
     });
 
@@ -50,7 +58,7 @@ describe('Error Recovery', () => {
   describe('retryWithRecovery', () => {
     it('should retry on failure and succeed', async () => {
       let attempts = 0;
-      const fn = vi.fn(async () => {
+      const fn = jest.fn(async () => {
         attempts++;
         if (attempts < 2) {
           throw new Error('Temporary failure');
@@ -68,7 +76,7 @@ describe('Error Recovery', () => {
     });
 
     it('should throw after max retries', async () => {
-      const fn = vi.fn(async () => {
+      const fn = jest.fn(async () => {
         throw new Error('Permanent failure');
       });
 
@@ -84,7 +92,7 @@ describe('Error Recovery', () => {
 
     it('should call onRetry callback', async () => {
       let attempts = 0;
-      const fn = vi.fn(async () => {
+      const fn = jest.fn(async () => {
         attempts++;
         if (attempts < 2) {
           throw new Error('Temporary failure');
@@ -92,7 +100,7 @@ describe('Error Recovery', () => {
         return 'success';
       });
 
-      const onRetry = vi.fn();
+      const onRetry = jest.fn();
 
       await errorRecovery.retryWithRecovery(fn, {
         maxRetries: 3,
@@ -116,14 +124,15 @@ describe('Error Recovery', () => {
   });
 
   describe('recoverInitErrors', () => {
-    it('should handle npm cache errors', async () => {
+    it('should handle npm cache errors in test mode', async () => {
       const error = new Error('ENOTEMPTY: directory not empty, rmdir \'/home/user/.npm/_npx/xxx/node_modules/some-package\'');
 
       const result = await errorRecovery.recoverInitErrors(error);
 
-      expect(result).toHaveProperty('success');
+      expect(result).toHaveProperty('success', true);
       expect(result).toHaveProperty('action');
       expect(result).toHaveProperty('message');
+      expect(result).toHaveProperty('recovered', true);
     });
 
     it('should handle non-recoverable errors', async () => {

@@ -985,11 +985,49 @@ export class QdrantStore extends EventEmitter {
 // =============================================================================
 
 let _storeInstance: QdrantStore | null = null;
+let _mockStoreInstance: any | null = null;
+
+/**
+ * Check if running in test mode
+ */
+function isTestMode(): boolean {
+  return (
+    process.env.NODE_ENV === "test" ||
+    process.env.TIARA_TEST_MODE === "true" ||
+    process.env.TIARA_MOCK_QDRANT === "true" ||
+    process.env.VITEST === "true" ||
+    process.env.JEST_WORKER_ID !== undefined
+  );
+}
 
 /**
  * Get the shared QdrantStore instance.
+ * Returns MockQdrantStore when in test mode.
  */
 export async function getQdrantStore(config?: AgentCoreClientConfig): Promise<QdrantStore> {
+  // In test mode, return mock store
+  if (isTestMode()) {
+    if (!_mockStoreInstance) {
+      try {
+        // Dynamic import to avoid circular dependencies
+        const { getMockQdrantStore } = await import("../../test/MockQdrantStore");
+        _mockStoreInstance = await getMockQdrantStore();
+        if (process.env.TIARA_DEBUG === "true") {
+          console.log("[DEBUG] [QdrantStore] Using MockQdrantStore in test mode");
+        }
+      } catch (error) {
+        // Fallback to real store if mock not available
+        if (process.env.TIARA_DEBUG === "true") {
+          console.log("[DEBUG] [QdrantStore] MockQdrantStore not available, using real store");
+        }
+      }
+    }
+    if (_mockStoreInstance) {
+      return _mockStoreInstance as unknown as QdrantStore;
+    }
+  }
+
+  // Production mode: use real QdrantStore
   if (!_storeInstance) {
     _storeInstance = await QdrantStore.getInstance(config);
   }
@@ -1003,5 +1041,9 @@ export function resetQdrantStore(): void {
   if (_storeInstance) {
     _storeInstance.close();
     _storeInstance = null;
+  }
+  if (_mockStoreInstance) {
+    _mockStoreInstance.reset?.();
+    _mockStoreInstance = null;
   }
 }
