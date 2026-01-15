@@ -208,18 +208,18 @@ export class MockQdrantStore extends EventEmitter {
   // Swarm Operations
   // =============================================================================
 
-  async createSwarm(data: Omit<SwarmData, "createdAt">): Promise<string> {
+  async createSwarm(data: Omit<SwarmData, "id" | "createdAt" | "isActive">): Promise<SwarmData> {
+    const id = randomUUID();
     const swarm: SwarmData = {
+      id,
       ...data,
+      isActive: false,
       createdAt: Date.now(),
     };
-    this.swarmCache.set(data.id, swarm);
-    if (swarm.isActive) {
-      this.activeSwarmId = swarm.id;
-    }
-    debugLog("MockQdrantStore", `Created swarm: ${data.id}`);
+    this.swarmCache.set(id, swarm);
+    debugLog("MockQdrantStore", `Created swarm: ${id}`);
     this.emit("swarm:created", swarm);
-    return data.id;
+    return swarm;
   }
 
   async getSwarm(id: string): Promise<SwarmData | null> {
@@ -253,9 +253,45 @@ export class MockQdrantStore extends EventEmitter {
     return Array.from(this.swarmCache.values());
   }
 
+  async getAllSwarms(): Promise<(SwarmData & { agentCount: number })[]> {
+    const swarms = Array.from(this.swarmCache.values());
+    return Promise.all(
+      swarms.map(async (swarm) => {
+        const agents = await this.getAgents(swarm.id);
+        return { ...swarm, agentCount: agents.length };
+      })
+    );
+  }
+
+  async setActiveSwarm(id: string): Promise<void> {
+    // Deactivate all swarms first
+    for (const swarm of this.swarmCache.values()) {
+      swarm.isActive = swarm.id === id;
+    }
+    this.activeSwarmId = id;
+    this.emit("swarm:activated", id);
+  }
+
   // =============================================================================
   // Agent Operations
   // =============================================================================
+
+  async createAgent(data: Omit<AgentData, "id" | "createdAt" | "lastHeartbeat" | "successCount" | "errorCount" | "messageCount">): Promise<AgentData> {
+    const id = randomUUID();
+    const agent: AgentData = {
+      id,
+      ...data,
+      successCount: 0,
+      errorCount: 0,
+      messageCount: 0,
+      createdAt: Date.now(),
+      lastHeartbeat: Date.now(),
+    };
+    this.agentCache.set(id, agent);
+    debugLog("MockQdrantStore", `Created agent: ${id}`);
+    this.emit("agent:created", agent);
+    return agent;
+  }
 
   async registerAgent(data: Omit<AgentData, "createdAt" | "lastHeartbeat" | "successCount" | "errorCount" | "messageCount">): Promise<string> {
     const agent: AgentData = {
@@ -304,6 +340,30 @@ export class MockQdrantStore extends EventEmitter {
     return agents;
   }
 
+  async getAgents(swarmId: string): Promise<AgentData[]> {
+    return this.listAgents(swarmId);
+  }
+
+  async updateAgentStatus(id: string, status: AgentStatusType): Promise<void> {
+    await this.updateAgent(id, { status });
+  }
+
+  async getAgentPerformance(agentId: string): Promise<{
+    successRate: number;
+    totalTasks: number;
+    messageCount: number;
+  } | null> {
+    const agent = await this.getAgent(agentId);
+    if (!agent) return null;
+
+    const total = agent.successCount + agent.errorCount;
+    return {
+      successRate: total > 0 ? agent.successCount / total : 0,
+      totalTasks: total,
+      messageCount: agent.messageCount,
+    };
+  }
+
   async getAvailableAgents(swarmId: string, capabilities?: string[]): Promise<AgentData[]> {
     return Array.from(this.agentCache.values()).filter(a => {
       if (a.swarmId !== swarmId) return false;
@@ -319,30 +379,41 @@ export class MockQdrantStore extends EventEmitter {
   // Task Operations
   // =============================================================================
 
-  async createTask(data: Omit<TaskData, "createdAt">): Promise<string> {
+  async createTask(data: Omit<TaskData, "id" | "createdAt">): Promise<TaskData> {
+    const id = randomUUID();
     const task: TaskData = {
+      id,
       ...data,
       createdAt: Date.now(),
     };
-    this.taskCache.set(data.id, task);
-    debugLog("MockQdrantStore", `Created task: ${data.id}`);
+    this.taskCache.set(id, task);
+    debugLog("MockQdrantStore", `Created task: ${id}`);
     this.emit("task:created", task);
-    return data.id;
+    return task;
   }
 
   async getTask(id: string): Promise<TaskData | null> {
     return this.taskCache.get(id) || null;
   }
 
-  async updateTask(id: string, updates: Partial<TaskData>): Promise<void> {
+  async getTasks(swarmId: string): Promise<TaskData[]> {
+    const tasks = Array.from(this.taskCache.values())
+      .filter(t => t.swarmId === swarmId)
+      .sort((a, b) => b.createdAt - a.createdAt);
+    return tasks;
+  }
+
+  async updateTask(id: string, updates: Partial<TaskData>): Promise<TaskData | null> {
     const task = this.taskCache.get(id);
     if (task) {
       Object.assign(task, updates);
-      if (updates.status === "completed" || updates.status === "failed") {
+      if (updates.status === "completed" || updates.status === "failed" || updates.status === "cancelled") {
         task.completedAt = Date.now();
       }
       this.emit("task:updated", task);
+      return task;
     }
+    return null;
   }
 
   async updateTaskStatus(id: string, status: TaskStatus): Promise<void> {
@@ -366,14 +437,33 @@ export class MockQdrantStore extends EventEmitter {
   }
 
   async getPendingTasks(swarmId: string): Promise<TaskData[]> {
-    return this.listTasks(swarmId, "pending");
+    const priorityOrder: Record<TaskPriority, number> = {
+      critical: 1,
+      high: 2,
+      medium: 3,
+      low: 4,
+    };
+
+    const tasks = Array.from(this.taskCache.values())
+      .filter(t => t.swarmId === swarmId && t.status === "pending")
+      .sort((a, b) => {
+        const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
+        if (priorityDiff !== 0) return priorityDiff;
+        return a.createdAt - b.createdAt;
+      });
+    return tasks;
+  }
+
+  async getActiveTasks(swarmId: string): Promise<TaskData[]> {
+    return Array.from(this.taskCache.values())
+      .filter(t => t.swarmId === swarmId && (t.status === "assigned" || t.status === "in_progress"));
   }
 
   // =============================================================================
   // Communication Operations
   // =============================================================================
 
-  async createCommunication(data: Omit<CommunicationData, "id" | "timestamp">): Promise<string> {
+  async createCommunication(data: Omit<CommunicationData, "id" | "timestamp">): Promise<CommunicationData> {
     const id = randomUUID();
     const comm: CommunicationData = {
       ...data,
@@ -382,7 +472,7 @@ export class MockQdrantStore extends EventEmitter {
     };
     this.communicationCache.set(id, comm);
     this.emit("communication:created", comm);
-    return id;
+    return comm;
   }
 
   async getCommunication(id: string): Promise<CommunicationData | null> {
@@ -393,6 +483,29 @@ export class MockQdrantStore extends EventEmitter {
     return Array.from(this.communicationCache.values()).filter(c =>
       (c.toAgentId === agentId || !c.toAgentId) && !c.readAt
     );
+  }
+
+  async getPendingMessages(agentId: string): Promise<CommunicationData[]> {
+    const priorityOrder: Record<MessagePriority, number> = {
+      urgent: 1,
+      high: 2,
+      normal: 3,
+      low: 4,
+    };
+
+    return Array.from(this.communicationCache.values())
+      .filter(c => c.toAgentId === agentId && !c.deliveredAt)
+      .sort((a, b) => {
+        const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
+        if (priorityDiff !== 0) return priorityDiff;
+        return a.timestamp - b.timestamp;
+      });
+  }
+
+  async getRecentMessages(swarmId: string, timeWindowMs: number): Promise<CommunicationData[]> {
+    const cutoff = Date.now() - timeWindowMs;
+    return Array.from(this.communicationCache.values())
+      .filter(c => c.swarmId === swarmId && c.timestamp > cutoff);
   }
 
   async markMessageRead(id: string): Promise<void> {
@@ -413,7 +526,7 @@ export class MockQdrantStore extends EventEmitter {
   // Consensus Operations
   // =============================================================================
 
-  async createConsensusProposal(data: Omit<ConsensusData, "id" | "createdAt" | "votes" | "currentVotes" | "status">): Promise<string> {
+  async createConsensusProposal(data: Omit<ConsensusData, "id" | "createdAt" | "votes" | "currentVotes" | "totalVoters" | "status">): Promise<ConsensusData> {
     const id = randomUUID();
     const consensus: ConsensusData = {
       ...data,
@@ -421,11 +534,12 @@ export class MockQdrantStore extends EventEmitter {
       status: "pending",
       votes: {},
       currentVotes: 0,
+      totalVoters: 0,
       createdAt: Date.now(),
     };
     this.consensusCache.set(id, consensus);
     this.emit("consensus:created", consensus);
-    return id;
+    return consensus;
   }
 
   async getConsensusProposal(id: string): Promise<ConsensusData | null> {
@@ -435,8 +549,17 @@ export class MockQdrantStore extends EventEmitter {
   async submitConsensusVote(proposalId: string, agentId: string, vote: boolean, reason?: string): Promise<void> {
     const consensus = this.consensusCache.get(proposalId);
     if (consensus) {
-      consensus.votes[agentId] = { vote, reason, timestamp: Date.now() };
-      consensus.currentVotes = Object.keys(consensus.votes).length;
+      consensus.votes[agentId] = { vote, reason: reason ?? "", timestamp: Date.now() };
+      consensus.totalVoters = Object.keys(consensus.votes).length;
+      consensus.currentVotes = Object.values(consensus.votes).filter(v => v.vote).length;
+
+      // Check if threshold is met
+      const currentRatio = consensus.currentVotes / consensus.totalVoters;
+      if (currentRatio >= consensus.requiredThreshold) {
+        consensus.status = "achieved";
+        consensus.resolvedAt = Date.now();
+      }
+
       this.emit("consensus:voted", { proposalId, agentId, vote });
     }
   }
@@ -475,6 +598,18 @@ export class MockQdrantStore extends EventEmitter {
     return id;
   }
 
+  async storePerformanceMetric(data: Omit<MetricsData, "id" | "timestamp">): Promise<MetricsData> {
+    const id = randomUUID();
+    const metric: MetricsData = {
+      ...data,
+      id,
+      timestamp: Date.now(),
+    };
+    this.metricsCache.push(metric);
+    this.emit("metrics:recorded", metric);
+    return metric;
+  }
+
   async getMetrics(swarmId: string, metricType?: string, limit: number = 100): Promise<MetricsData[]> {
     let metrics = this.metricsCache.filter(m => m.swarmId === swarmId);
     if (metricType) {
@@ -483,31 +618,111 @@ export class MockQdrantStore extends EventEmitter {
     return metrics.slice(-limit);
   }
 
+  async getSwarmStats(swarmId: string): Promise<{
+    agentCount: number;
+    busyAgents: number;
+    agentUtilization: number;
+    taskBacklog: number;
+  }> {
+    const agents = await this.getAgents(swarmId);
+    const pendingTasks = await this.getPendingTasks(swarmId);
+    const activeTasks = await this.getActiveTasks(swarmId);
+
+    const busyAgents = agents.filter(a => a.status === "busy").length;
+
+    return {
+      agentCount: agents.length,
+      busyAgents,
+      agentUtilization: agents.length > 0 ? busyAgents / agents.length : 0,
+      taskBacklog: pendingTasks.length + activeTasks.length,
+    };
+  }
+
+  async getStrategyPerformance(swarmId: string): Promise<Record<string, {
+    successRate: number;
+    avgCompletionTime: number;
+    totalTasks: number;
+  }>> {
+    const tasks = Array.from(this.taskCache.values())
+      .filter(t => t.swarmId === swarmId && t.completedAt != null);
+
+    const byStrategy: Record<string, TaskData[]> = {};
+    for (const task of tasks) {
+      if (!byStrategy[task.strategy]) {
+        byStrategy[task.strategy] = [];
+      }
+      byStrategy[task.strategy].push(task);
+    }
+
+    const performance: Record<string, { successRate: number; avgCompletionTime: number; totalTasks: number }> = {};
+
+    for (const [strategy, strategyTasks] of Object.entries(byStrategy)) {
+      const successful = strategyTasks.filter(t => t.status === "completed").length;
+      let totalTime = 0;
+      let timeCount = 0;
+
+      for (const task of strategyTasks) {
+        if (task.completedAt) {
+          totalTime += task.completedAt - task.createdAt;
+          timeCount++;
+        }
+      }
+
+      performance[strategy] = {
+        successRate: strategyTasks.length > 0 ? successful / strategyTasks.length : 0,
+        avgCompletionTime: timeCount > 0 ? totalTime / timeCount : 0,
+        totalTasks: strategyTasks.length,
+      };
+    }
+
+    return performance;
+  }
+
   // =============================================================================
   // Memory Operations
   // =============================================================================
 
   async storeMemory(data: MemoryData): Promise<void> {
-    const key = `${data.namespace}:${data.key}`;
-    this.memoryCache.set(key, { ...data, createdAt: Date.now() });
+    const compositeKey = `${data.namespace}:${data.key}`;
+    this.memoryCache.set(compositeKey, { ...data, createdAt: data.createdAt ?? Date.now() });
     this.emit("memory:stored", data);
   }
 
-  async getMemory(namespace: string, key: string): Promise<MemoryData | null> {
+  async getMemory(key: string, namespace: string): Promise<MemoryData | null> {
     return this.memoryCache.get(`${namespace}:${key}`) || null;
   }
 
-  async searchMemory(namespace: string, query: string): Promise<MemoryData[]> {
+  async searchMemory(options: {
+    pattern?: string;
+    namespace?: string;
+    limit?: number;
+  }): Promise<MemoryData[]> {
+    const results: MemoryData[] = [];
+    const namespace = options.namespace ?? "";
+    const pattern = options.pattern ?? "";
+    const limit = options.limit ?? 10;
+
+    for (const [k, v] of this.memoryCache.entries()) {
+      if (namespace && !k.startsWith(namespace)) continue;
+      if (pattern && !v.value.includes(pattern) && !v.key.includes(pattern)) continue;
+      results.push(v);
+      if (results.length >= limit) break;
+    }
+    return results;
+  }
+
+  async listMemory(namespace: string, limit: number): Promise<MemoryData[]> {
     const results: MemoryData[] = [];
     for (const [k, v] of this.memoryCache.entries()) {
-      if (k.startsWith(namespace) && (v.value.includes(query) || v.key.includes(query))) {
+      if (k.startsWith(namespace)) {
         results.push(v);
+        if (results.length >= limit) break;
       }
     }
     return results;
   }
 
-  async deleteMemory(namespace: string, key: string): Promise<void> {
+  async deleteMemory(key: string, namespace: string): Promise<void> {
     this.memoryCache.delete(`${namespace}:${key}`);
     this.emit("memory:deleted", { namespace, key });
   }
