@@ -17,6 +17,18 @@ export { MemoryMonitor } from './core/MemoryMonitor.js';
 export { MCPToolWrapper } from './integration/MCPToolWrapper.js';
 export { SwarmOrchestrator } from './integration/SwarmOrchestrator.js';
 export { ConsensusEngine } from './integration/ConsensusEngine.js';
+export {
+  AgentCoreClient,
+  getAgentCoreClient,
+  resetAgentCoreClient,
+  TiaraNamespaces as AgentCoreTiaraNamespaces,
+  type AgentCoreClientConfig,
+  type MemoryEntry,
+  type MemoryStoreInput,
+  type MemorySearchParams,
+  type MemorySearchResult,
+  type ProcessInfo,
+} from './integration/AgentCoreClient.js';
 
 // Types
 export * from './types.js';
