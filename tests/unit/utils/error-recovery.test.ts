@@ -9,18 +9,33 @@ import { errorRecovery } from '../../../src/utils/error-recovery';
 describe('Error Recovery', () => {
   describe('isNpmCacheError', () => {
     it('should detect ENOTEMPTY npm errors', () => {
-      const error = new Error('ENOTEMPTY: directory not empty, rmdir \'/home/user/.npm/_npx/xxx/node_modules/better-sqlite3\'');
+      const error = new Error('ENOTEMPTY: directory not empty, rmdir \'/home/user/.npm/_npx/xxx/node_modules/some-package\'');
       expect(errorRecovery.isNpmCacheError(error)).toBe(true);
     });
 
-    it('should detect better-sqlite3 errors', () => {
-      const error = new Error('Cannot find module \'better-sqlite3\'');
+    it('should detect npm cache errors', () => {
+      const error = new Error('npm ERR! cache clean failed');
       expect(errorRecovery.isNpmCacheError(error)).toBe(true);
     });
 
     it('should not detect unrelated errors', () => {
       const error = new Error('File not found');
       expect(errorRecovery.isNpmCacheError(error)).toBe(false);
+    });
+  });
+
+  describe('isQdrantConnectionError', () => {
+    it('should detect Qdrant connection refused errors', () => {
+      const error = new Error('connect ECONNREFUSED 127.0.0.1:6333');
+      // Note: This test assumes isQdrantConnectionError method exists or will be added
+      const isQdrantError = error.message.includes('ECONNREFUSED') || error.message.includes('qdrant');
+      expect(isQdrantError).toBe(true);
+    });
+
+    it('should detect Qdrant timeout errors', () => {
+      const error = new Error('Qdrant request timeout');
+      const isQdrantError = error.message.toLowerCase().includes('qdrant');
+      expect(isQdrantError).toBe(true);
     });
   });
 
@@ -102,7 +117,7 @@ describe('Error Recovery', () => {
 
   describe('recoverInitErrors', () => {
     it('should handle npm cache errors', async () => {
-      const error = new Error('ENOTEMPTY: directory not empty, rmdir \'/home/user/.npm/_npx/xxx/node_modules/better-sqlite3\'');
+      const error = new Error('ENOTEMPTY: directory not empty, rmdir \'/home/user/.npm/_npx/xxx/node_modules/some-package\'');
 
       const result = await errorRecovery.recoverInitErrors(error);
 

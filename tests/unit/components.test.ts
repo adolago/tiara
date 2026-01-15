@@ -12,7 +12,6 @@ import { AgentManager } from '../../agents/agent-manager.js';
 
 // Mock external dependencies
 jest.mock('fs-extra');
-jest.mock('better-sqlite3');
 
 describe('Component Unit Tests', () => {
   let eventBus: EventBus;
