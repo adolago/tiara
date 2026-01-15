@@ -73,13 +73,10 @@ export class Logger implements ILogger {
   static getInstance(config?: LoggingConfig): Logger {
     if (!Logger.instance) {
       if (!config) {
-        // Use default config if none provided and not in test environment
-        const isTestEnv = process.env.CLAUDE_FLOW_ENV === 'test';
-        if (isTestEnv) {
-          throw new Error('Logger configuration required for initialization');
-        }
+        // Use default config - quiet in test environment, normal otherwise
+        const isTestEnv = process.env.CLAUDE_FLOW_ENV === 'test' || process.env.NODE_ENV === 'test';
         config = {
-          level: 'info',
+          level: isTestEnv ? 'error' : 'info',
           format: 'json',
           destination: 'console',
         };

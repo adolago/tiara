@@ -30,6 +30,9 @@ export {
   type ConsensusData,
   type MetricsData,
   type MemoryData,
+  type ConsensusProposal,
+  type PerformanceMetrics,
+  type MemoryEntry,
 } from "./MockQdrantStore";
 
 // Re-export test utils from the tests folder

@@ -134,6 +134,46 @@ export interface MetricsData {
   timestamp: number;
 }
 
+// Alternative consensus structure for tests
+export interface ConsensusProposal {
+  id: string;
+  swarmId: string;
+  proposerId: string;
+  type: string;
+  description: string;
+  options: string[];
+  votingStrategy: string;
+  deadline: number;
+  status: string;
+  votes: Array<{ agentId: string; vote: string; timestamp: number }>;
+  result?: string;
+  createdAt: number;
+}
+
+// Alternative metrics structure for tests
+export interface PerformanceMetrics {
+  id: string;
+  swarmId: string;
+  timestamp: number;
+  taskCompletionRate: number;
+  averageTaskTime: number;
+  agentUtilization: number;
+  consensusSuccessRate: number;
+  messageLatency: number;
+  errorRate: number;
+}
+
+// Alternative memory structure for tests
+export interface MemoryEntry {
+  id: string;
+  swarmId: string;
+  key: string;
+  content: string;
+  namespace: string;
+  ttl?: number;
+  createdAt: number;
+}
+
 export interface MemoryData {
   key: string;
   namespace: string;
@@ -160,6 +200,11 @@ export class MockQdrantStore extends EventEmitter {
   private consensusCache = new Map<string, ConsensusData>();
   private metricsCache: MetricsData[] = [];
   private memoryCache = new Map<string, MemoryData>();
+
+  // Alternative caches for test compatibility
+  private consensusProposalCache = new Map<string, ConsensusProposal>();
+  private performanceMetricsCache: PerformanceMetrics[] = [];
+  private memoryEntryCache = new Map<string, MemoryEntry>();
 
   // Active swarm tracking
   private activeSwarmId: string | null = null;
@@ -190,6 +235,9 @@ export class MockQdrantStore extends EventEmitter {
     this.consensusCache.clear();
     this.metricsCache = [];
     this.memoryCache.clear();
+    this.consensusProposalCache.clear();
+    this.performanceMetricsCache = [];
+    this.memoryEntryCache.clear();
     this.activeSwarmId = null;
     debugLog("MockQdrantStore", "Store reset");
   }
@@ -208,13 +256,20 @@ export class MockQdrantStore extends EventEmitter {
   // Swarm Operations
   // =============================================================================
 
-  async createSwarm(data: Omit<SwarmData, "id" | "createdAt" | "isActive">): Promise<SwarmData> {
-    const id = randomUUID();
+  async createSwarm(data: Partial<SwarmData> & Pick<SwarmData, "name" | "topology">): Promise<SwarmData> {
+    const id = data.id ?? randomUUID();
     const swarm: SwarmData = {
       id,
-      ...data,
-      isActive: false,
-      createdAt: Date.now(),
+      name: data.name,
+      topology: data.topology,
+      queenMode: data.queenMode ?? false,
+      maxAgents: data.maxAgents ?? 10,
+      consensusThreshold: data.consensusThreshold ?? 0.66,
+      memoryTTL: data.memoryTTL ?? 3600,
+      config: data.config ?? {},
+      isActive: data.isActive ?? false,
+      createdAt: data.createdAt ?? Date.now(),
+      updatedAt: data.updatedAt,
     };
     this.swarmCache.set(id, swarm);
     debugLog("MockQdrantStore", `Created swarm: ${id}`);
@@ -332,6 +387,10 @@ export class MockQdrantStore extends EventEmitter {
     this.emit("agent:deregistered", id);
   }
 
+  async unregisterAgent(id: string): Promise<void> {
+    return this.deregisterAgent(id);
+  }
+
   async listAgents(swarmId?: string): Promise<AgentData[]> {
     const agents = Array.from(this.agentCache.values());
     if (swarmId) {
@@ -379,12 +438,25 @@ export class MockQdrantStore extends EventEmitter {
   // Task Operations
   // =============================================================================
 
-  async createTask(data: Omit<TaskData, "id" | "createdAt">): Promise<TaskData> {
-    const id = randomUUID();
+  async createTask(data: Partial<TaskData> & Pick<TaskData, "swarmId" | "description">): Promise<TaskData> {
+    const id = data.id ?? randomUUID();
     const task: TaskData = {
       id,
-      ...data,
-      createdAt: Date.now(),
+      swarmId: data.swarmId,
+      description: data.description,
+      priority: data.priority ?? "medium",
+      strategy: data.strategy ?? "single",
+      status: data.status ?? "pending",
+      dependencies: data.dependencies ?? [],
+      assignedAgents: data.assignedAgents ?? [],
+      requireConsensus: data.requireConsensus ?? false,
+      maxAgents: data.maxAgents ?? 1,
+      requiredCapabilities: data.requiredCapabilities ?? [],
+      result: data.result,
+      error: data.error,
+      metadata: data.metadata ?? {},
+      createdAt: data.createdAt ?? Date.now(),
+      completedAt: data.completedAt,
     };
     this.taskCache.set(id, task);
     debugLog("MockQdrantStore", `Created task: ${id}`);
@@ -522,6 +594,22 @@ export class MockQdrantStore extends EventEmitter {
     }
   }
 
+  async storeMessage(data: Omit<CommunicationData, "id" | "timestamp">): Promise<CommunicationData> {
+    return this.createCommunication(data);
+  }
+
+  async getMessagesForAgent(agentId: string): Promise<CommunicationData[]> {
+    return Array.from(this.communicationCache.values())
+      .filter(c => c.toAgentId === agentId)
+      .sort((a, b) => b.timestamp - a.timestamp);
+  }
+
+  async getSwarmMessages(swarmId: string): Promise<CommunicationData[]> {
+    return Array.from(this.communicationCache.values())
+      .filter(c => c.swarmId === swarmId)
+      .sort((a, b) => b.timestamp - a.timestamp);
+  }
+
   // =============================================================================
   // Consensus Operations
   // =============================================================================
@@ -580,6 +668,42 @@ export class MockQdrantStore extends EventEmitter {
       .filter(c => c.swarmId === swarmId)
       .sort((a, b) => b.createdAt - a.createdAt)
       .slice(0, limit);
+  }
+
+  // Alternative consensus methods for test compatibility
+  async createConsensus(data: Omit<ConsensusProposal, "id" | "createdAt">): Promise<ConsensusProposal> {
+    const id = randomUUID();
+    const proposal: ConsensusProposal = {
+      id,
+      swarmId: data.swarmId,
+      proposerId: data.proposerId,
+      type: data.type,
+      description: data.description,
+      options: data.options,
+      votingStrategy: data.votingStrategy,
+      deadline: data.deadline,
+      status: data.status,
+      votes: data.votes ?? [],
+      result: data.result,
+      createdAt: Date.now(),
+    };
+    this.consensusProposalCache.set(id, proposal);
+    this.emit("consensus:created", proposal);
+    return proposal;
+  }
+
+  async updateConsensus(id: string, updates: Partial<ConsensusProposal>): Promise<ConsensusProposal | null> {
+    const proposal = this.consensusProposalCache.get(id);
+    if (proposal) {
+      Object.assign(proposal, updates);
+      this.emit("consensus:updated", proposal);
+      return proposal;
+    }
+    return null;
+  }
+
+  async getConsensus(id: string): Promise<ConsensusProposal | null> {
+    return this.consensusProposalCache.get(id) || null;
   }
 
   // =============================================================================
@@ -678,14 +802,61 @@ export class MockQdrantStore extends EventEmitter {
     return performance;
   }
 
+  // Alternative metrics methods for test compatibility
+  async storeMetrics(data: Omit<PerformanceMetrics, "id">): Promise<PerformanceMetrics> {
+    const id = randomUUID();
+    const metrics: PerformanceMetrics = {
+      id,
+      swarmId: data.swarmId,
+      timestamp: data.timestamp ?? Date.now(),
+      taskCompletionRate: data.taskCompletionRate,
+      averageTaskTime: data.averageTaskTime,
+      agentUtilization: data.agentUtilization,
+      consensusSuccessRate: data.consensusSuccessRate,
+      messageLatency: data.messageLatency,
+      errorRate: data.errorRate,
+    };
+    this.performanceMetricsCache.push(metrics);
+    this.emit("metrics:stored", metrics);
+    return metrics;
+  }
+
+  async getMetricsHistory(swarmId: string, limit: number = 100): Promise<PerformanceMetrics[]> {
+    return this.performanceMetricsCache
+      .filter(m => m.swarmId === swarmId)
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, limit);
+  }
+
   // =============================================================================
   // Memory Operations
   // =============================================================================
 
-  async storeMemory(data: MemoryData): Promise<void> {
-    const compositeKey = `${data.namespace}:${data.key}`;
-    this.memoryCache.set(compositeKey, { ...data, createdAt: data.createdAt ?? Date.now() });
-    this.emit("memory:stored", data);
+  async storeMemory(data: MemoryData | Omit<MemoryEntry, "id" | "createdAt">): Promise<MemoryEntry | void> {
+    // Check if this is the new format with swarmId
+    if ("swarmId" in data && "content" in data) {
+      const entry = data as Omit<MemoryEntry, "id" | "createdAt">;
+      const id = randomUUID();
+      const memoryEntry: MemoryEntry = {
+        id,
+        swarmId: entry.swarmId,
+        key: entry.key,
+        content: entry.content,
+        namespace: entry.namespace,
+        ttl: entry.ttl,
+        createdAt: Date.now(),
+      };
+      const compositeKey = `${entry.swarmId}:${entry.namespace}:${entry.key}`;
+      this.memoryEntryCache.set(compositeKey, memoryEntry);
+      this.emit("memory:stored", memoryEntry);
+      return memoryEntry;
+    }
+
+    // Old format
+    const oldData = data as MemoryData;
+    const compositeKey = `${oldData.namespace}:${oldData.key}`;
+    this.memoryCache.set(compositeKey, { ...oldData, createdAt: oldData.createdAt ?? Date.now() });
+    this.emit("memory:stored", oldData);
   }
 
   async getMemory(key: string, namespace: string): Promise<MemoryData | null> {
@@ -737,6 +908,73 @@ export class MockQdrantStore extends EventEmitter {
     return results;
   }
 
+  // Alternative memory methods for test compatibility (swarmId-based)
+  async storeMemoryEntry(data: Omit<MemoryEntry, "id" | "createdAt">): Promise<MemoryEntry> {
+    const id = randomUUID();
+    const entry: MemoryEntry = {
+      id,
+      swarmId: data.swarmId,
+      key: data.key,
+      content: data.content,
+      namespace: data.namespace,
+      ttl: data.ttl,
+      createdAt: Date.now(),
+    };
+    const compositeKey = `${data.swarmId}:${data.namespace}:${data.key}`;
+    this.memoryEntryCache.set(compositeKey, entry);
+    this.emit("memory:stored", entry);
+    return entry;
+  }
+
+  async getMemoryByKey(swarmId: string, key: string): Promise<MemoryEntry | null> {
+    // Search across all namespaces for this swarm and key
+    for (const [k, v] of this.memoryEntryCache.entries()) {
+      if (v.swarmId === swarmId && v.key === key) {
+        // Check TTL expiration
+        if (v.ttl && Date.now() > v.createdAt + v.ttl) {
+          return null;
+        }
+        return v;
+      }
+    }
+    return null;
+  }
+
+  async listMemoryByNamespace(swarmId: string, namespace: string): Promise<MemoryEntry[]> {
+    const results: MemoryEntry[] = [];
+    const now = Date.now();
+    for (const v of this.memoryEntryCache.values()) {
+      if (v.swarmId === swarmId && v.namespace === namespace) {
+        // Check TTL expiration
+        if (v.ttl && now > v.createdAt + v.ttl) {
+          continue;
+        }
+        results.push(v);
+      }
+    }
+    return results;
+  }
+
+  async cleanupExpiredMemory(): Promise<number> {
+    let deletedCount = 0;
+    const now = Date.now();
+    const keysToDelete: string[] = [];
+
+    for (const [k, v] of this.memoryEntryCache.entries()) {
+      if (v.ttl && now > v.createdAt + v.ttl) {
+        keysToDelete.push(k);
+      }
+    }
+
+    for (const key of keysToDelete) {
+      this.memoryEntryCache.delete(key);
+      deletedCount++;
+    }
+
+    this.emit("memory:cleanup", { deleted: deletedCount });
+    return deletedCount;
+  }
+
   // =============================================================================
   // Debug / Test Utilities
   // =============================================================================
@@ -752,6 +990,9 @@ export class MockQdrantStore extends EventEmitter {
     consensus: ConsensusData[];
     metrics: MetricsData[];
     memory: MemoryData[];
+    consensusProposals: ConsensusProposal[];
+    performanceMetrics: PerformanceMetrics[];
+    memoryEntries: MemoryEntry[];
   } {
     return {
       swarms: Array.from(this.swarmCache.values()),
@@ -761,6 +1002,9 @@ export class MockQdrantStore extends EventEmitter {
       consensus: Array.from(this.consensusCache.values()),
       metrics: this.metricsCache,
       memory: Array.from(this.memoryCache.values()),
+      consensusProposals: Array.from(this.consensusProposalCache.values()),
+      performanceMetrics: this.performanceMetricsCache,
+      memoryEntries: Array.from(this.memoryEntryCache.values()),
     };
   }
 
@@ -776,6 +1020,15 @@ export class MockQdrantStore extends EventEmitter {
     snapshot.consensus.forEach(c => this.consensusCache.set(c.id, c));
     this.metricsCache = [...snapshot.metrics];
     snapshot.memory.forEach(m => this.memoryCache.set(`${m.namespace}:${m.key}`, m));
+    if (snapshot.consensusProposals) {
+      snapshot.consensusProposals.forEach(c => this.consensusProposalCache.set(c.id, c));
+    }
+    if (snapshot.performanceMetrics) {
+      this.performanceMetricsCache = [...snapshot.performanceMetrics];
+    }
+    if (snapshot.memoryEntries) {
+      snapshot.memoryEntries.forEach(m => this.memoryEntryCache.set(`${m.swarmId}:${m.namespace}:${m.key}`, m));
+    }
     debugLog("MockQdrantStore", "Loaded snapshot");
   }
 }

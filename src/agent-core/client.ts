@@ -92,10 +92,17 @@ export class AgentCoreClient {
   }
 
   /**
+   * Check if daemon is running
+   */
+  async isDaemonRunning(): Promise<boolean> {
+    return isDaemonRunning(this.config.baseUrl);
+  }
+
+  /**
    * Ensure the daemon is running
    */
   async ensureConnected(): Promise<void> {
-    const running = await isDaemonRunning(this.config.baseUrl);
+    const running = await this.isDaemonRunning();
     if (!running) {
       throw new Error(
         `agent-core daemon not running at ${this.config.baseUrl}. ` +
