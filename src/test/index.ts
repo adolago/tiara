@@ -34,3 +34,14 @@ export {
 
 // Re-export test utils from the tests folder
 export * from "./test-helpers";
+
+// CLI test harness
+export {
+  runCLI,
+  runHiveMind,
+  assertions,
+  getCLIPath,
+  InteractiveCLI,
+  type CLIResult,
+  type CLIOptions
+} from "./cli-harness";
