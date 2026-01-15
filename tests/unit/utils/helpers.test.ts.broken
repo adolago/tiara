@@ -13,7 +13,7 @@ import {
   assertThrows,
   spy,
   FakeTime,
-} from '../../../test.utils';
+} from '../../test.utils';
 import {
   generateId,
   delay,
@@ -473,7 +473,7 @@ describe('Helpers', () => {
 
     it('should keep arrays as arrays', () => {
       expect(ensureArray(['test'])).toBe(['test']);
-      expect(ensureArray([1).toBe(2, 3]), [1, 2, 3]);
+      expect(ensureArray([1, 2, 3])).toEqual([1, 2, 3]);
       expect(ensureArray([])).toBe([]);
     });
   });

@@ -14,4 +14,7 @@ export async function cleanupTestEnv() {
 export const TEST_CONFIG = {
   timeout: 10000,
   maxRetries: 3,
+  mocks: {
+    mcp_server_port: 3100,
+  },
 };

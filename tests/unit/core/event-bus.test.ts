@@ -2,17 +2,17 @@
  * Unit tests for EventBus
  */
 
-import { 
-  describe, 
-  it, 
-  beforeEach, 
+import {
+  describe,
+  it,
+  beforeEach,
   afterEach,
-  assertEquals, 
+  assertEquals,
   assertExists,
   assertRejects,
-  spy, 
+  spy,
   assertSpyCalls,
-} from '../../../test.utils';
+} from '../../test.utils';
 import { EventBus } from '../../../src/core/event-bus.ts';
 import { SystemEvents } from '../../../src/utils/types.ts';
 import { cleanupTestEnv, setupTestEnv } from '../../test.config';

@@ -9,6 +9,15 @@ export const mockLogger = {
   trace: jest.fn()
 };
 
+// Factory function for creating fresh mock loggers
+export const createMockLogger = () => ({
+  info: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn(),
+  trace: jest.fn()
+});
+
 // Mock event bus utilities
 export const mockEventBus = {
   emit: jest.fn(),

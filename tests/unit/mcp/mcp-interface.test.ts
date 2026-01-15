@@ -3,10 +3,9 @@
  * Tests stdio and HTTP transports, protocol compliance, and error handling
  */
 
-import { describe, it, beforeEach, afterEach  } from "../../test.utils";
+import { describe, it, beforeEach, afterEach, FakeTime } from "../../test.utils";
 import { expect } from "@jest/globals";
-// FakeTime equivalent available in test.utils.ts
-import { spy, stub  } from "../../test.utils";
+import { spy, stub } from "../../test.utils";
 
 import { MCPServer } from '../../../src/mcp/server.ts';
 import { MCPClient } from '../../../src/mcp/client.ts';
@@ -89,7 +88,7 @@ describe('MCP Interface - Comprehensive Tests', () => {
         // Test serialization/deserialization
         const serialized = JSON.stringify(message);
         const deserialized = JSON.parse(serialized);
-        expect(deserialized).toBe(message);
+        expect(deserialized).toEqual(message);
       }
     });
 
@@ -379,7 +378,7 @@ describe('MCP Interface - Comprehensive Tests', () => {
       
       const result = await mcpClient.request('test_method', { param: 'value' });
       expect(result).toBeDefined();
-      expect(result).toBe({ success: true });
+      expect(result).toStrictEqual({ success: true });
     });
   });
 
@@ -517,14 +516,21 @@ describe('MCP Interface - Comprehensive Tests', () => {
 function validateMCPMessage(message: any): boolean {
   if (!message || typeof message !== 'object') return false;
   if (message.jsonrpc !== '2.0') return false;
-  
+
   // Must have either method (request/notification) or result/error (response)
   const hasMethod = typeof message.method === 'string';
   const hasResult = 'result' in message;
   const hasError = 'error' in message;
-  
+
   if (!hasMethod && !hasResult && !hasError) return false;
-  
+
+  // Validate params if present (must be array or object, not primitive)
+  if ('params' in message && message.params !== undefined) {
+    if (typeof message.params !== 'object' || message.params === null) {
+      return false;
+    }
+  }
+
   // Requests with id and responses must have valid id
   if (hasResult || hasError) {
     // Responses must have an id
@@ -532,7 +538,7 @@ function validateMCPMessage(message: any): boolean {
       return false;
     }
   }
-  
+
   // Requests (not notifications) should have an id
   if (hasMethod && message.id !== undefined) {
     // This is a request, check for valid id type
@@ -540,7 +546,7 @@ function validateMCPMessage(message: any): boolean {
       return false;
     }
   }
-  
+
   return true;
 }
 

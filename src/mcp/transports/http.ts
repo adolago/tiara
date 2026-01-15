@@ -194,8 +194,8 @@ export class HttpTransport implements ITransport {
       await this.handleJsonRpcRequest(req, res);
     });
 
-    // Handle preflight requests
-    this.app.options('*', (req, res) => {
+    // Handle preflight requests (Express 5 requires named wildcard)
+    this.app.options('/{*splat}', (req, res) => {
       res.status(204).end();
     });
 
