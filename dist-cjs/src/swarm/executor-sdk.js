@@ -1,4 +1,3 @@
-import { spawn } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import { Logger } from '../core/logger.js';
 import { generateId } from '../utils/helpers.js';
@@ -168,52 +167,19 @@ export class TaskExecutorSDK extends EventEmitter {
         }
         return this.executeTask(task, agent);
     }
-    async executeInteractiveCLI(task, agent) {
+    async executeInteractiveCLI(task, _agent) {
         const startTime = Date.now();
-        return new Promise((resolve)=>{
-            const args = [
-                '--no-visual',
-                task.description
-            ];
-            const claudeProcess = spawn('claude', args, {
-                stdio: 'pipe',
-                env: {
-                    ...process.env
-                }
-            });
-            let output = '';
-            let errorOutput = '';
-            claudeProcess.stdout?.on('data', (data)=>{
-                output += data.toString();
-            });
-            claudeProcess.stderr?.on('data', (data)=>{
-                errorOutput += data.toString();
-            });
-            claudeProcess.on('close', (code)=>{
-                const executionTime = Date.now() - startTime;
-                resolve({
-                    success: code === 0,
-                    output: output || errorOutput,
-                    errors: code !== 0 ? [
-                        errorOutput
-                    ] : [],
-                    executionTime,
-                    tokensUsed: 0
-                });
-            });
-            claudeProcess.on('error', (error)=>{
-                const executionTime = Date.now() - startTime;
-                resolve({
-                    success: false,
-                    output: null,
-                    errors: [
-                        error.message
-                    ],
-                    executionTime,
-                    tokensUsed: 0
-                });
-            });
-        });
+        console.warn('[DEPRECATED] executeInteractiveCLI is deprecated. ' + 'Use agent-core daemon with AgentCoreClient for task execution. ' + 'Start daemon: agent-core daemon');
+        const executionTime = Date.now() - startTime;
+        return {
+            success: false,
+            output: null,
+            errors: [
+                'Interactive CLI mode is deprecated. ' + 'Please use agent-core daemon for task execution. ' + `Task: ${task.description}`
+            ],
+            executionTime,
+            tokensUsed: 0
+        };
     }
     buildPrompt(task, agent) {
         const agentContext = `

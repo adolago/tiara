@@ -20,7 +20,9 @@ import { automationAction } from './simple-commands/automation.js';
 import { coordinationAction } from './simple-commands/coordination.js';
 import { hooksAction } from './simple-commands/hooks.js';
 import { hookSafetyCommand } from './simple-commands/hook-safety.js';
+import { hiveMindCommand } from './simple-commands/hive-mind.js';
 import { HelpFormatter } from './help-formatter.js';
+import hiveMindOptimizeCommand from './simple-commands/hive-mind-optimize.js';
 import { neuralCommand } from './simple-commands/neural.js';
 import { goalCommand } from './simple-commands/goal.js';
 import { showUnifiedMetrics, fixTaskAttribution } from './simple-commands/swarm-metrics-integration.js';
@@ -280,6 +282,53 @@ Commands:
             'swarm "Analyze data" --max-agents 3 --parallel',
             'swarm "Development task" --ui --monitor --background'
         ]
+    });
+    commandRegistry.set('hive-mind', {
+        handler: hiveMindCommand,
+        description: '🧠 Advanced Hive Mind swarm intelligence with collective decision-making',
+        usage: 'hive-mind <subcommand> [options]',
+        examples: [
+            'hive-mind init                          # Initialize hive mind system',
+            'hive-mind spawn "Build microservices"   # Create swarm with objective',
+            'hive-mind wizard                        # Interactive setup wizard',
+            'hive-mind status                        # View active swarms',
+            'hive-mind consensus                     # View consensus decisions',
+            'hive-mind metrics                       # Performance analytics'
+        ],
+        customHelp: true,
+        details: `
+Hive Mind System Features:
+  • Queen-led coordination with specialized worker agents
+  • Collective memory and knowledge sharing
+  • Consensus building for critical decisions  
+  • Auto-scaling based on workload
+  • Parallel task execution with work stealing
+  • Real-time monitoring and metrics
+  • SQLite-backed persistence
+  • MCP tool integration for 87+ operations
+
+Queen Types:
+  • Strategic - Long-term planning and optimization
+  • Tactical - Task prioritization and rapid response
+  • Adaptive - Learning and strategy evolution
+
+Worker Types:
+  • Researcher, Coder, Analyst, Tester
+  • Architect, Reviewer, Optimizer, Documenter
+
+Use 'hive-mind wizard' for interactive setup or 'hive-mind help' for full documentation.`
+    });
+    commandRegistry.set('hive-mind-optimize', {
+        handler: hiveMindOptimizeCommand,
+        description: '🔧 Optimize hive mind database for better performance',
+        usage: 'hive-mind-optimize [options]',
+        examples: [
+            'hive-mind-optimize                      # Interactive optimization wizard',
+            'hive-mind-optimize --auto               # Auto-optimize with defaults',
+            'hive-mind-optimize --report             # Generate optimization report',
+            'hive-mind-optimize --clean-memory --memory-days 60'
+        ],
+        customHelp: true
     });
     commandRegistry.set('swarm-metrics', {
         handler: async (args, flags)=>{

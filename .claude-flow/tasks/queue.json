@@ -10,6 +10,166 @@
     "progress": 0
   },
   {
+    "id": "task_1768494065335_u14vzdkdy",
+    "type": "code",
+    "description": "Build API",
+    "priority": 8,
+    "status": "queued",
+    "createdAt": 1768494065335,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768495806573_dlxsjiax3",
+    "type": "code",
+    "description": "Build API",
+    "priority": 8,
+    "status": "queued",
+    "createdAt": 1768495806573,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768497953888_1il4a9q3s",
+    "type": "code",
+    "description": "Build API",
+    "priority": 8,
+    "status": "queued",
+    "createdAt": 1768497953888,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498136431_qfifznk1e",
+    "type": "code",
+    "description": "Build API",
+    "priority": 8,
+    "status": "queued",
+    "createdAt": 1768498136431,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498184820_ltsfpswp3",
+    "type": "code",
+    "description": "Build API",
+    "priority": 8,
+    "status": "queued",
+    "createdAt": 1768498184820,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498457555_dd1th4174",
+    "type": "code",
+    "description": "Build API",
+    "priority": 8,
+    "status": "queued",
+    "createdAt": 1768498457555,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502654537_b0rvqggjl",
+    "type": "code",
+    "description": "Build API",
+    "priority": 8,
+    "status": "queued",
+    "createdAt": 1768502654537,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502834674_qkvgp46ib",
+    "type": "code",
+    "description": "Build API",
+    "priority": 8,
+    "status": "queued",
+    "createdAt": 1768502834674,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502930969_jztah8nx3",
+    "type": "code",
+    "description": "Build API",
+    "priority": 8,
+    "status": "queued",
+    "createdAt": 1768502930969,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503109168_t8eon5lu4",
+    "type": "code",
+    "description": "Build API",
+    "priority": 8,
+    "status": "queued",
+    "createdAt": 1768503109168,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503340484_aii0v7xij",
+    "type": "code",
+    "description": "Build API",
+    "priority": 8,
+    "status": "queued",
+    "createdAt": 1768503340484,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503520322_6qliy9s7d",
+    "type": "code",
+    "description": "Build API",
+    "priority": 8,
+    "status": "queued",
+    "createdAt": 1768503520322,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503532046_rvs5xkqtu",
+    "type": "code",
+    "description": "Build API",
+    "priority": 8,
+    "status": "queued",
+    "createdAt": 1768503532046,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504192750_ez2dinlng",
+    "type": "code",
+    "description": "Build API",
+    "priority": 8,
+    "status": "queued",
+    "createdAt": 1768504192750,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504384299_g7c778enh",
+    "type": "code",
+    "description": "Build API",
+    "priority": 8,
+    "status": "queued",
+    "createdAt": 1768504384299,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768505018012_2pk3j8hkk",
+    "type": "code",
+    "description": "Build API",
+    "priority": 8,
+    "status": "queued",
+    "createdAt": 1768505018012,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
     "id": "task_1758290420668_64s4duyk2",
     "type": "research",
     "description": "Analyze performance bottlenecks in the codebase",
@@ -146,6 +306,1766 @@
     "priority": 5,
     "status": "queued",
     "createdAt": 1767890864418,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768494065314_341z4vjv7",
+    "type": "research",
+    "description": "Market analysis",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768494065314,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768494065330_tfqm3cts0",
+    "type": "code",
+    "description": "Implement user authentication system",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768494065330,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768494065332_s332zr72h",
+    "type": "analysis",
+    "description": "Data processing pipeline",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768494065332,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768494065334_c036g5g4o",
+    "type": "research",
+    "description": "Analyze \"best practices\" for API design",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768494065334,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768494065336_ferj3mjkj",
+    "type": "code",
+    "description": "Build API",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768494065336,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768494065337_vym25ki9g",
+    "type": "general",
+    "description": "Quick task description",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768494065337,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768494065341_snc5e0t49",
+    "type": "code",
+    "description": "\"Unclosed quote",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768494065341,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768494065364_91h3myqbi",
+    "type": "code",
+    "description": "Implement feature #123 @high-priority",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768494065364,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768494065364_ea2clyqd5",
+    "type": "research",
+    "description": "研究 AI 技术 🚀",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768494065364,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768494065367_059g4ctis",
+    "type": "analysis",
+    "description": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768494065367,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768494065368_33y3xcjll",
+    "type": "code",
+    "description": "Test; rm -rf /",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768494065368,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768495806514_kavrwvvjw",
+    "type": "research",
+    "description": "Market analysis",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768495806514,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768495806558_09vafsw1z",
+    "type": "code",
+    "description": "Implement user authentication system",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768495806558,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768495806564_llticzupq",
+    "type": "analysis",
+    "description": "Data processing pipeline",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768495806564,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768495806568_2z41a20xg",
+    "type": "research",
+    "description": "Analyze \"best practices\" for API design",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768495806568,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768495806575_q4m3vquqq",
+    "type": "code",
+    "description": "Build API",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768495806575,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768495806579_qsvagh2z9",
+    "type": "general",
+    "description": "Quick task description",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768495806579,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768495806585_jeyseqjgn",
+    "type": "code",
+    "description": "\"Unclosed quote",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768495806585,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768495806612_oaoggnjvu",
+    "type": "code",
+    "description": "Implement feature #123 @high-priority",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768495806612,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768495806614_dglqgca92",
+    "type": "research",
+    "description": "研究 AI 技术 🚀",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768495806614,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768495806617_amjcidcuk",
+    "type": "analysis",
+    "description": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768495806617,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768495806618_x5b4w6eth",
+    "type": "code",
+    "description": "Test; rm -rf /",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768495806618,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768497953852_pa0a08348",
+    "type": "research",
+    "description": "Market analysis",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768497953852,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768497953880_85zw81nbz",
+    "type": "code",
+    "description": "Implement user authentication system",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768497953880,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768497953883_1ds7pmetd",
+    "type": "analysis",
+    "description": "Data processing pipeline",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768497953883,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768497953886_hfqfu0g1x",
+    "type": "research",
+    "description": "Analyze \"best practices\" for API design",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768497953886,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768497953891_8v4pxzmui",
+    "type": "code",
+    "description": "Build API",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768497953891,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768497953894_pwfdnzf30",
+    "type": "general",
+    "description": "Quick task description",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768497953894,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768497953900_37wkj9iby",
+    "type": "code",
+    "description": "\"Unclosed quote",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768497953900,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768497953932_przup4hn7",
+    "type": "code",
+    "description": "Implement feature #123 @high-priority",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768497953932,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768497953934_m3obb3x4w",
+    "type": "research",
+    "description": "研究 AI 技术 🚀",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768497953934,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768497953935_4luq1h4ay",
+    "type": "analysis",
+    "description": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768497953936,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768497953938_9nh2i9ukb",
+    "type": "code",
+    "description": "Test; rm -rf /",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768497953938,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498136387_xz1f3vtic",
+    "type": "research",
+    "description": "Market analysis",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498136387,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498136422_aopli5aeb",
+    "type": "code",
+    "description": "Implement user authentication system",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498136422,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498136425_u7vul90h6",
+    "type": "analysis",
+    "description": "Data processing pipeline",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498136425,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498136428_v562al4aj",
+    "type": "research",
+    "description": "Analyze \"best practices\" for API design",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498136428,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498136434_ummqap06f",
+    "type": "code",
+    "description": "Build API",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498136434,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498136436_06u5h043c",
+    "type": "general",
+    "description": "Quick task description",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498136436,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498136443_amqermnp5",
+    "type": "code",
+    "description": "\"Unclosed quote",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498136443,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498136475_hfj3bfauq",
+    "type": "code",
+    "description": "Implement feature #123 @high-priority",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498136475,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498136477_fb5b3lzh6",
+    "type": "research",
+    "description": "研究 AI 技术 🚀",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498136477,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498136478_epn8hwu6s",
+    "type": "analysis",
+    "description": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498136478,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498136480_h69sn7fl2",
+    "type": "code",
+    "description": "Test; rm -rf /",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498136480,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498184776_t7zsuf2oj",
+    "type": "research",
+    "description": "Market analysis",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498184776,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498184813_2mukaj1w5",
+    "type": "code",
+    "description": "Implement user authentication system",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498184813,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498184816_bntk3mx62",
+    "type": "analysis",
+    "description": "Data processing pipeline",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498184816,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498184818_b44h32776",
+    "type": "research",
+    "description": "Analyze \"best practices\" for API design",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498184818,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498184823_7lnpzpbma",
+    "type": "code",
+    "description": "Build API",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498184823,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498184826_k05cotkuk",
+    "type": "general",
+    "description": "Quick task description",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498184826,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498184834_992p25pmr",
+    "type": "code",
+    "description": "\"Unclosed quote",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498184834,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498184870_jil8g6qrp",
+    "type": "code",
+    "description": "Implement feature #123 @high-priority",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498184870,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498184873_a9ldy4ajo",
+    "type": "research",
+    "description": "研究 AI 技术 🚀",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498184873,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498184875_yivosnam0",
+    "type": "analysis",
+    "description": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498184875,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498184876_x1d900rg2",
+    "type": "code",
+    "description": "Test; rm -rf /",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498184876,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498457504_m3odgqaqn",
+    "type": "research",
+    "description": "Market analysis",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498457504,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498457538_50l2ddpse",
+    "type": "code",
+    "description": "Implement user authentication system",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498457538,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498457546_ckz2bnrjn",
+    "type": "analysis",
+    "description": "Data processing pipeline",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498457546,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498457551_jhddlox9o",
+    "type": "research",
+    "description": "Analyze \"best practices\" for API design",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498457551,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498457560_a7zsfhqyv",
+    "type": "code",
+    "description": "Build API",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498457560,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498457562_ftkafekzp",
+    "type": "general",
+    "description": "Quick task description",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498457562,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498457567_vqakw5ur4",
+    "type": "code",
+    "description": "\"Unclosed quote",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498457567,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498457594_8vz6geod6",
+    "type": "code",
+    "description": "Implement feature #123 @high-priority",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498457594,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498457595_86vrm766e",
+    "type": "research",
+    "description": "研究 AI 技术 🚀",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498457595,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498457596_xeqvvcp0h",
+    "type": "analysis",
+    "description": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498457596,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768498457597_sln0rygup",
+    "type": "code",
+    "description": "Test; rm -rf /",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768498457597,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502654498_ze5qvckrg",
+    "type": "research",
+    "description": "Market analysis",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502654498,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502654529_g3ye0znvy",
+    "type": "code",
+    "description": "Implement user authentication system",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502654529,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502654533_tg4ewjqhq",
+    "type": "analysis",
+    "description": "Data processing pipeline",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502654533,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502654535_c1vvtcstv",
+    "type": "research",
+    "description": "Analyze \"best practices\" for API design",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502654535,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502654542_el6vl0o0l",
+    "type": "code",
+    "description": "Build API",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502654542,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502654544_kzd330o1o",
+    "type": "general",
+    "description": "Quick task description",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502654544,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502654548_3ecvfq6wg",
+    "type": "code",
+    "description": "\"Unclosed quote",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502654548,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502654581_3n1y2y3ax",
+    "type": "code",
+    "description": "Implement feature #123 @high-priority",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502654581,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502654582_vh8zod6bk",
+    "type": "research",
+    "description": "研究 AI 技术 🚀",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502654582,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502654584_e3ifdcx35",
+    "type": "analysis",
+    "description": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502654584,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502654589_3akonpkz5",
+    "type": "code",
+    "description": "Test; rm -rf /",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502654589,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502834647_tx3u8fsmn",
+    "type": "research",
+    "description": "Market analysis",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502834647,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502834665_xvc32l0cd",
+    "type": "code",
+    "description": "Implement user authentication system",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502834665,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502834670_pbo10hq90",
+    "type": "analysis",
+    "description": "Data processing pipeline",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502834670,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502834672_04i8n2gmr",
+    "type": "research",
+    "description": "Analyze \"best practices\" for API design",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502834672,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502834676_frd7p3uzh",
+    "type": "code",
+    "description": "Build API",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502834676,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502834677_qwgppyjlw",
+    "type": "general",
+    "description": "Quick task description",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502834677,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502834680_06bl02hzz",
+    "type": "code",
+    "description": "\"Unclosed quote",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502834680,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502834700_4jokds25o",
+    "type": "code",
+    "description": "Implement feature #123 @high-priority",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502834700,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502834701_o07uczyda",
+    "type": "research",
+    "description": "研究 AI 技术 🚀",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502834701,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502834702_v18udkru5",
+    "type": "analysis",
+    "description": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502834702,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502834702_rgc3tjrip",
+    "type": "code",
+    "description": "Test; rm -rf /",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502834702,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502930884_4eup843yk",
+    "type": "research",
+    "description": "Market analysis",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502930884,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502930946_xdfpekxli",
+    "type": "code",
+    "description": "Implement user authentication system",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502930946,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502930955_fmx8ttmo0",
+    "type": "analysis",
+    "description": "Data processing pipeline",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502930955,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502930962_evrfq0ui1",
+    "type": "research",
+    "description": "Analyze \"best practices\" for API design",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502930962,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502930997_i4jzjekme",
+    "type": "code",
+    "description": "Build API",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502930997,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502931002_hgf6gz505",
+    "type": "general",
+    "description": "Quick task description",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502931002,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502931025_jr4pkgf5h",
+    "type": "code",
+    "description": "\"Unclosed quote",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502931025,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502931089_pqk8myxpz",
+    "type": "code",
+    "description": "Implement feature #123 @high-priority",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502931089,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502931091_lberhack5",
+    "type": "research",
+    "description": "研究 AI 技术 🚀",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502931091,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502931093_nto06m3rq",
+    "type": "analysis",
+    "description": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502931093,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768502931095_x4ibovlrn",
+    "type": "code",
+    "description": "Test; rm -rf /",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768502931095,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503109140_q7h263smi",
+    "type": "research",
+    "description": "Market analysis",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503109140,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503109161_ru0ff1kjy",
+    "type": "code",
+    "description": "Implement user authentication system",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503109161,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503109163_hrbk9b4ud",
+    "type": "analysis",
+    "description": "Data processing pipeline",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503109163,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503109165_88cd9w2ao",
+    "type": "research",
+    "description": "Analyze \"best practices\" for API design",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503109165,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503109170_wb4mshhet",
+    "type": "code",
+    "description": "Build API",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503109170,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503109172_pwc8qppcn",
+    "type": "general",
+    "description": "Quick task description",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503109172,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503109177_13f6ozzh7",
+    "type": "code",
+    "description": "\"Unclosed quote",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503109177,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503109215_1w3l2z2yf",
+    "type": "code",
+    "description": "Implement feature #123 @high-priority",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503109215,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503109217_wd4tw7cu1",
+    "type": "research",
+    "description": "研究 AI 技术 🚀",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503109217,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503109218_i9u59gqi9",
+    "type": "analysis",
+    "description": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503109218,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503109225_x9z8ffan8",
+    "type": "code",
+    "description": "Test; rm -rf /",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503109225,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503340445_agbnlz0ma",
+    "type": "research",
+    "description": "Market analysis",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503340445,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503340469_7fv75rtsu",
+    "type": "code",
+    "description": "Implement user authentication system",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503340469,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503340472_lodwfxnh7",
+    "type": "analysis",
+    "description": "Data processing pipeline",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503340473,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503340474_tkhgoo9p5",
+    "type": "research",
+    "description": "Analyze \"best practices\" for API design",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503340474,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503340492_1ey4zj9no",
+    "type": "code",
+    "description": "Build API",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503340492,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503340494_1t1pjhckp",
+    "type": "general",
+    "description": "Quick task description",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503340494,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503340500_4beiryjn0",
+    "type": "code",
+    "description": "\"Unclosed quote",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503340500,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503340556_unsblcgk0",
+    "type": "code",
+    "description": "Implement feature #123 @high-priority",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503340556,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503340563_zgrfbmu92",
+    "type": "research",
+    "description": "研究 AI 技术 🚀",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503340563,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503340565_blpzhj7fy",
+    "type": "analysis",
+    "description": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503340565,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503340567_3gcvbhndx",
+    "type": "code",
+    "description": "Test; rm -rf /",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503340567,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503520286_qkddridgu",
+    "type": "research",
+    "description": "Market analysis",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503520286,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503520311_v045irdyv",
+    "type": "code",
+    "description": "Implement user authentication system",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503520311,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503520314_7pzrwfeqb",
+    "type": "analysis",
+    "description": "Data processing pipeline",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503520314,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503520317_o5lnklp3y",
+    "type": "research",
+    "description": "Analyze \"best practices\" for API design",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503520317,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503520325_o1z99hfoi",
+    "type": "code",
+    "description": "Build API",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503520325,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503520328_n0qu14pf6",
+    "type": "general",
+    "description": "Quick task description",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503520328,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503520337_1coy6d8r2",
+    "type": "code",
+    "description": "\"Unclosed quote",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503520337,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503520387_aqakfpd4x",
+    "type": "code",
+    "description": "Implement feature #123 @high-priority",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503520387,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503520391_t7l28mvl2",
+    "type": "research",
+    "description": "研究 AI 技术 🚀",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503520391,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503520393_hk7sj0c5s",
+    "type": "analysis",
+    "description": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503520393,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503520395_vimjkw84s",
+    "type": "code",
+    "description": "Test; rm -rf /",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503520396,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503532005_rf9puw4th",
+    "type": "research",
+    "description": "Market analysis",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503532005,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503532037_5mfkshvrn",
+    "type": "code",
+    "description": "Implement user authentication system",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503532037,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503532040_vdn0pndcj",
+    "type": "analysis",
+    "description": "Data processing pipeline",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503532040,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503532043_h4dd2gbqo",
+    "type": "research",
+    "description": "Analyze \"best practices\" for API design",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503532043,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503532048_mp6hpwy3h",
+    "type": "code",
+    "description": "Build API",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503532048,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503532050_4u814cr7u",
+    "type": "general",
+    "description": "Quick task description",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503532051,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503532059_lvvzp57ei",
+    "type": "code",
+    "description": "\"Unclosed quote",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503532059,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503532112_zd1aa8ttn",
+    "type": "code",
+    "description": "Implement feature #123 @high-priority",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503532112,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503532114_65qodtgt4",
+    "type": "research",
+    "description": "研究 AI 技术 🚀",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503532114,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503532115_jols9cdhz",
+    "type": "analysis",
+    "description": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503532115,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768503532121_680dya6vm",
+    "type": "code",
+    "description": "Test; rm -rf /",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768503532121,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504192722_gusczrqrl",
+    "type": "research",
+    "description": "Market analysis",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504192722,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504192736_ylh5ndxyh",
+    "type": "code",
+    "description": "Implement user authentication system",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504192736,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504192744_iisxzjmub",
+    "type": "analysis",
+    "description": "Data processing pipeline",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504192744,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504192747_5wjok2s9i",
+    "type": "research",
+    "description": "Analyze \"best practices\" for API design",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504192747,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504192759_cjd7zwedw",
+    "type": "code",
+    "description": "Build API",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504192759,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504192761_nif55iaza",
+    "type": "general",
+    "description": "Quick task description",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504192761,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504192766_gpc9ax72a",
+    "type": "code",
+    "description": "\"Unclosed quote",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504192766,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504192813_rwrybtz1r",
+    "type": "code",
+    "description": "Implement feature #123 @high-priority",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504192813,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504192815_1o9dtx3jt",
+    "type": "research",
+    "description": "研究 AI 技术 🚀",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504192815,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504192817_yc0nyv2sq",
+    "type": "analysis",
+    "description": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504192817,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504192820_p7i16gslo",
+    "type": "code",
+    "description": "Test; rm -rf /",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504192820,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504384263_zgusxnl24",
+    "type": "research",
+    "description": "Market analysis",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504384263,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504384292_otdx7kajr",
+    "type": "code",
+    "description": "Implement user authentication system",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504384292,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504384295_fw4pse4l3",
+    "type": "analysis",
+    "description": "Data processing pipeline",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504384295,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504384297_kxgf0jgi4",
+    "type": "research",
+    "description": "Analyze \"best practices\" for API design",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504384297,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504384301_vfdu7ycqx",
+    "type": "code",
+    "description": "Build API",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504384301,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504384302_fbw39l5r6",
+    "type": "general",
+    "description": "Quick task description",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504384302,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504384311_ypaz74vjt",
+    "type": "code",
+    "description": "\"Unclosed quote",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504384311,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504384371_jj2yj12lx",
+    "type": "code",
+    "description": "Implement feature #123 @high-priority",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504384371,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504384374_erl2g6v2y",
+    "type": "research",
+    "description": "研究 AI 技术 🚀",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504384374,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504384377_3gx6lj0qs",
+    "type": "analysis",
+    "description": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504384377,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768504384388_9o3hnxsd1",
+    "type": "code",
+    "description": "Test; rm -rf /",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768504384388,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768505017989_ro70kn8s1",
+    "type": "research",
+    "description": "Market analysis",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768505017989,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768505018002_3qzqp3hc8",
+    "type": "code",
+    "description": "Implement user authentication system",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768505018002,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768505018004_yecztwoi6",
+    "type": "analysis",
+    "description": "Data processing pipeline",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768505018004,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768505018009_94lfgbwvv",
+    "type": "research",
+    "description": "Analyze \"best practices\" for API design",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768505018009,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768505018014_exrgwpezb",
+    "type": "code",
+    "description": "Build API",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768505018014,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768505018024_x2ddppxmw",
+    "type": "general",
+    "description": "Quick task description",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768505018024,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768505018034_h5tqw1ygw",
+    "type": "code",
+    "description": "\"Unclosed quote",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768505018034,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768505018094_8ehqw9c5a",
+    "type": "code",
+    "description": "Implement feature #123 @high-priority",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768505018094,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768505018096_3ulc2034m",
+    "type": "research",
+    "description": "研究 AI 技术 🚀",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768505018096,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768505018099_mptbiugyr",
+    "type": "analysis",
+    "description": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768505018099,
+    "assignedTo": null,
+    "progress": 0
+  },
+  {
+    "id": "task_1768505018103_589zc2b2p",
+    "type": "code",
+    "description": "Test; rm -rf /",
+    "priority": 5,
+    "status": "queued",
+    "createdAt": 1768505018103,
     "assignedTo": null,
     "progress": 0
   }

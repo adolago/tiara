@@ -360,11 +360,14 @@ export class AuthService {
     hashApiKey(key) {
         return createHash('sha256').update(key).digest('hex');
     }
+    getSalt() {
+        return process.env.PASSWORD_SALT || 'salt';
+    }
     async hashPassword(password) {
-        return createHash('sha256').update(password + 'salt').digest('hex');
+        return createHash('sha256').update(password + this.getSalt()).digest('hex');
     }
     async verifyPassword(password, hash) {
-        const passwordHash = createHash('sha256').update(password + 'salt').digest('hex');
+        const passwordHash = createHash('sha256').update(password + this.getSalt()).digest('hex');
         return this.constantTimeCompare(passwordHash, hash);
     }
     constantTimeCompare(a, b) {
@@ -376,40 +379,53 @@ export class AuthService {
         return timingSafeEqual(bufferA, bufferB);
     }
     initializeDefaultUsers() {
-        const adminId = 'admin_default';
-        const adminUser = {
-            id: adminId,
-            email: 'admin@claude-flow.local',
-            passwordHash: createHash('sha256').update('admin123' + 'salt').digest('hex'),
-            role: 'admin',
-            permissions: ROLE_PERMISSIONS.admin,
-            apiKeys: [],
-            isActive: true,
-            loginAttempts: 0,
-            mfaEnabled: false,
-            createdAt: new Date(),
-            updatedAt: new Date()
-        };
-        this.users.set(adminId, adminUser);
-        const serviceId = 'service_default';
-        const serviceUser = {
-            id: serviceId,
-            email: 'service@claude-flow.local',
-            passwordHash: createHash('sha256').update('service123' + 'salt').digest('hex'),
-            role: 'service',
-            permissions: ROLE_PERMISSIONS.service,
-            apiKeys: [],
-            isActive: true,
-            loginAttempts: 0,
-            mfaEnabled: false,
-            createdAt: new Date(),
-            updatedAt: new Date()
-        };
-        this.users.set(serviceId, serviceUser);
-        this.logger.info('Default users initialized', {
-            admin: adminUser.email,
-            service: serviceUser.email
-        });
+        const adminEmail = process.env.ADMIN_EMAIL;
+        const adminPassword = process.env.ADMIN_PASSWORD;
+        if (adminEmail && adminPassword) {
+            const adminId = 'admin_default';
+            const adminUser = {
+                id: adminId,
+                email: adminEmail,
+                passwordHash: createHash('sha256').update(adminPassword + this.getSalt()).digest('hex'),
+                role: 'admin',
+                permissions: ROLE_PERMISSIONS.admin,
+                apiKeys: [],
+                isActive: true,
+                loginAttempts: 0,
+                mfaEnabled: false,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
+            this.users.set(adminId, adminUser);
+        } else {
+            this.logger.warn('ADMIN_EMAIL and ADMIN_PASSWORD not set. Default admin user not created.');
+        }
+        const serviceEmail = process.env.SERVICE_EMAIL;
+        const servicePassword = process.env.SERVICE_PASSWORD;
+        if (serviceEmail && servicePassword) {
+            const serviceId = 'service_default';
+            const serviceUser = {
+                id: serviceId,
+                email: serviceEmail,
+                passwordHash: createHash('sha256').update(servicePassword + this.getSalt()).digest('hex'),
+                role: 'service',
+                permissions: ROLE_PERMISSIONS.service,
+                apiKeys: [],
+                isActive: true,
+                loginAttempts: 0,
+                mfaEnabled: false,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
+            this.users.set(serviceId, serviceUser);
+        } else {
+            this.logger.warn('SERVICE_EMAIL and SERVICE_PASSWORD not set. Default service user not created.');
+        }
+        if (this.users.size > 0) {
+            this.logger.info('Default users initialized', {
+                users: Array.from(this.users.values()).map((u)=>u.email)
+            });
+        }
     }
 }
 

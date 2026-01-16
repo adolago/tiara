@@ -16,6 +16,12 @@ export class ClaudeFlowError extends Error {
         };
     }
 }
+export class AuthenticationError extends ClaudeFlowError {
+    constructor(message, details){
+        super(message, 'AUTHENTICATION_ERROR', details);
+        this.name = 'AuthenticationError';
+    }
+}
 export class TerminalError extends ClaudeFlowError {
     constructor(message, details){
         super(message, 'TERMINAL_ERROR', details);

@@ -1,4 +1,4 @@
-import { printSuccess, printError, printWarning } from '../utils.js';
+import { printSuccess, printError, printWarning, runCommand } from '../utils.js';
 import { existsSync } from 'fs';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -290,38 +290,19 @@ async function callAgentBooster(operation, params) {
         if (!toolName) {
             throw new Error(`Unknown operation: ${operation}`);
         }
-        if (operation === 'edit') {
-            return {
-                success: true,
-                edited_code: params.code_edit + '\n// Edited with Agent Booster\n',
-                metadata: {
-                    operation,
-                    timestamp: Date.now()
-                }
-            };
-        } else if (operation === 'batch') {
-            return {
-                success: true,
-                results: params.edits.map((edit)=>({
-                        success: true,
-                        edited_code: edit.code_edit + '\n// Batch edited\n',
-                        filepath: edit.target_filepath
-                    }))
-            };
-        } else if (operation === 'parse') {
-            return {
-                success: true,
-                edits_count: 1,
-                edits: [
-                    {
-                        success: true,
-                        filepath: 'example.js',
-                        edited_code: '// Parsed from markdown\n'
-                    }
-                ]
-            };
+        const jsonParams = JSON.stringify(params).replace(/'/g, "'\\''");
+        const command = `npx ruv-swarm mcp-execute ${toolName} '${jsonParams}'`;
+        const result = await runCommand(command, [], {
+            shell: true
+        });
+        if (!result.success) {
+            throw new Error(result.stderr || result.stdout || `Command failed with code ${result.code}`);
         }
-        throw new Error('Invalid operation');
+        try {
+            return JSON.parse(result.stdout);
+        } catch (e) {
+            throw new Error(`Failed to parse MCP response: ${result.stdout}`);
+        }
     } catch (error) {
         return {
             success: false,

@@ -3,7 +3,11 @@ import { fileURLToPath } from 'url';
 import { existsSync, readFileSync } from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+let cachedRoot;
 export function getClaudeFlowRoot() {
+    if (cachedRoot) {
+        return cachedRoot;
+    }
     const strategies = [
         resolve(__dirname, '../..'),
         process.cwd(),
@@ -17,12 +21,14 @@ export function getClaudeFlowRoot() {
                 const pkgContent = readFileSync(pkgPath, 'utf-8');
                 const pkg = JSON.parse(pkgContent);
                 if (pkg.name === 'claude-flow') {
+                    cachedRoot = path;
                     return path;
                 }
             } catch  {}
         }
     }
-    return process.cwd();
+    cachedRoot = process.cwd();
+    return cachedRoot;
 }
 export function getClaudeFlowBin() {
     return join(getClaudeFlowRoot(), 'bin', 'claude-flow');

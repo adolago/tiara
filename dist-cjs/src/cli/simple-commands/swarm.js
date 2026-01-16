@@ -1,4 +1,5 @@
 import { mkdirAsync, writeTextFile, exit } from '../node-compat.js';
+import ora from 'ora';
 import { spawn } from 'child_process';
 import { existsSync, chmodSync, statSync, readFileSync } from 'fs';
 import { open } from 'fs/promises';
@@ -1342,9 +1343,10 @@ async function createSwarmFiles(objective, flags) {
         await fs.promises.mkdir(apiDir, {
             recursive: true
         });
-        console.log(`\n🏗️  Creating REST API...`);
-        console.log(`  🤖 Agent developer-1: Creating server implementation`);
-        const serverCode = `const express = require('express');
+        const spinner = ora('Creating REST API...').start();
+        try {
+            spinner.text = 'Agent developer-1: Creating server implementation';
+            const serverCode = `const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -1399,43 +1401,51 @@ app.listen(port, () => {
 
 module.exports = app;
 `;
-        await fs.promises.writeFile(path.join(apiDir, 'server.js'), serverCode);
-        console.log(`  ✅ Created: server.js`);
-        const packageJson = {
-            name: 'rest-api',
-            version: '1.0.0',
-            description: 'REST API created by Claude Flow Swarm',
-            main: 'server.js',
-            scripts: {
-                start: 'node server.js',
-                dev: 'nodemon server.js',
-                test: 'jest'
-            },
-            keywords: [
-                'rest',
-                'api',
-                'swarm',
-                'claude-flow'
-            ],
-            author: 'Claude Flow Swarm',
-            license: 'MIT',
-            dependencies: {
-                express: '^4.18.2'
-            },
-            devDependencies: {
-                nodemon: '^3.0.1',
-                jest: '^29.7.0',
-                supertest: '^6.3.3'
-            },
-            swarmMetadata: {
-                swarmId,
-                strategy: flags.strategy || 'development',
-                created: new Date().toISOString()
-            }
-        };
-        await fs.promises.writeFile(path.join(apiDir, 'package.json'), JSON.stringify(packageJson, null, 2));
-        console.log(`  ✅ Created: package.json`);
-        const readme = `# REST API
+            await fs.promises.writeFile(path.join(apiDir, 'server.js'), serverCode);
+            spinner.stopAndPersist({
+                symbol: '✅',
+                text: 'Created: server.js'
+            });
+            spinner.start('Creating package.json...');
+            const packageJson = {
+                name: 'rest-api',
+                version: '1.0.0',
+                description: 'REST API created by Claude Flow Swarm',
+                main: 'server.js',
+                scripts: {
+                    start: 'node server.js',
+                    dev: 'nodemon server.js',
+                    test: 'jest'
+                },
+                keywords: [
+                    'rest',
+                    'api',
+                    'swarm',
+                    'claude-flow'
+                ],
+                author: 'Claude Flow Swarm',
+                license: 'MIT',
+                dependencies: {
+                    express: '^4.18.2'
+                },
+                devDependencies: {
+                    nodemon: '^3.0.1',
+                    jest: '^29.7.0',
+                    supertest: '^6.3.3'
+                },
+                swarmMetadata: {
+                    swarmId,
+                    strategy: flags.strategy || 'development',
+                    created: new Date().toISOString()
+                }
+            };
+            await fs.promises.writeFile(path.join(apiDir, 'package.json'), JSON.stringify(packageJson, null, 2));
+            spinner.stopAndPersist({
+                symbol: '✅',
+                text: 'Created: package.json'
+            });
+            spinner.start('Creating README.md...');
+            const readme = `# REST API
 
 This REST API was created by the Claude Flow Swarm system.
 
@@ -1467,14 +1477,22 @@ npm start
 ---
 Created by Claude Flow Swarm
 `;
-        await fs.promises.writeFile(path.join(apiDir, 'README.md'), readme);
-        console.log(`  ✅ Created: README.md`);
-        console.log(`\n✅ Swarm completed successfully!`);
-        console.log(`📁 Files created in: ${apiDir}`);
-        console.log(`🆔 Swarm ID: ${swarmId}`);
+            await fs.promises.writeFile(path.join(apiDir, 'README.md'), readme);
+            spinner.stopAndPersist({
+                symbol: '✅',
+                text: 'Created: README.md'
+            });
+            console.log(`\n✅ Swarm completed successfully!`);
+            console.log(`📁 Files created in: ${apiDir}`);
+            console.log(`🆔 Swarm ID: ${swarmId}`);
+        } catch (error) {
+            spinner.fail('Failed to create REST API');
+            throw error;
+        }
     } else {
-        console.log(`\n🏗️  Creating application...`);
-        const appCode = `// Application created by Claude Flow Swarm
+        const spinner = ora('Creating application...').start();
+        try {
+            const appCode = `// Application created by Claude Flow Swarm
 // Objective: ${objective}
 // Swarm ID: ${swarmId}
 
@@ -1485,27 +1503,38 @@ function main() {
 
 main();
 `;
-        await fs.promises.writeFile(path.join(targetDir, 'app.js'), appCode);
-        console.log(`  ✅ Created: app.js`);
-        const packageJson = {
-            name: 'swarm-app',
-            version: '1.0.0',
-            description: `Application created by Claude Flow Swarm: ${objective}`,
-            main: 'app.js',
-            scripts: {
-                start: 'node app.js'
-            },
-            swarmMetadata: {
-                swarmId,
-                objective,
-                created: new Date().toISOString()
-            }
-        };
-        await fs.promises.writeFile(path.join(targetDir, 'package.json'), JSON.stringify(packageJson, null, 2));
-        console.log(`  ✅ Created: package.json`);
-        console.log(`\n✅ Swarm completed successfully!`);
-        console.log(`📁 Files created in: ${targetDir}`);
-        console.log(`🆔 Swarm ID: ${swarmId}`);
+            await fs.promises.writeFile(path.join(targetDir, 'app.js'), appCode);
+            spinner.stopAndPersist({
+                symbol: '✅',
+                text: 'Created: app.js'
+            });
+            spinner.start('Creating package.json...');
+            const packageJson = {
+                name: 'swarm-app',
+                version: '1.0.0',
+                description: `Application created by Claude Flow Swarm: ${objective}`,
+                main: 'app.js',
+                scripts: {
+                    start: 'node app.js'
+                },
+                swarmMetadata: {
+                    swarmId,
+                    objective,
+                    created: new Date().toISOString()
+                }
+            };
+            await fs.promises.writeFile(path.join(targetDir, 'package.json'), JSON.stringify(packageJson, null, 2));
+            spinner.stopAndPersist({
+                symbol: '✅',
+                text: 'Created: package.json'
+            });
+            console.log(`\n✅ Swarm completed successfully!`);
+            console.log(`📁 Files created in: ${targetDir}`);
+            console.log(`🆔 Swarm ID: ${swarmId}`);
+        } catch (error) {
+            spinner.fail('Failed to create application');
+            throw error;
+        }
     }
 }
 function getStrategyGuidance(strategy, objective) {

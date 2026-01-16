@@ -76,7 +76,7 @@ claudeCommand.command('spawn').description('Spawn a new Claude instance with spe
         const message = error instanceof Error ? error.message : String(error);
         if (message.includes('daemon not running')) {
             console.error(chalk.red('agent-core daemon not running. Start it with:'));
-            console.log(chalk.yellow('  agent-core daemon --external-gateway'));
+            console.log(chalk.yellow('  agent-core daemon'));
         } else {
             console.error(chalk.red('Failed to spawn Claude:'), message);
         }
@@ -132,7 +132,7 @@ claudeCommand.command('batch').description('Spawn multiple Claude instances from
         const message = error instanceof Error ? error.message : String(error);
         if (message.includes('daemon not running')) {
             console.error(chalk.red('agent-core daemon not running. Start it with:'));
-            console.log(chalk.yellow('  agent-core daemon --external-gateway'));
+            console.log(chalk.yellow('  agent-core daemon'));
         } else {
             console.error(chalk.red('Failed to process workflow:'), message);
         }

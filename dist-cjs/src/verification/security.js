@@ -48,8 +48,10 @@ let CryptographicCore = class CryptographicCore {
         return crypto.randomBytes(32).toString('hex');
     }
     encrypt(data, key) {
-        const iv = crypto.randomBytes(16);
-        const cipher = crypto.createCipher(this.algorithm, key);
+        const salt = crypto.randomBytes(16);
+        const derivedKey = crypto.pbkdf2Sync(key, salt, 100000, 32, 'sha256');
+        const iv = crypto.randomBytes(12);
+        const cipher = crypto.createCipheriv(this.algorithm, derivedKey, iv);
         cipher.setAAD(Buffer.from('claude-flow-verification'));
         let encrypted = cipher.update(data, 'utf8', 'hex');
         encrypted += cipher.final('hex');
@@ -57,13 +59,21 @@ let CryptographicCore = class CryptographicCore {
         return {
             encrypted,
             iv: iv.toString('hex'),
-            tag: tag.toString('hex')
+            tag: tag.toString('hex'),
+            salt: salt.toString('hex')
         };
     }
     decrypt(encryptedData, key) {
-        const decipher = crypto.createDecipher(this.algorithm, key);
+        if (!encryptedData.salt) {
+            throw new Error('Missing salt for decryption (required for secure key derivation)');
+        }
+        const salt = Buffer.from(encryptedData.salt, 'hex');
+        const iv = Buffer.from(encryptedData.iv, 'hex');
+        const tag = Buffer.from(encryptedData.tag, 'hex');
+        const derivedKey = crypto.pbkdf2Sync(key, salt, 100000, 32, 'sha256');
+        const decipher = crypto.createDecipheriv(this.algorithm, derivedKey, iv);
         decipher.setAAD(Buffer.from('claude-flow-verification'));
-        decipher.setAuthTag(Buffer.from(encryptedData.tag, 'hex'));
+        decipher.setAuthTag(tag);
         let decrypted = decipher.update(encryptedData.encrypted, 'hex', 'utf8');
         decrypted += decipher.final('utf8');
         return decrypted;

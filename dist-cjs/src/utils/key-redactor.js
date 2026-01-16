@@ -8,6 +8,7 @@ export class KeyRedactor {
         /([A-Z_]+_API_KEY|[A-Z_]+_TOKEN|[A-Z_]+_SECRET)=["']?([^"'\s]+)["']?/gi,
         /eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*/gi
     ];
+    static COMBINED_PATTERN = new RegExp(KeyRedactor.API_KEY_PATTERNS.map((p)=>p.source).join('|'), 'gi');
     static SENSITIVE_FIELDS = [
         'apiKey',
         'api_key',
@@ -21,42 +22,60 @@ export class KeyRedactor {
         'refreshToken',
         'refresh_token'
     ];
+    static SENSITIVE_KEY_PATTERN = new RegExp(KeyRedactor.SENSITIVE_FIELDS.join('|'), 'i');
     static redact(text, showPrefix = true) {
         if (!text) return text;
-        let redacted = text;
-        this.API_KEY_PATTERNS.forEach((pattern)=>{
-            redacted = redacted.replace(pattern, (match)=>{
-                if (showPrefix && match.length > 8) {
-                    const prefix = match.substring(0, 8);
-                    return `${prefix}...[REDACTED]`;
-                }
-                return '[REDACTED_API_KEY]';
-            });
+        return text.replace(this.COMBINED_PATTERN, (match)=>{
+            if (showPrefix && match.length > 8) {
+                const prefix = match.substring(0, 8);
+                return `${prefix}...[REDACTED]`;
+            }
+            return '[REDACTED_API_KEY]';
         });
-        return redacted;
     }
     static redactObject(obj, deep = true) {
         if (!obj || typeof obj !== 'object') return obj;
-        const redacted = {
-            ...obj
-        };
-        Object.keys(redacted).forEach((key)=>{
-            const lowerKey = key.toLowerCase();
-            const isSensitive = this.SENSITIVE_FIELDS.some((field)=>lowerKey.includes(field));
-            if (isSensitive && typeof redacted[key] === 'string') {
-                const value = redacted[key];
-                if (value && value.length > 8) {
-                    redacted[key] = `${value.substring(0, 4)}...[REDACTED]`;
+        if (Array.isArray(obj)) {
+            let changed = false;
+            const newArray = obj.map((item)=>{
+                let newItem = item;
+                if (typeof item === 'string') {
+                    newItem = this.redact(item);
                 } else {
-                    redacted[key] = '[REDACTED]';
+                    newItem = this.redactObject(item, deep);
                 }
-            } else if (deep && typeof redacted[key] === 'object' && redacted[key] !== null) {
-                redacted[key] = this.redactObject(redacted[key], deep);
-            } else if (typeof redacted[key] === 'string') {
-                redacted[key] = this.redact(redacted[key]);
+                if (newItem !== item) changed = true;
+                return newItem;
+            });
+            return changed ? newArray : obj;
+        }
+        let redacted = null;
+        const keys = Object.keys(obj);
+        for (const key of keys){
+            const val = obj[key];
+            let newVal = val;
+            const isSensitive = typeof val === 'string' && this.SENSITIVE_KEY_PATTERN.test(key);
+            if (isSensitive) {
+                if (val && val.length > 8) {
+                    newVal = `${val.substring(0, 4)}...[REDACTED]`;
+                } else {
+                    newVal = '[REDACTED]';
+                }
+            } else if (deep && typeof val === 'object' && val !== null) {
+                newVal = this.redactObject(val, deep);
+            } else if (typeof val === 'string') {
+                newVal = this.redact(val);
             }
-        });
-        return redacted;
+            if (newVal !== val) {
+                if (!redacted) {
+                    redacted = {
+                        ...obj
+                    };
+                }
+                redacted[key] = newVal;
+            }
+        }
+        return redacted || obj;
     }
     static sanitize(text) {
         return this.redact(text, true);
@@ -70,11 +89,12 @@ export class KeyRedactor {
         });
     }
     static containsSensitiveData(text) {
-        return this.API_KEY_PATTERNS.some((pattern)=>pattern.test(text));
+        return text.search(this.COMBINED_PATTERN) !== -1;
     }
     static validate(text) {
         const warnings = [];
         this.API_KEY_PATTERNS.forEach((pattern, index)=>{
+            pattern.lastIndex = 0;
             if (pattern.test(text)) {
                 warnings.push(`Potential API key detected (pattern ${index + 1})`);
             }

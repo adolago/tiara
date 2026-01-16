@@ -30,9 +30,7 @@ export default {
         target: 'es2022'
       }
     }],
-    '^.+\\.js$': ['babel-jest', {
-      presets: [['@babel/preset-env', { modules: false }]]
-    }]
+    '^.+\\.js$': 'babel-jest'
   },
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
