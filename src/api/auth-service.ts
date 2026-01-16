@@ -6,7 +6,10 @@
 import { ILogger } from '../core/logger.js';
 import { AuthenticationError } from '../utils/errors.js';
 import { nanoid } from 'nanoid';
-import { createHash, createHmac, timingSafeEqual } from 'crypto';
+import { createHash, createHmac, timingSafeEqual, pbkdf2, pbkdf2Sync, randomBytes } from 'crypto';
+import { promisify } from 'util';
+
+const pbkdf2Async = promisify(pbkdf2);
 
 export interface AuthConfig {
   jwtSecret: string;
@@ -581,17 +584,45 @@ export class AuthService {
     return process.env.PASSWORD_SALT || 'salt';
   }
 
+  private hashPasswordSync(password: string): string {
+    const salt = randomBytes(16).toString('hex');
+    const iterations = 100000;
+    const keyLength = 64;
+    const digest = 'sha512';
+
+    const derivedKey = pbkdf2Sync(password, salt, iterations, keyLength, digest).toString('hex');
+    return `${salt}:${iterations}:${keyLength}:${digest}:${derivedKey}`;
+  }
+
   private async hashPassword(password: string): Promise<string> {
-    // In a real implementation, use bcrypt
-    // Using a simple salt for demonstration, but it should be a random salt in production
-    // or passed via environment variable
-    return createHash('sha256').update(password + this.getSalt()).digest('hex');
+    const salt = randomBytes(16).toString('hex');
+    const iterations = 100000;
+    const keyLength = 64;
+    const digest = 'sha512';
+
+    const derivedKeyBuffer = await pbkdf2Async(password, salt, iterations, keyLength, digest);
+    const derivedKey = derivedKeyBuffer.toString('hex');
+    return `${salt}:${iterations}:${keyLength}:${digest}:${derivedKey}`;
   }
 
   private async verifyPassword(password: string, hash: string): Promise<boolean> {
-    // In a real implementation, use bcrypt.compare
-    const passwordHash = createHash('sha256').update(password + this.getSalt()).digest('hex');
-    return this.constantTimeCompare(passwordHash, hash);
+    // Handle legacy hashes (SHA-256 with global salt)
+    if (!hash.includes(':')) {
+      const legacyHash = createHash('sha256').update(password + this.getSalt()).digest('hex');
+      return this.constantTimeCompare(legacyHash, hash);
+    }
+
+    try {
+      const [salt, iterationsStr, keyLengthStr, digest, derivedKey] = hash.split(':');
+      const iterations = parseInt(iterationsStr, 10);
+      const keyLength = parseInt(keyLengthStr, 10);
+
+      const calculatedKeyBuffer = await pbkdf2Async(password, salt, iterations, keyLength, digest);
+      const calculatedKey = calculatedKeyBuffer.toString('hex');
+      return this.constantTimeCompare(derivedKey, calculatedKey);
+    } catch (error) {
+      return false;
+    }
   }
 
   private constantTimeCompare(a: string, b: string): boolean {
@@ -615,7 +646,7 @@ export class AuthService {
       const adminUser: User = {
         id: adminId,
         email: adminEmail,
-        passwordHash: createHash('sha256').update(adminPassword + this.getSalt()).digest('hex'),
+        passwordHash: this.hashPasswordSync(adminPassword),
         role: 'admin',
         permissions: ROLE_PERMISSIONS.admin,
         apiKeys: [],
@@ -640,7 +671,7 @@ export class AuthService {
       const serviceUser: User = {
         id: serviceId,
         email: serviceEmail,
-        passwordHash: createHash('sha256').update(servicePassword + this.getSalt()).digest('hex'),
+        passwordHash: this.hashPasswordSync(servicePassword),
         role: 'service',
         permissions: ROLE_PERMISSIONS.service,
         apiKeys: [],
