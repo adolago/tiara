@@ -339,7 +339,29 @@ function setLoading(button, isLoading) {
     button.disabled = isLoading;
     button.setAttribute('aria-busy', isLoading);
 
-    // Add visual feedback class if needed, but CSS handles disabled/aria-busy
+    const svg = button.querySelector('svg:not(.spinner)');
+    let spinner = button.querySelector('.spinner');
+
+    if (isLoading) {
+        if (svg) svg.style.display = 'none';
+        if (!spinner) {
+            spinner = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            spinner.setAttribute("class", "spinner");
+            spinner.setAttribute("viewBox", "0 0 24 24");
+            spinner.setAttribute("aria-hidden", "true");
+            // Simple loading arc
+            spinner.innerHTML = '<path d="M21 12a9 9 0 1 1-6.219-8.56" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>';
+
+            if (svg) {
+                button.insertBefore(spinner, svg);
+            } else {
+                button.prepend(spinner);
+            }
+        }
+    } else {
+        if (svg) svg.style.display = '';
+        if (spinner) spinner.remove();
+    }
 }
 
 /**
