@@ -240,8 +240,24 @@ export class AgentCoreClient {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: response.statusText }));
-        throw new Error(`HTTP ${response.status}: ${error.error ?? 'Unknown error'}`);
+        const errorData = await response.json().catch(() => ({ error: response.statusText }));
+
+        // Handle different error response formats
+        let errorMessage: string;
+        if (typeof errorData.error === 'string') {
+          errorMessage = errorData.error;
+        } else if (Array.isArray(errorData.error)) {
+          // Validation errors from hono-openapi return an array
+          errorMessage = errorData.error.map((e: any) => e.message || JSON.stringify(e)).join('; ');
+        } else if (errorData.error) {
+          errorMessage = JSON.stringify(errorData.error);
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        } else {
+          errorMessage = JSON.stringify(errorData);
+        }
+
+        throw new Error(`HTTP ${response.status}: ${errorMessage}`);
       }
 
       const result = await response.json();

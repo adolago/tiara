@@ -666,7 +666,7 @@ export class QdrantStore extends EventEmitter {
   }
 
   async getNamespaceStats(namespace: string): Promise<{ entries: number; size: number; avgTTL: number }> {
-    const entries = await this.client.listMemoriesByNamespace(namespace, { limit: 1000 });
+    const entries = await this.client.listMemoriesByNamespace(namespace, { limit: 500 });
     let totalTTL = 0;
     let ttlCount = 0;
 
@@ -685,12 +685,12 @@ export class QdrantStore extends EventEmitter {
   }
 
   async getAllMemoryEntries(): Promise<MemoryData[]> {
-    // Get entries from all namespaces
+    // Get entries from all namespaces (limit per namespace to API max of 500)
     const namespaces = Object.values(TiaraNamespaces);
     const allEntries: MemoryData[] = [];
 
     for (const ns of namespaces) {
-      const entries = await this.listMemory(ns, 1000);
+      const entries = await this.listMemory(ns, 500);
       allEntries.push(...entries);
     }
 
