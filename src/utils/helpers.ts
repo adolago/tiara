@@ -219,28 +219,35 @@ export function deepMerge<T extends Record<string, unknown>>(
   // Create a deep clone of the target to avoid mutation
   const result = deepClone(target);
 
-  if (!sources.length) return result;
-
-  const source = sources.shift();
-  if (!source) return result;
-
-  for (const key in source) {
-    if (Object.prototype.hasOwnProperty.call(source, key)) {
-      const sourceValue = source[key];
-      const resultValue = result[key];
-
-      if (isObject(resultValue) && isObject(sourceValue)) {
-        result[key] = deepMerge(
-          resultValue as Record<string, unknown>,
-          sourceValue as Record<string, unknown>,
-        ) as T[Extract<keyof T, string>];
-      } else {
-        result[key] = sourceValue as T[Extract<keyof T, string>];
-      }
+  for (const source of sources) {
+    if (source) {
+      mergeRecursive(result, source);
     }
   }
 
-  return deepMerge(result, ...sources);
+  return result;
+}
+
+/**
+ * Recursive helper for deepMerge
+ */
+function mergeRecursive(target: any, source: any) {
+  for (const key in source) {
+    if (Object.prototype.hasOwnProperty.call(source, key)) {
+      const sourceValue = source[key];
+      const targetValue = target[key];
+
+      if (isObject(targetValue) && isObject(sourceValue)) {
+        mergeRecursive(targetValue, sourceValue);
+      } else {
+        if (sourceValue !== null && typeof sourceValue === 'object') {
+          target[key] = deepClone(sourceValue);
+        } else {
+          target[key] = sourceValue;
+        }
+      }
+    }
+  }
 }
 
 /**
