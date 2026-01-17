@@ -111,6 +111,22 @@ class ClaudeFlowDashboard {
         const agentList = document.getElementById('agentList');
         agentList.innerHTML = '';
 
+        if (this.agents.size === 0) {
+            const emptyState = document.createElement('li');
+            emptyState.className = 'agent-empty-state';
+            emptyState.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"></path>
+                    <path d="M12 12v6"></path>
+                    <path d="M12 8h.01"></path>
+                </svg>
+                <p>No active agents connected</p>
+                <span class="hint">Spawn agents to start the swarm</span>
+            `;
+            agentList.appendChild(emptyState);
+            return;
+        }
+
         this.agents.forEach(agent => {
             const li = document.createElement('li');
             li.className = 'agent-item';
