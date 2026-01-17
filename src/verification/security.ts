@@ -7,7 +7,10 @@
  */
 
 import crypto from 'crypto';
+import { promisify } from 'util';
 import { EventEmitter } from 'events';
+
+const pbkdf2Async = promisify(crypto.pbkdf2);
 
 // ======================== TYPES AND INTERFACES ========================
 
@@ -71,14 +74,19 @@ class CryptographicCore {
   private readonly signatureAlgorithm = 'rsa';
   
   // Generate secure key pair for agent
-  generateKeyPair(): { publicKey: string; privateKey: string } {
-    const { publicKey, privateKey } = crypto.generateKeyPairSync(this.signatureAlgorithm, {
-      modulusLength: 4096,
-      publicKeyEncoding: { type: 'spki', format: 'pem' },
-      privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
+  async generateKeyPair(): Promise<{ publicKey: string; privateKey: string }> {
+    // Manual Promise wrapper to handle multiple arguments (publicKey, privateKey)
+    // util.promisify might drop the second argument
+    return new Promise((resolve, reject) => {
+      crypto.generateKeyPair(this.signatureAlgorithm, {
+        modulusLength: 4096,
+        publicKeyEncoding: { type: 'spki', format: 'pem' },
+        privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
+      }, (err, publicKey, privateKey) => {
+        if (err) return reject(err);
+        resolve({ publicKey: publicKey as string, privateKey: privateKey as string });
+      });
     });
-    
-    return { publicKey, privateKey };
   }
 
   // Create cryptographic signature
@@ -120,10 +128,10 @@ class CryptographicCore {
   }
 
   // Encrypt sensitive data
-  encrypt(data: string, key: string): { encrypted: string; iv: string; tag: string; salt: string } {
+  async encrypt(data: string, key: string): Promise<{ encrypted: string; iv: string; tag: string; salt: string }> {
     const salt = crypto.randomBytes(16);
     // Derive a 32-byte key from the password and salt
-    const derivedKey = crypto.pbkdf2Sync(key, salt, 100000, 32, 'sha256');
+    const derivedKey = await pbkdf2Async(key, salt, 100000, 32, 'sha256');
     // Generate a 12-byte IV (recommended for GCM)
     const iv = crypto.randomBytes(12);
 
@@ -144,7 +152,7 @@ class CryptographicCore {
   }
 
   // Decrypt sensitive data
-  decrypt(encryptedData: { encrypted: string; iv: string; tag: string; salt?: string }, key: string): string {
+  async decrypt(encryptedData: { encrypted: string; iv: string; tag: string; salt?: string }, key: string): Promise<string> {
     if (!encryptedData.salt) {
       throw new Error('Missing salt for decryption (required for secure key derivation)');
     }
@@ -153,7 +161,7 @@ class CryptographicCore {
     const iv = Buffer.from(encryptedData.iv, 'hex');
     const tag = Buffer.from(encryptedData.tag, 'hex');
 
-    const derivedKey = crypto.pbkdf2Sync(key, salt, 100000, 32, 'sha256');
+    const derivedKey = await pbkdf2Async(key, salt, 100000, 32, 'sha256');
 
     const decipher = crypto.createDecipheriv(this.algorithm, derivedKey, iv);
     decipher.setAAD(Buffer.from('claude-flow-verification'));
@@ -193,12 +201,12 @@ class ThresholdSignatureSystem {
 
     // Phase 1: Generate key pairs for each participant
     const keyPairs = new Map<string, { publicKey: string; privateKey: string }>();
-    participants.forEach(participant => {
-      keyPairs.set(participant, this.crypto.generateKeyPair());
-    });
+    for (const participant of participants) {
+      keyPairs.set(participant, await this.crypto.generateKeyPair());
+    }
 
     // Phase 2: Generate master public key (simplified for demonstration)
-    const masterKeyPair = this.crypto.generateKeyPair();
+    const masterKeyPair = await this.crypto.generateKeyPair();
     this.masterPublicKey = masterKeyPair.publicKey;
 
     // Phase 3: Generate key shares using Shamir's Secret Sharing
@@ -402,7 +410,7 @@ class AgentAuthenticationSystem {
 
   // Register new agent with authentication
   async registerAgent(agentId: string, capabilities: string[], securityLevel: AgentIdentity['securityLevel']): Promise<AgentIdentity> {
-    const keyPair = this.crypto.generateKeyPair();
+    const keyPair = await this.crypto.generateKeyPair();
     
     const identity: AgentIdentity = {
       agentId,
