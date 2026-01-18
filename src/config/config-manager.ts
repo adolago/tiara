@@ -5,6 +5,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
+import { deepClone } from '../utils/helpers.js';
 
 export interface Config {
   orchestrator: {
@@ -158,7 +159,7 @@ export class ConfigManager {
   private userConfigDir: string;
 
   private constructor() {
-    this.config = this.deepClone(DEFAULT_CONFIG);
+    this.config = deepClone(DEFAULT_CONFIG);
     this.userConfigDir = path.join(os.homedir(), '.claude-flow');
   }
 
@@ -190,7 +191,7 @@ export class ConfigManager {
    * Creates a default configuration file
    */
   async createDefaultConfig(configPath: string): Promise<void> {
-    const config = this.deepClone(DEFAULT_CONFIG);
+    const config = deepClone(DEFAULT_CONFIG);
     const content = JSON.stringify(config, null, 2);
     await fs.writeFile(configPath, content, 'utf8');
     this.configPath = configPath;
@@ -234,7 +235,7 @@ export class ConfigManager {
    * Shows current configuration
    */
   show(): Config {
-    return this.deepClone(this.config);
+    return deepClone(this.config);
   }
 
   /**
@@ -500,17 +501,10 @@ export class ConfigManager {
   }
 
   /**
-   * Deep clone helper
-   */
-  private deepClone<T>(obj: T): T {
-    return JSON.parse(JSON.stringify(obj));
-  }
-
-  /**
    * Get ruv-swarm specific configuration
    */
   getRuvSwarmConfig() {
-    return this.deepClone(this.config.ruvSwarm);
+    return deepClone(this.config.ruvSwarm);
   }
 
   /**
@@ -641,7 +635,7 @@ export class ConfigManager {
    * Get Claude API configuration
    */
   getClaudeConfig() {
-    return this.deepClone(this.config.claude || {});
+    return deepClone(this.config.claude || {});
   }
 
   /**
@@ -666,7 +660,7 @@ export class ConfigManager {
    * Deep merge helper
    */
   private deepMerge(target: Config, source: Partial<Config>): Config {
-    const result = this.deepClone(target);
+    const result = deepClone(target);
 
     if (source.orchestrator) {
       result.orchestrator = { ...result.orchestrator, ...source.orchestrator };
