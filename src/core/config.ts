@@ -8,7 +8,7 @@ import { join } from 'path';
 import { homedir } from 'os';
 import { createHash, randomBytes, createCipheriv, createDecipheriv } from 'crypto';
 import type { Config } from '../utils/types.js';
-import { deepMerge, safeParseJSON } from '../utils/helpers.js';
+import { deepClone, deepMerge, safeParseJSON } from '../utils/helpers.js';
 import { ConfigError, ValidationError } from '../utils/errors.js';
 
 // Format parsers
@@ -1262,10 +1262,6 @@ export const configManager = ConfigManager.getInstance();
 // Helper function to load configuration
 export async function loadConfig(path?: string): Promise<Config> {
   return await configManager.load(path);
-}
-
-function deepClone<T>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj));
 }
 
 // Export types for external use
