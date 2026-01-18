@@ -242,3 +242,23 @@ export function getErrorDetails(error: unknown): unknown {
   }
   return undefined;
 }
+
+/**
+ * Swarm-related errors
+ */
+export class SwarmError extends ClaudeFlowError {
+  constructor(message: string, details?: unknown) {
+    super(message, 'SWARM_ERROR', details);
+    this.name = 'SwarmError';
+  }
+}
+
+/**
+ * Database-related errors
+ */
+export class DatabaseError extends ClaudeFlowError {
+  constructor(message: string, details?: unknown) {
+    super(message, 'DATABASE_ERROR', details);
+    this.name = 'DatabaseError';
+  }
+}

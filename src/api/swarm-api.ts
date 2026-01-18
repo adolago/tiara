@@ -11,6 +11,7 @@ import { ICoordinationManager } from '../coordination/manager.js';
 import { SwarmCoordinator } from '../swarm/coordinator.js';
 import { AgentManager } from '../agents/agent-manager.js';
 import { ResourceManager } from '../resources/resource-manager.js';
+import { AuthService } from './auth-service.js';
 import { SwarmConfig } from '../utils/types.js';
 import { ValidationError, SwarmError } from '../utils/errors.js';
 import { nanoid } from 'nanoid';
@@ -87,17 +88,22 @@ export class SwarmApi {
     private coordinationManager: ICoordinationManager,
     private agentManager: AgentManager,
     private resourceManager: ResourceManager,
+    private authService?: AuthService,
   ) {
+    if (config.authentication.enabled && !authService) {
+      throw new Error('AuthService is required when authentication is enabled');
+    }
     this.router = Router();
+    this.setupRequestMiddleware();
     this.setupRoutes();
-    this.setupMiddleware();
+    this.setupErrorMiddleware();
   }
 
   getRouter(): Router {
     return this.router;
   }
 
-  private setupMiddleware(): void {
+  private setupRequestMiddleware(): void {
     // Request logging
     this.router.use((req, res, next) => {
       this.logger.info('Swarm API request', {
@@ -108,6 +114,9 @@ export class SwarmApi {
       });
       next();
     });
+
+    // Authentication
+    this.router.use(this.authenticateRequest.bind(this));
 
     // Request validation
     this.router.use((req, res, next) => {
@@ -121,7 +130,9 @@ export class SwarmApi {
       }
       next();
     });
+  }
 
+  private setupErrorMiddleware(): void {
     // Error handling
     this.router.use((err: Error, req: any, res: any, _next: any) => {
       this.logger.error('Swarm API error', {
@@ -152,6 +163,59 @@ export class SwarmApi {
         code: 'INTERNAL_ERROR',
       });
     });
+  }
+
+  private async authenticateRequest(req: any, res: any, next: any): Promise<void> {
+    // Public endpoints
+    if (req.path === '/health') {
+      return next();
+    }
+
+    if (!this.config.authentication.enabled) {
+      return next();
+    }
+
+    if (!this.authService) {
+      // Should not happen due to constructor check, but for safety
+      return res.status(500).json({ error: 'Authentication service not initialized' });
+    }
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ error: 'Missing authorization header', code: 'UNAUTHORIZED' });
+    }
+
+    const [scheme, token] = authHeader.split(' ');
+    if (!token) {
+      return res
+        .status(401)
+        .json({ error: 'Invalid authorization header format', code: 'UNAUTHORIZED' });
+    }
+
+    try {
+      if (scheme === 'Bearer') {
+        const { user } = await this.authService.verifyJWT(token);
+        req.user = user;
+      } else if (scheme === 'ApiKey') {
+        const { user, key } = await this.authService.authenticateApiKey(token);
+        req.user = user;
+        req.apiKey = key;
+      } else {
+        return res
+          .status(401)
+          .json({ error: 'Unsupported authentication scheme', code: 'UNAUTHORIZED' });
+      }
+      next();
+    } catch (error) {
+      this.logger.warn('Authentication failed', {
+        error: error instanceof Error ? error.message : String(error),
+        ip: req.ip,
+      });
+      return res.status(401).json({
+        error: 'Authentication failed',
+        code: 'UNAUTHORIZED',
+      });
+    }
   }
 
   private setupRoutes(): void {
@@ -196,7 +260,7 @@ export class SwarmApi {
   private async createSwarm(req: any, res: any): Promise<void> {
     try {
       const request = req.body as SwarmCreateRequest;
-      
+
       // Validate request
       if (!request.name || !request.topology) {
         return res.status(400).json({
@@ -296,7 +360,7 @@ export class SwarmApi {
         swarmId,
         config,
         status,
-        agents: agents.map(agent => ({
+        agents: agents.map((agent) => ({
           id: agent.id,
           type: agent.type,
           name: agent.name,
@@ -577,7 +641,7 @@ export class SwarmApi {
 
       const agents = await swarm.getAgents();
       res.json({
-        agents: agents.map(agent => ({
+        agents: agents.map((agent) => ({
           id: agent.id,
           type: agent.type,
           name: agent.name,
@@ -655,7 +719,7 @@ export class SwarmApi {
 
       const tasks = await swarm.getTasks();
       res.json({
-        tasks: tasks.map(task => ({
+        tasks: tasks.map((task) => ({
           id: task.id,
           description: task.description,
           status: task.status,
